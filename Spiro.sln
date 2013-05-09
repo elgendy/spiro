@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{C60DB0EF-407E-401B-9507-8CF3A7E576E9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Spiro", "Spiro\Spiro.csproj", "{9F1F0533-1201-4EE9-9D52-20F9E3735AAD}"
+EndProject
+Global
+	GlobalSection(TestCaseManagementSettings) = postSolution
+		CategoryFile = Server.vsmdi
+	EndGlobalSection
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9F1F0533-1201-4EE9-9D52-20F9E3735AAD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9F1F0533-1201-4EE9-9D52-20F9E3735AAD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9F1F0533-1201-4EE9-9D52-20F9E3735AAD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9F1F0533-1201-4EE9-9D52-20F9E3735AAD}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
