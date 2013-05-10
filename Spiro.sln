@@ -5,6 +5,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{C60DB0
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Spiro", "Spiro\Spiro.csproj", "{9F1F0533-1201-4EE9-9D52-20F9E3735AAD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Spiro.Test", "Spiro.Test\Spiro.Test.csproj", "{8557D3CA-470D-43E5-A0CF-6E75D4AD1F44}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Spiro.Test.Runner", "Spiro.Test.Runner\Spiro.Test.Runner.csproj", "{27053CE0-4518-46EF-9EDE-87D67AAEEB2D}"
+EndProject
 Global
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = Server.vsmdi
@@ -18,6 +22,14 @@ Global
 		{9F1F0533-1201-4EE9-9D52-20F9E3735AAD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9F1F0533-1201-4EE9-9D52-20F9E3735AAD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9F1F0533-1201-4EE9-9D52-20F9E3735AAD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8557D3CA-470D-43E5-A0CF-6E75D4AD1F44}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8557D3CA-470D-43E5-A0CF-6E75D4AD1F44}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8557D3CA-470D-43E5-A0CF-6E75D4AD1F44}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8557D3CA-470D-43E5-A0CF-6E75D4AD1F44}.Release|Any CPU.Build.0 = Release|Any CPU
+		{27053CE0-4518-46EF-9EDE-87D67AAEEB2D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{27053CE0-4518-46EF-9EDE-87D67AAEEB2D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{27053CE0-4518-46EF-9EDE-87D67AAEEB2D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{27053CE0-4518-46EF-9EDE-87D67AAEEB2D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,0 +1,1 @@
+﻿var appPath = "http://mvc.nakedobjects.net:1081/RestDemo";
