@@ -15,6 +15,8 @@
 
 <body style="cursor: auto;" class="spiro">
 
+    <%-- Main defines the static structure of the page into which sections of html are dynamically inserted. The format of the
+        inserted html is defined in spiro.modern.presentations.handlebars.templates --%>
     <div id="main">
         <div class="object-view ">
             <div class="header">
@@ -22,8 +24,8 @@
                 <div class="type"></div>
                 <div class="messages"></div>
             </div>
-            <div class="properties-pane "></div>
-            <div class="actions-pane "></div>
+            <div class="properties-pane"></div>
+            <div class="actions-pane"></div>
             <div class="dialog-pane"></div>
             <div class="collection-pane"></div>
             <div class="object-pane"></div>
@@ -34,7 +36,7 @@
                 <a class="refresh icon-loop disabled" title="Refresh" />
                 <a class="edit icon-pencil" title="Edit" />
                 <a class="help icon-help disabled" title="Help" />
-                <a style="display: none" /> <%--Workaround for curious bug whereby last link in the app-bar is rendered in multiple places--%>
+                <a style="display: none" /> <%--Temporary workaround for curious bug in some browsers whereby last link in the app-bar is rendered in multiple places--%>
             </div>
         </div>
     </div>
@@ -43,7 +45,8 @@
         var appPath = "http://mvc.nakedobjects.net:1081/RestDemo";
     </script>
 
-<%--    Colour definitions & Mappings--%>
+<%--    Colour definitions & Mappings.  Here you may specifiy the colour(s) for any object type in your model.  Where a
+    type is not specified in this map, Spiro will assign a colour to that type, arbitrarily but consistently --%>
     <script type="text/javascript">
         var colourMap = {
             "AdventureWorksModel.CustomerRepository": { "backgroundColor": "redLight" },

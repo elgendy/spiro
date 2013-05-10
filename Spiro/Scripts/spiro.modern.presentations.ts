@@ -1,3 +1,11 @@
+// ABOUT THIS FILE:
+// The interfaces defined here permit the separation of the presentation layer from the
+// mechanics of spiro.modern, which use Backbone.js.  In the distribution, we provide
+// an implementation of the presentation layer using Handlebars templates, but it would
+// also be possible to write your presentation layer using Tags or Stickit or another
+// library.
+
+
 /// <reference path="typings/jquery/jquery.d.ts" />
 /// <reference path="typings/backbone/backbone.d.ts" />
 /// <reference path="typings/backbone/backbone.mine.d.ts" />

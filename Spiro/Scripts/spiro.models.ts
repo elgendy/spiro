@@ -1,4 +1,9 @@
-﻿/// <reference path="typings/jquery/jquery.d.ts" />
+﻿// ABOUT THIS FILE:
+// spiro.models defines a set of classes that correspond directly to the JSON representations returned by Restful Objects
+// resources.  These classes provide convenient methods for navigating the contents of those representations, and for
+// following links to other resources.
+
+/// <reference path="typings/jquery/jquery.d.ts" />
 /// <reference path="typings/backbone/backbone.d.ts" />
 
 declare var _: any;

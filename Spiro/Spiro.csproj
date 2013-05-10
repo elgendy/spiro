@@ -161,18 +161,17 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="App_Start\AuthConfig.cs" />
+    <Compile Include="App_Start\AuthConfig.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
-    <Compile Include="Controllers\AccountController.cs" />
     <Compile Include="Controllers\SpiroController.cs" />
-    <Compile Include="Filters\InitializeSimpleMembershipAttribute.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
-    <Compile Include="Models\AccountModels.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -250,18 +249,12 @@
     <Content Include="fonts\iconFont.eot" />
     <Content Include="fonts\iconFont.ttf" />
     <Content Include="fonts\iconFont.woff" />
-    <None Include="Scripts\jquery-1.9.1.intellisense.js" />
     <Content Include="Scripts\jquery-1.8.3.js" />
-    <Content Include="Scripts\jquery-1.9.1.js" />
-    <Content Include="Scripts\jquery-1.9.1.min.js" />
     <Content Include="Scripts\jquery-ui-1.10.2.js" />
-    <Content Include="Scripts\jquery-ui-1.10.2.min.js" />
     <Content Include="Scripts\modernizr-2.6.2.js" />
     <Content Include="Scripts\spiro.modern.presentations.handlebars.js.map">
       <DependentUpon>spiro.modern.presentations.handlebars.ts</DependentUpon>
     </Content>
-    <Content Include="Scripts\jquery-1.9.1.min.map" />
-    <None Include="Scripts\jquery.validate-vsdoc.js" />
     <Content Include="Scripts\backbone.cachingsync.js" />
     <Content Include="Scripts\backbone.js" />
     <Content Include="Scripts\backbone.min.js" />
@@ -278,14 +271,6 @@
     <Content Include="Scripts\typings\backbone\backbone.d.ts" />
     <Content Include="Scripts\typings\backbone\backbone.mine.d.ts" />
     <Content Include="Scripts\typings\jquery\jquery.d.ts" />
-    <Content Include="Scripts\jquery.unobtrusive-ajax.js" />
-    <Content Include="Scripts\jquery.unobtrusive-ajax.min.js" />
-    <Content Include="Scripts\jquery.validate.js" />
-    <Content Include="Scripts\jquery.validate.min.js" />
-    <Content Include="Scripts\jquery.validate.unobtrusive.js" />
-    <Content Include="Scripts\jquery.validate.unobtrusive.min.js" />
-    <Content Include="Scripts\knockout-2.1.0.debug.js" />
-    <Content Include="Scripts\knockout-2.1.0.js" />
     <Content Include="Scripts\modernizr-2.5.3.js" />
     <TypeScriptCompile Include="Scripts\spiro.models.helpers.ts" />
     <Content Include="Scripts\spiro.models.helpers.js">
@@ -303,10 +288,6 @@
     </Content>
     <TypeScriptCompile Include="Scripts\spiro.modern.presentations.ts" />
     <TypeScriptCompile Include="Scripts\spiro.modern.ts" />
-    <TypeScriptCompile Include="Scripts\spiro.tags.ts" />
-    <Content Include="Scripts\spiro.tags.js">
-      <DependentUpon>spiro.tags.ts</DependentUpon>
-    </Content>
     <Content Include="Scripts\typings\handlebars\handlebars.d.ts" />
     <Content Include="Scripts\typings\modernizr\modernizr.d.ts" />
     <Content Include="Scripts\typings\underscore\underscore-typed-1.4.2.d.ts" />
@@ -315,8 +296,6 @@
     <Content Include="Scripts\typings\underscore\underscore.d.ts" />
     <Content Include="Scripts\underscore.js" />
     <Content Include="Scripts\underscore.min.js" />
-    <Content Include="Views\Spiro\ModernStickit.aspx" />
-    <Content Include="Views\Spiro\ModernTagged.aspx" />
     <Content Include="Views\Spiro\Modern.aspx" />
     <Content Include="Web.config" />
     <Content Include="Web.Debug.config">
@@ -326,21 +305,6 @@
       <DependentUpon>Web.config</DependentUpon>
     </Content>
     <Content Include="Scripts\_references.js" />
-    <Content Include="Views\Account\_ChangePasswordPartial.aspx" />
-    <Content Include="Views\Account\_ExternalLoginsListPartial.aspx" />
-    <Content Include="Views\Account\_RemoveExternalLoginsPartial.aspx" />
-    <Content Include="Views\Account\_SetPasswordPartial.aspx" />
-    <Content Include="Views\Account\Login.aspx" />
-    <Content Include="Views\Account\Manage.aspx" />
-    <Content Include="Views\Account\Register.aspx" />
-    <Content Include="Views\Account\ExternalLoginFailure.aspx" />
-    <Content Include="Views\Account\ExternalLoginConfirmation.aspx" />
-    <Content Include="Views\Home\About.aspx" />
-    <Content Include="Views\Home\Contact.aspx" />
-    <Content Include="Views\Home\Index.aspx" />
-    <Content Include="Views\Shared\Error.aspx" />
-    <Content Include="Views\Shared\_LoginPartial.aspx" />
-    <Content Include="Views\Shared\Site.Master" />
     <Content Include="Views\Web.config" />
     <Content Include="Scripts\spiro.models.helpers.js.map">
       <DependentUpon>spiro.models.helpers.ts</DependentUpon>
@@ -354,13 +318,12 @@
     <Content Include="Scripts\spiro.modern.js.map">
       <DependentUpon>spiro.modern.ts</DependentUpon>
     </Content>
-    <Content Include="Scripts\spiro.tags.js.map">
-      <DependentUpon>spiro.tags.ts</DependentUpon>
-    </Content>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
+    <Folder Include="Filters\" />
     <Folder Include="Images\" />
+    <Folder Include="Models\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />

@@ -1,3 +1,11 @@
+// ABOUT THIS FILE:
+// spiro.modern defines the controllers and routing responsible for the interactive behaviour of the Spiro Modern UI.
+// It is built on the Backbone.js framework.
+// Note that we have named our extensions to Backbone.View  xxxController, as this is what they really are.  We have
+// factored out the view rendering responsibilities into spiro.modern.presentations, and the default implementation
+// spiro.modern.presentation.handlebars.
+
+
 /// <reference path="typings/backbone/backbone.d.ts" />
 /// <reference path="typings/backbone/backbone.mine.d.ts" />
 /// <reference path="spiro.models.ts" />

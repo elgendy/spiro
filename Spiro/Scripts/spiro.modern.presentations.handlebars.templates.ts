@@ -1,3 +1,9 @@
+// ABOUT THIS FILE:
+// spiro.modern.presentations.handlebars.templates contains the definitions for all the Handlebars templates
+// that generate all the html rendered in the browser (other than the static html contained in the main
+// 'Modern' page itself).
+
+
 /// <reference path="typings/handlebars/handlebars.d.ts" />
 
 module Spiro.Modern.HandlebarsTemplating {

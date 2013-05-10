@@ -1,3 +1,7 @@
+// ABOUT THIS FILE:
+// spiro.modern.presentations.handlebars creates the various view elements using Handlebars templates
+// defined in spiro.modern.presentations.handlebars.templates.  The purpose
+
 /// <reference path="typings/jquery/jquery.d.ts" />
 /// <reference path="typings/backbone/backbone.d.ts" />
 /// <reference path="typings/backbone/backbone.mine.d.ts" />
