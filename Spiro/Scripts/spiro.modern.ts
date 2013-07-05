@@ -24,6 +24,8 @@
 
 module Spiro.Modern {
 
+    declare var _: any;
+
     // bind in a caching implementation 
     Spiro.sync = function (method: string, model: Backbone.Model, options?: any) {
         var wrapped = Backbone.cachingSync(Backbone.sync);
@@ -243,19 +245,19 @@ module Spiro.Modern {
         }
 
         static CreateControllerAndFetch(model: Backbone.Model, options: ModernOptions): Backbone.View {
-            var controller = CreateController(model, options);
+            var controller = ControllerFactory.CreateController(model, options);
             model.fetch();
             return controller;
         }
 
         static CreateControllerAndDraw(model: Backbone.Model, options: ModernOptions): Backbone.View {
-            var controller = CreateController(model, options);
+            var controller = ControllerFactory.CreateController(model, options);
             model.trigger("draw");
             return controller;
         }
 
-        private static CreateController(model: Backbone.Model, options: ModernOptions): Backbone.View {
-            var controller = ControllerMap[Helpers.getClassName(model)](model, options);
+        static CreateController(model: Backbone.Model, options: ModernOptions): Backbone.View {
+            var controller = ControllerFactory.ControllerMap[Helpers.getClassName(model)](model, options);
 
             if (options.controllerEvent) {
                 options.controllerEvent(controller); 

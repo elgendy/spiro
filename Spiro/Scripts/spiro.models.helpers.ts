@@ -12,7 +12,7 @@
 /// <reference path="typings/backbone/backbone.d.ts" />
 /// <reference path="spiro.models.ts" />
 
-declare var _: any;
+//declare var _: any;
 
 // helpers for common tasks with spiro model 
 

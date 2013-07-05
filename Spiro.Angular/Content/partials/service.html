@@ -1,0 +1,26 @@
+﻿
+ <div class="object-view" ng-class="service.serviceId() | toColorFromType" >
+     <div class="header">
+         <div class="title">{{service.title()}}</div>
+         <div class="type"></div>
+         <div class="messages"></div>
+     </div>
+     <div class="properties-pane" ng-class="service.serviceId() | toColorFromType">
+     </div>
+     <div class="actions-pane" ng-class="service.serviceId() | toColorFromType">
+         <div>
+             <div class="actions" ng-repeat="(id, action) in service.actionMembers()">
+                 <div class="action-button clickable-area">
+                     <a class="action" href="{{action.detailsLink().href() | toActionUrl}}">
+                         <span></span>
+                         {{action.extensions().friendlyName}}
+                     </a>
+                 </div>
+             </div>
+         </div>
+     </div>
+     <div class="dialog-pane" ng-include="dialogTemplate"></div>
+     <div class="collection-pane"></div>
+     <div class="object-pane" ng-include="nestedTemplate"></div>
+     <div class="app-bar"  ng-controller="AppBarController" ng-include="'Content/partials/appbar.html'"></div>
+ </div>

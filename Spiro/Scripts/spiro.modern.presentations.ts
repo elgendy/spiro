@@ -22,10 +22,13 @@
 /// <reference path="spiro.models.ts" />
 /// <reference path="spiro.models.helpers.ts" />
 
-Backbone.EventsMixin = (<any>function () { });
-_.extend(Backbone.EventsMixin.prototype, (<any>Backbone).Events);
+
 
 module Spiro.Modern {
+
+    declare var _: any;
+
+    //_.extend((<any>Backbone.EventsMixin).prototype, (<any>Backbone).Events);
 
     export interface Presentation extends Backbone.HasEvents {
         element: JQuery;

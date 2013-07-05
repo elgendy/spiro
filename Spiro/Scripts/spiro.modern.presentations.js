@@ -1,6 +1,3 @@
-Backbone.EventsMixin = (function () {
-});
-_.extend(Backbone.EventsMixin.prototype, (Backbone).Events);
 var Spiro;
 (function (Spiro) {
     (function (Modern) {

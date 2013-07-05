@@ -40,7 +40,7 @@ declare module Backbone {
     interface bind { (eventName: string, callback: (...args: any[]) => void, context?: any): any; }
     interface unbind { (eventName?: string, callback?: (...args: any[]) => void, context?: any): any; }
 
-    declare class Events {
+    export class Events {
         on(eventName: string, callback: (...args: any[]) => void , context?: any): any;
         once(eventName: string, callback: (...args: any[]) => void , context?: any): any;
         off(eventName?: string, callback?: (...args:any[]) => void, context?: any): any;
@@ -51,7 +51,7 @@ declare module Backbone {
 
     export class ModelBase extends Events {
         fetch(options?: JQueryAjaxSettings);
-        url: any;
+        url(): any;
         parse(response);
         toJSON(): any;
     }
@@ -244,6 +244,6 @@ declare module Backbone {
     var  emulateJSONBackbone: bool;
 
     // Utility
-    function noConflict(): Backbone;
+    //function noConflict(): Backbone;
     function setDomLibrary(jQueryNew);
 }

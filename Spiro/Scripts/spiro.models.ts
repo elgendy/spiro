@@ -16,11 +16,13 @@
 /// <reference path="typings/jquery/jquery.d.ts" />
 /// <reference path="typings/backbone/backbone.d.ts" />
 
-declare var _: any;
+//
 
 declare var appPath: any;
 
 module Spiro {
+
+    declare var _: any;
 
     export var sync = function (method: string, model: Backbone.Model, options?: any) {
         Backbone.sync(method, model, options);
@@ -275,7 +277,7 @@ module Spiro {
     export class HateoasModelBase extends Backbone.Model implements HateoasModel {
         constructor(object?) {
             super(object);
-            this.url = this.getUrl;
+            //this.url = this.getUrl;
             this.once('error', this.error);
         }
 
@@ -283,11 +285,13 @@ module Spiro {
         method: string = "GET"; // default to GET 
         private suffix: string = "";
 
-        url: any;
-
-        getUrl(): string {
+        url(): string {
             return (this.hateoasUrl || super.url()) + this.suffix;
         }
+
+        //getUrl(): string {
+        //    return (this.hateoasUrl || super.url()) + this.suffix;
+        //}
 
         error(originalModel, resp, iOptions) {
             var rs = resp.responseText ? $.parseJSON(resp.responseText) : {};
@@ -465,16 +469,19 @@ module Spiro {
         // not create members of correct type 
         constructor() {
             super();
-            this.url = this.getUrl;
+            //this.url = this.getUrl;
         }
 
+        
         hateoasUrl: string;
         method: string;
-        url: any;
-
-        getUrl(): string {
+        url(): string {
             return this.hateoasUrl || super.url();
         }
+
+        //getUrl(): string {
+        //    return this.hateoasUrl || super.url();
+        //}
 
         model = Link;
 

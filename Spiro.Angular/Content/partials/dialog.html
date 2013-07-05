@@ -1,0 +1,16 @@
+﻿<div class='action-dialog'>
+    <div class='title'>{{action.extensions().friendlyName}}</div>
+    <form>
+        <div class='parameters'>
+            <div class='parameter' ng-repeat="(id, parameter) in action.parameters()">
+                <div class='parameter-name'>{{parameter.extensions().friendlyName}}</div>
+                <div class='parameter-value input-control text'>
+                    <input type='text' placeholder='{{parameterValue}}' ng-model="parms" />
+                    <div class='error'>{{parameterError}}</div>
+                </div>
+            </div>
+            {{error}}
+        </div>
+        <input class='go' type='submit' value='Do' style='float: right' ng-click="invoke()" />
+    </form>
+</div>

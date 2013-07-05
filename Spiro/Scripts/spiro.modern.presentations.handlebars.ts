@@ -171,7 +171,25 @@ module Spiro.Modern.HandlebarsTemplating {
         }
     }
 
-    class ActionPresentation extends Backbone.EventsMixin implements Presentation {
+    export class EventsMixin implements Backbone.HasEvents {
+
+        constructor() {             
+            _.extend(this, Backbone.Events);
+        }
+
+        on(event: string, callback, context?) {
+        }
+        once(event: string, callback, context?) {
+        }
+        off(event: string, callback, context?) {
+        }
+        trigger(event: string, args?) {
+        }
+        stopListening(obj: Object, name: string, callback) {
+        }
+    }
+
+    class ActionPresentation extends EventsMixin implements Presentation {
 
         element: JQuery;
 
@@ -196,7 +214,7 @@ module Spiro.Modern.HandlebarsTemplating {
         }
     }
 
-    class PropertyEditPresentation extends Backbone.EventsMixin implements Presentation {
+    class PropertyEditPresentation extends EventsMixin implements Presentation {
 
         element: JQuery;
 
@@ -338,7 +356,7 @@ module Spiro.Modern.HandlebarsTemplating {
     }
 
 
-    class PropertyPresentation extends Backbone.EventsMixin implements Presentation {
+    class PropertyPresentation extends EventsMixin implements Presentation {
 
         element: JQuery;
 
@@ -388,7 +406,7 @@ module Spiro.Modern.HandlebarsTemplating {
         }
     }
 
-    class CollectionMemberPresentation extends Backbone.EventsMixin implements Presentation {
+    class CollectionMemberPresentation extends EventsMixin implements Presentation {
 
         element: JQuery;
 
@@ -420,7 +438,7 @@ module Spiro.Modern.HandlebarsTemplating {
         }
     }
 
-    class ParameterPresentation extends Backbone.EventsMixin implements Presentation {
+    class ParameterPresentation extends EventsMixin implements Presentation {
 
         element: JQuery;
 
@@ -512,7 +530,7 @@ module Spiro.Modern.HandlebarsTemplating {
         }
     }
 
-    class ActionDialogPresentation extends Backbone.EventsMixin implements Presentation {
+    class ActionDialogPresentation extends EventsMixin implements Presentation {
 
         element: JQuery;
 
@@ -593,7 +611,7 @@ module Spiro.Modern.HandlebarsTemplating {
         }
     }
 
-    class ListPresentation extends Backbone.EventsMixin implements Presentation {
+    class ListPresentation extends EventsMixin implements Presentation {
 
         element: JQuery;
 
@@ -641,7 +659,7 @@ module Spiro.Modern.HandlebarsTemplating {
         }
     }
 
-    class ListItemPresentation extends Backbone.EventsMixin implements Presentation {
+    class ListItemPresentation extends EventsMixin implements Presentation {
 
         element: JQuery;
 
@@ -687,7 +705,7 @@ module Spiro.Modern.HandlebarsTemplating {
         name: string;
     }
 
-    class TablePresentation extends Backbone.EventsMixin implements Presentation {
+    class TablePresentation extends EventsMixin implements Presentation {
 
         element: JQuery;
 
@@ -833,7 +851,7 @@ module Spiro.Modern.HandlebarsTemplating {
     }
 
 
-    class TableRowPresentation extends Backbone.EventsMixin implements Presentation {
+    class TableRowPresentation extends EventsMixin implements Presentation {
 
         element: JQuery;
 
@@ -864,7 +882,7 @@ module Spiro.Modern.HandlebarsTemplating {
         }
     }
 
-    class TableCellPresentation extends Backbone.EventsMixin implements Presentation {
+    class TableCellPresentation extends EventsMixin implements Presentation {
 
         element: JQuery;
 
@@ -897,7 +915,7 @@ module Spiro.Modern.HandlebarsTemplating {
         }
     }
 
-    class ObjectPresentation extends Backbone.EventsMixin {
+    class ObjectPresentation extends EventsMixin {
 
         element: JQuery;
         editProperties: PropertyEditPresentation[];
@@ -1091,7 +1109,7 @@ module Spiro.Modern.HandlebarsTemplating {
         }
     }
 
-    class ServiceLinkPresentation extends Backbone.EventsMixin implements Presentation {
+    class ServiceLinkPresentation extends EventsMixin implements Presentation {
 
         element: JQuery;
 
@@ -1119,7 +1137,7 @@ module Spiro.Modern.HandlebarsTemplating {
         }
     }
 
-    class PagePresentation extends Backbone.EventsMixin implements Presentation {
+    class PagePresentation extends EventsMixin implements Presentation {
 
         element: JQuery;
         model: Backbone.Model;
@@ -1206,7 +1224,7 @@ module Spiro.Modern.HandlebarsTemplating {
         }
     }
 
-    class ServicesPresentation extends Backbone.EventsMixin implements Presentation {
+    class ServicesPresentation extends EventsMixin implements Presentation {
 
         element: JQuery;
 

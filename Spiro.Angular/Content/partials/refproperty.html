@@ -1,0 +1,7 @@
+﻿<div class="property-name">{{property.extensions().friendlyName}}:</div>
+<div  class="property-reference clickable-area" ng-class="property.extensions().returnType | toColorFromType">
+    <a href="{{property.detailsLink().href()}}">
+        <span></span>
+        {{property.value().toString()}}
+    </a>
+</div>
