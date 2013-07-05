@@ -252,6 +252,8 @@
     <Content Include="Scripts\jquery-1.8.3.js" />
     <Content Include="Scripts\jquery-ui-1.10.2.js" />
     <Content Include="Scripts\modernizr-2.6.2.js" />
+    <TypeScriptCompile Include="Scripts\spiro.models.shims.ts" />
+    <Content Include="Scripts\spiro.models.shims.js" />
     <Content Include="Scripts\spiro.modern.presentations.handlebars.js.map">
       <DependentUpon>spiro.modern.presentations.handlebars.ts</DependentUpon>
     </Content>
@@ -326,6 +328,15 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Spiro\Spiro.csproj">
+      <Project>{9f1f0533-1201-4ee9-9d52-20f9e3735aad}</Project>
+      <Name>Spiro</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Scripts\spiro.models.shims.js.map" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

@@ -13,20 +13,13 @@
 // resources.  These classes provide convenient methods for navigating the contents of those representations, and for
 // following links to other resources.
 
-/// <reference path="typings/jquery/jquery.d.ts" />
-/// <reference path="typings/backbone/backbone.d.ts" />
-
-//
+/// <reference path="spiro.models.shims.ts" />
 
 declare var appPath: any;
 
 module Spiro {
 
     declare var _: any;
-
-    export var sync = function (method: string, model: Backbone.Model, options?: any) {
-        Backbone.sync(method, model, options);
-    }
 
     // TODO should we implement an event cascade ? 
     // eg when you 'get' a resource from another resource shoul;d it wire it up so that 
@@ -274,10 +267,9 @@ module Spiro {
     }
 
     // base class for all representations that can be directly loaded from the server 
-    export class HateoasModelBase extends Backbone.Model implements HateoasModel {
+    export class HateoasModelBase extends ModelShim implements HateoasModel {
         constructor(object?) {
-            super(object);
-            //this.url = this.getUrl;
+            super(object);         
             this.once('error', this.error);
         }
 
@@ -288,10 +280,6 @@ module Spiro {
         url(): string {
             return (this.hateoasUrl || super.url()) + this.suffix;
         }
-
-        //getUrl(): string {
-        //    return (this.hateoasUrl || super.url()) + this.suffix;
-        //}
 
         error(originalModel, resp, iOptions) {
             var rs = resp.responseText ? $.parseJSON(resp.responseText) : {};
@@ -463,25 +451,19 @@ module Spiro {
     }
 
     // backbone helper - collection of Links 
-    export class Links extends Backbone.Collection implements HateoasModel {
+    export class Links extends CollectionShim implements HateoasModel {
 
         // cannot use constructor to initialise as model property is not yet set and so will 
         // not create members of correct type 
         constructor() {
-            super();
-            //this.url = this.getUrl;
+            super();        
         }
-
-        
+      
         hateoasUrl: string;
         method: string;
         url(): string {
             return this.hateoasUrl || super.url();
         }
-
-        //getUrl(): string {
-        //    return this.hateoasUrl || super.url();
-        //}
 
         model = Link;
 
@@ -1302,7 +1284,7 @@ module Spiro {
     }
 
     // matches the Link representation 2.7
-    export class Link extends Backbone.Model {
+    export class Link extends ModelShim {
 
         constructor(object?) {
             super(object);

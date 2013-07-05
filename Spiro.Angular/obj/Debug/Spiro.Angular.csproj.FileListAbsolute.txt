@@ -87,3 +87,5 @@ C:\Users\Stef Cascarini\Documents\GitHub\spiro\Spiro.Angular\bin\zh-Hant\System.
 C:\Users\Stef Cascarini\Documents\GitHub\spiro\Spiro.Angular\obj\Debug\Spiro.Angular.csprojResolveAssemblyReference.cache
 C:\Users\Stef Cascarini\Documents\GitHub\spiro\Spiro.Angular\obj\Debug\Spiro.Modern.Angular.dll
 C:\Users\Stef Cascarini\Documents\GitHub\spiro\Spiro.Angular\obj\Debug\Spiro.Modern.Angular.pdb
+C:\Users\Stef Cascarini\Documents\GitHub\spiro\Spiro.Angular\bin\Spiro.Models.dll
+C:\Users\Stef Cascarini\Documents\GitHub\spiro\Spiro.Angular\bin\Spiro.Models.pdb

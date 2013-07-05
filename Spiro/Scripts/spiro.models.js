@@ -6,10 +6,6 @@
 };
 var Spiro;
 (function (Spiro) {
-    Spiro.sync = function (method, model, options) {
-        Backbone.sync(method, model, options);
-    };
-
     function isScalarType(typeName) {
         return typeName === "string" || typeName === "number" || typeName === "boolean" || typeName === "integer";
     }
@@ -191,7 +187,6 @@ var Spiro;
             _super.call(this, object);
             this.method = "GET";
             this.suffix = "";
-
             this.once('error', this.error);
         }
         HateoasModelBase.prototype.url = function () {
@@ -243,7 +238,7 @@ var Spiro;
             Spiro.sync(method, model, options);
         };
         return HateoasModelBase;
-    })(Backbone.Model);
+    })(Spiro.ModelShim);
     Spiro.HateoasModelBase = HateoasModelBase;
 
     var ErrorMap = (function (_super) {
@@ -405,7 +400,7 @@ var Spiro;
             return this.getLinkByRel(new Rel(rel));
         };
         return Links;
-    })(Backbone.Collection);
+    })(Spiro.CollectionShim);
     Spiro.Links = Links;
 
     var ResourceRepresentation = (function (_super) {
@@ -1209,7 +1204,7 @@ var Spiro;
             return target;
         };
         return Link;
-    })(Backbone.Model);
+    })(Spiro.ModelShim);
     Spiro.Link = Link;
 })(Spiro || (Spiro = {}));
 //@ sourceMappingURL=spiro.models.js.map

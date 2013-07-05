@@ -119,6 +119,7 @@
     <script type="text/javascript" src="<%= Url.Content("~/Scripts/backbone.js") %>"></script>
     <script type="text/javascript" src="<%= Url.Content("~/Scripts/burry.js") %>"></script>
     <script type="text/javascript" src="<%= Url.Content("~/Scripts/backbone.cachingSync.js") %>"></script>
+    <script type="text/javascript" src="<%= Url.Content("~/Scripts/spiro.models.shims.js") %>"></script>
     <script type="text/javascript" src="<%= Url.Content("~/Scripts/spiro.models.js") %>"></script>
     <script type="text/javascript" src="<%= Url.Content("~/Scripts/spiro.models.helpers.js") %>"></script>
     <script type="text/javascript" src="<%= Url.Content("~/Scripts/spiro.modern.presentations.js") %>"></script>
