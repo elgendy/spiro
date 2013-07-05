@@ -14,6 +14,7 @@ C:\Users\Stef Cascarini\Documents\GitHub\spiro\Spiro.Angular\bin\Microsoft.Web.I
 C:\Users\Stef Cascarini\Documents\GitHub\spiro\Spiro.Angular\bin\Microsoft.Web.Mvc.FixedDisplayModes.dll
 C:\Users\Stef Cascarini\Documents\GitHub\spiro\Spiro.Angular\bin\Microsoft.Web.WebPages.OAuth.dll
 C:\Users\Stef Cascarini\Documents\GitHub\spiro\Spiro.Angular\bin\Newtonsoft.Json.dll
+C:\Users\Stef Cascarini\Documents\GitHub\spiro\Spiro.Angular\bin\Spiro.Models.dll
 C:\Users\Stef Cascarini\Documents\GitHub\spiro\Spiro.Angular\bin\System.Net.Http.dll
 C:\Users\Stef Cascarini\Documents\GitHub\spiro\Spiro.Angular\bin\System.Net.Http.Formatting.dll
 C:\Users\Stef Cascarini\Documents\GitHub\spiro\Spiro.Angular\bin\System.Net.Http.WebRequest.dll
@@ -31,6 +32,7 @@ C:\Users\Stef Cascarini\Documents\GitHub\spiro\Spiro.Angular\bin\System.Web.WebP
 C:\Users\Stef Cascarini\Documents\GitHub\spiro\Spiro.Angular\bin\WebGrease.dll
 C:\Users\Stef Cascarini\Documents\GitHub\spiro\Spiro.Angular\bin\WebMatrix.Data.dll
 C:\Users\Stef Cascarini\Documents\GitHub\spiro\Spiro.Angular\bin\WebMatrix.WebData.dll
+C:\Users\Stef Cascarini\Documents\GitHub\spiro\Spiro.Angular\bin\Spiro.Models.pdb
 C:\Users\Stef Cascarini\Documents\GitHub\spiro\Spiro.Angular\bin\EntityFramework.xml
 C:\Users\Stef Cascarini\Documents\GitHub\spiro\Spiro.Angular\bin\Newtonsoft.Json.xml
 C:\Users\Stef Cascarini\Documents\GitHub\spiro\Spiro.Angular\bin\System.Net.Http.xml
@@ -87,5 +89,3 @@ C:\Users\Stef Cascarini\Documents\GitHub\spiro\Spiro.Angular\bin\zh-Hant\System.
 C:\Users\Stef Cascarini\Documents\GitHub\spiro\Spiro.Angular\obj\Debug\Spiro.Angular.csprojResolveAssemblyReference.cache
 C:\Users\Stef Cascarini\Documents\GitHub\spiro\Spiro.Angular\obj\Debug\Spiro.Modern.Angular.dll
 C:\Users\Stef Cascarini\Documents\GitHub\spiro\Spiro.Angular\obj\Debug\Spiro.Modern.Angular.pdb
-C:\Users\Stef Cascarini\Documents\GitHub\spiro\Spiro.Angular\bin\Spiro.Models.dll
-C:\Users\Stef Cascarini\Documents\GitHub\spiro\Spiro.Angular\bin\Spiro.Models.pdb

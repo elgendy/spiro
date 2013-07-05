@@ -54,7 +54,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Content Include="Scripts\spiro.models.shims.ts" />
+    <Content Include="Scripts\spiro.models.shims.js">
+      <DependentUpon>spiro.models.shims.ts</DependentUpon>
+    </Content>
+    <TypeScriptCompile Include="Scripts\spiro.models.shims.ts" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Scripts\spiro-model-tests.js" />
@@ -85,13 +88,9 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="web.config" />
-    <None Include="web.Debug.config">
-      <DependentUpon>web.config</DependentUpon>
-    </None>
-    <None Include="web.Release.config">
-      <DependentUpon>web.config</DependentUpon>
-    </None>
+    <Content Include="Scripts\spiro.models.shims.js.map">
+      <DependentUpon>spiro.models.shims.ts</DependentUpon>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />
