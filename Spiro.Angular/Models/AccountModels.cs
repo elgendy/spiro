@@ -7,7 +7,7 @@ using System.Globalization;
 using System.Web.Mvc;
 using System.Web.Security;
 
-namespace Spiro.Angular.Models {
+namespace Spiro.Modern.Angular.Models {
     public class UsersContext : DbContext {
         public UsersContext()
             : base("DefaultConnection") {

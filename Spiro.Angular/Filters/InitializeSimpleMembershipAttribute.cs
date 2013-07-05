@@ -3,8 +3,9 @@ using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Threading;
 using System.Web.Mvc;
+using Spiro.Modern.Angular.Models;
 using WebMatrix.WebData;
-using Spiro.Angular.Models;
+
 
 namespace Spiro.Angular.Filters {
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]

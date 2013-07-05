@@ -1,5 +1,5 @@
-C:\Users\Stef Cascarini\Documents\GitHub\spiro\Spiro.Angular\bin\Spiro.Angular.dll
-C:\Users\Stef Cascarini\Documents\GitHub\spiro\Spiro.Angular\bin\Spiro.Angular.pdb
+C:\Users\Stef Cascarini\Documents\GitHub\spiro\Spiro.Angular\bin\Spiro.Modern.Angular.dll
+C:\Users\Stef Cascarini\Documents\GitHub\spiro\Spiro.Angular\bin\Spiro.Modern.Angular.pdb
 C:\Users\Stef Cascarini\Documents\GitHub\spiro\Spiro.Angular\bin\Antlr3.Runtime.dll
 C:\Users\Stef Cascarini\Documents\GitHub\spiro\Spiro.Angular\bin\DotNetOpenAuth.AspNet.dll
 C:\Users\Stef Cascarini\Documents\GitHub\spiro\Spiro.Angular\bin\DotNetOpenAuth.Core.dll
@@ -84,5 +84,6 @@ C:\Users\Stef Cascarini\Documents\GitHub\spiro\Spiro.Angular\bin\ko\System.Spati
 C:\Users\Stef Cascarini\Documents\GitHub\spiro\Spiro.Angular\bin\ru\System.Spatial.resources.dll
 C:\Users\Stef Cascarini\Documents\GitHub\spiro\Spiro.Angular\bin\zh-Hans\System.Spatial.resources.dll
 C:\Users\Stef Cascarini\Documents\GitHub\spiro\Spiro.Angular\bin\zh-Hant\System.Spatial.resources.dll
-C:\Users\Stef Cascarini\Documents\GitHub\spiro\Spiro.Angular\obj\Debug\Spiro.Angular.dll
-C:\Users\Stef Cascarini\Documents\GitHub\spiro\Spiro.Angular\obj\Debug\Spiro.Angular.pdb
+C:\Users\Stef Cascarini\Documents\GitHub\spiro\Spiro.Angular\obj\Debug\Spiro.Angular.csprojResolveAssemblyReference.cache
+C:\Users\Stef Cascarini\Documents\GitHub\spiro\Spiro.Angular\obj\Debug\Spiro.Modern.Angular.dll
+C:\Users\Stef Cascarini\Documents\GitHub\spiro\Spiro.Angular\obj\Debug\Spiro.Modern.Angular.pdb
