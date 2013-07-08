@@ -1,46 +1,43 @@
-﻿<div class="object-view" ng-class="object.domainType() | toColorFromType">
+﻿<div class="object-view" ng-class="object.domainType | toColorFromType">
     <div class="header">
-        <div class="title">{{object.title()}}</div>
+        <div class="title">{{object.title}}</div>
         <div class="type"></div>
         <div class="messages"></div>
     </div>
-    <div class="properties-pane" ng-class="object.domainType() | toColorFromType">
+    <div class="properties-pane" ng-class="object.domainType | toColorFromType">
         <div class="object-properties">
             <div class="properties bg-color-" >
-                <div class="property" ng-repeat="(id, property) in object.propertyMembers()" ng-switch="propertyType(property)">
+                <div class="property" ng-repeat="property in object.properties" ng-switch="property.type">
                     
-                    <div class="property-name">{{property.extensions().friendlyName}}:</div>
-                    <div ng-switch-when="ref"   class="property-reference clickable-area" ng-class="property.extensions().returnType | toColorFromType">
-                        <a href="{{property.value().link().href() | toObjectLocalUrl }}">
+                    <div class="property-name">{{property.title}}:</div>
+                    <div ng-switch-when="ref"   class="property-reference clickable-area" ng-class="property.returnType | toColorFromType">
+                        <a href="{{property.href | toObjectLocalUrl }}">
                             <span></span>
-                            {{property.value().toString()}}
+                            {{property.value}}
                         </a>
                     </div>
-                    <div ng-switch-when="scalar" class='property-value'>{{property.value().toString()}}</div>
+                    <div ng-switch-when="scalar" class='property-value'>{{property.value}}</div>
                     
-     
                 </div>
                 
-                <div class="property" ng-repeat="(id, collection) in object.collectionMembers()">
+                <div class="property" ng-repeat="collection in object.collections">
                              
-                    <div class='property-name'>{{collection.extensions().friendlyName}}:</div>
+                    <div class='property-name'>{{collection.title}}:</div>
                     <div class='property-collection clickable-area'>
-                        <a href='{{collectionUrl}}'><span></span><i class='icon-plus' />{{collection.size()}}-{{collection.extensions().pluralName}}</a>
+                        <a href='{{collectionUrl}}'><span></span><i class='icon-plus' />{{collection.size}}-{{collection.pluralName}}</a>
                     </div>        
                 </div>
                 
-                
-
             </div>
         </div>
     </div>
-    <div class="actions-pane" ng-class="object.domainType() | toColorFromType">
+    <div class="actions-pane" ng-class="object.domainType | toColorFromType">
         <div>
-            <div class="actions" ng-repeat="(id, action) in object.actionMembers()">
+            <div class="actions" ng-repeat="action in object.actions">
                 <div class="action-button clickable-area">
-                    <a class="action" href="{{action.detailsLink().href() | toActionUrl}}">
+                    <a class="action" href="{{action.href | toActionUrl}}">
                         <span></span>
-                        {{action.extensions().friendlyName}}
+                        {{action.title}}
                     </a>
                 </div>
             </div>

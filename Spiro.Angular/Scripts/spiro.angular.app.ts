@@ -74,7 +74,7 @@ module Spiro.Angular {
         };
     });
 
-    var filter = app.filter('toActionUrl', function () {
+    app.filter('toActionUrl', function () {
         return function (href) {
 
             var urlRegex = /(objects|services)\/([\w|\.]+)\/actions\/([\w|\.]+)/;

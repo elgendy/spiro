@@ -1,20 +1,20 @@
 ﻿
-  <div class="object-view" ng-class="backGroundColor" >
+  <div class="object-view" ng-class="services.backGroundColor" >
        
       <div class="header">
-          <div class="title">{{title}}</div>
+          <div class="title">{{services.title}}</div>
           <div class="type"></div>
           <div class="messages"></div>
       </div>
       <div class="properties-pane" ng-class="backGroundColor">
-          <div class="service clickable-area" ng-class="service.href() | toColorFromHref" ng-repeat="service in services.value().models" >
-              <a  class="fg-color-" href="{{service.href() | toLocalUrl}}">
+          <div class="service clickable-area" ng-class="service.href | toColorFromHref" ng-repeat="service in services.items" >
+              <a  class="fg-color-" href="{{service.href | toLocalUrl}}">
                   <span></span>
-                  {{service.title()}}
+                  {{service.title}}
               </a>
           </div>
       </div>
-      <div class="actions-pane" ng-class="backGroundColor"></div>
+      <div class="actions-pane" ng-class="services.backGroundColor"></div>
       <div class="dialog-pane"></div>
       <div class="collection-pane"></div>
       <div class="object-pane"></div>

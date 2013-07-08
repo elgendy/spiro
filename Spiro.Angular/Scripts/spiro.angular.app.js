@@ -59,7 +59,7 @@
             };
         });
 
-        var filter = Angular.app.filter('toActionUrl', function () {
+        Angular.app.filter('toActionUrl', function () {
             return function (href) {
                 var urlRegex = /(objects|services)\/([\w|\.]+)\/actions\/([\w|\.]+)/;
 
