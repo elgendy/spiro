@@ -181,6 +181,150 @@ var Spiro;
     })();
     Spiro.NestedRepresentation = NestedRepresentation;
 
+    var HateoasModelBase = (function (_super) {
+        __extends(HateoasModelBase, _super);
+        function HateoasModelBase(object) {
+            _super.call(this, object);
+        }
+        HateoasModelBase.prototype.onError = function (map, statusCode, warnings) {
+            return new ErrorMap(map, statusCode, warnings);
+        };
+        return HateoasModelBase;
+    })(Spiro.HateoasModelBaseShim);
+    Spiro.HateoasModelBase = HateoasModelBase;
+
+    var ErrorMap = (function (_super) {
+        __extends(ErrorMap, _super);
+        function ErrorMap(map, statusCode, warningMessage) {
+            _super.call(this, map);
+            this.statusCode = statusCode;
+            this.warningMessage = warningMessage;
+        }
+        ErrorMap.prototype.values = function () {
+            var vs = {};
+
+            for (var v in this.attributes) {
+                if (this.attributes[v].hasOwnProperty("value")) {
+                    var ev = {
+                        value: new Value(this.attributes[v].value),
+                        invalidReason: this.attributes[v].invalidReason
+                    };
+                    vs[v] = ev;
+                }
+            }
+
+            return vs;
+        };
+
+        ErrorMap.prototype.invalidReason = function () {
+            return this.get("x-ro-invalid-reason");
+        };
+        return ErrorMap;
+    })(HateoasModelBase);
+    Spiro.ErrorMap = ErrorMap;
+
+    var UpdateMap = (function (_super) {
+        __extends(UpdateMap, _super);
+        function UpdateMap(domainObject, map) {
+            _super.call(this, map, domainObject, domainObject.instanceId());
+            this.domainObject = domainObject;
+
+            domainObject.updateLink().copyToHateoasModel(this);
+
+            for (var member in this.properties()) {
+                var currentValue = domainObject.propertyMembers()[member].value();
+                this.setProperty(member, currentValue);
+            }
+        }
+        UpdateMap.prototype.onChange = function () {
+            this.domainObject.setFromUpdateMap(this);
+        };
+
+        UpdateMap.prototype.onError = function (map, statusCode, warnings) {
+            return new ErrorMap(map, statusCode, warnings);
+        };
+
+        UpdateMap.prototype.properties = function () {
+            var pps = {};
+
+            for (var p in this.attributes) {
+                pps[p] = new Value(this.attributes[p].value);
+            }
+
+            return pps;
+        };
+
+        UpdateMap.prototype.setProperty = function (name, value) {
+            value.set(this.attributes, name);
+        };
+        return UpdateMap;
+    })(Spiro.ArgumentMap);
+    Spiro.UpdateMap = UpdateMap;
+
+    var AddToRemoveFromMap = (function (_super) {
+        __extends(AddToRemoveFromMap, _super);
+        function AddToRemoveFromMap(collectionResource, map, add) {
+            _super.call(this, map, collectionResource, collectionResource.instanceId());
+            this.collectionResource = collectionResource;
+
+            var link = add ? collectionResource.addToLink() : collectionResource.removeFromLink();
+
+            link.copyToHateoasModel(this);
+        }
+        AddToRemoveFromMap.prototype.onChange = function () {
+            this.collectionResource.setFromMap(this);
+        };
+
+        AddToRemoveFromMap.prototype.onError = function (map, statusCode, warnings) {
+            return new ErrorMap(map, statusCode, warnings);
+        };
+
+        AddToRemoveFromMap.prototype.setValue = function (value) {
+            value.set(this.attributes);
+        };
+        return AddToRemoveFromMap;
+    })(Spiro.ArgumentMap);
+    Spiro.AddToRemoveFromMap = AddToRemoveFromMap;
+
+    var ModifyMap = (function (_super) {
+        __extends(ModifyMap, _super);
+        function ModifyMap(propertyResource, map) {
+            _super.call(this, map, propertyResource, propertyResource.instanceId());
+            this.propertyResource = propertyResource;
+
+            propertyResource.modifyLink().copyToHateoasModel(this);
+
+            this.setValue(propertyResource.value());
+        }
+        ModifyMap.prototype.onChange = function () {
+            this.propertyResource.setFromModifyMap(this);
+        };
+
+        ModifyMap.prototype.onError = function (map, statusCode, warnings) {
+            return new ErrorMap(map, statusCode, warnings);
+        };
+
+        ModifyMap.prototype.setValue = function (value) {
+            value.set(this.attributes);
+        };
+        return ModifyMap;
+    })(Spiro.ArgumentMap);
+    Spiro.ModifyMap = ModifyMap;
+
+    var ClearMap = (function (_super) {
+        __extends(ClearMap, _super);
+        function ClearMap(propertyResource) {
+            _super.call(this, {}, propertyResource, propertyResource.instanceId());
+
+            propertyResource.clearLink().copyToHateoasModel(this);
+        }
+        ClearMap.prototype.onError = function (map, statusCode, warnings) {
+            return new ErrorMap(map, statusCode, warnings);
+        };
+        return ClearMap;
+    })(Spiro.ArgumentMap);
+    Spiro.ClearMap = ClearMap;
+
     var Links = (function (_super) {
         __extends(Links, _super);
         function Links() {
@@ -211,7 +355,7 @@ var Spiro;
             return this.getLinkByRel(new Rel(rel));
         };
         return Links;
-    })(Spiro.SpiroCollection);
+    })(Spiro.CollectionShim);
     Spiro.Links = Links;
 
     var ResourceRepresentation = (function (_super) {
@@ -228,7 +372,7 @@ var Spiro;
             return this.get("extensions");
         };
         return ResourceRepresentation;
-    })(Spiro.HateoasModelBase);
+    })(HateoasModelBase);
     Spiro.ResourceRepresentation = ResourceRepresentation;
 
     var ActionResultRepresentation = (function (_super) {
@@ -250,6 +394,10 @@ var Spiro;
 
         ActionResultRepresentation.prototype.result = function () {
             return new Result(this.get("result"), this.resultType());
+        };
+
+        ActionResultRepresentation.prototype.setParameter = function (name, value) {
+            value.set(this.attributes, name);
         };
         return ActionResultRepresentation;
     })(ResourceRepresentation);
@@ -368,13 +516,17 @@ var Spiro;
             return this.upLink().getTarget();
         };
 
+        CollectionRepresentation.prototype.setFromMap = function (map) {
+            this.set(map.attributes);
+        };
+
         CollectionRepresentation.prototype.addToMap = function () {
             return this.addToLink().arguments();
         };
 
         CollectionRepresentation.prototype.getAddToMap = function () {
             if (this.addToLink()) {
-                return new Spiro.AddToRemoveFromMap(this, this.addToMap(), true);
+                return new AddToRemoveFromMap(this, this.addToMap(), true);
             }
             return null;
         };
@@ -385,7 +537,7 @@ var Spiro;
 
         CollectionRepresentation.prototype.getRemoveFromMap = function () {
             if (this.removeFromLink()) {
-                return new Spiro.AddToRemoveFromMap(this, this.removeFromMap(), false);
+                return new AddToRemoveFromMap(this, this.removeFromMap(), false);
             }
             return null;
         };
@@ -436,6 +588,24 @@ var Spiro;
 
         PropertyRepresentation.prototype.getUp = function () {
             return this.upLink().getTarget();
+        };
+
+        PropertyRepresentation.prototype.setFromModifyMap = function (map) {
+            this.set(map.attributes);
+        };
+
+        PropertyRepresentation.prototype.getModifyMap = function () {
+            if (this.modifyLink()) {
+                return new ModifyMap(this, this.modifyMap());
+            }
+            return null;
+        };
+
+        PropertyRepresentation.prototype.getClearMap = function () {
+            if (this.clearLink()) {
+                return new ClearMap(this);
+            }
+            return null;
         };
 
         PropertyRepresentation.prototype.instanceId = function () {
@@ -577,8 +747,9 @@ var Spiro;
         __extends(DomainObjectRepresentation, _super);
         function DomainObjectRepresentation(object) {
             _super.call(this, object);
+            this.url = this.getUrl;
         }
-        DomainObjectRepresentation.prototype.url = function () {
+        DomainObjectRepresentation.prototype.getUrl = function () {
             return this.hateoasUrl || this.selfLink().href() || _super.prototype.url.call(this);
         };
 
@@ -693,6 +864,32 @@ var Spiro;
         DomainObjectRepresentation.prototype.getSelf = function () {
             return this.selfLink().getTarget();
         };
+
+        DomainObjectRepresentation.prototype.getPersistMap = function () {
+            return new PersistMap(this, this.persistMap());
+        };
+
+        DomainObjectRepresentation.prototype.getUpdateMap = function () {
+            return new UpdateMap(this, this.updateMap());
+        };
+
+        DomainObjectRepresentation.prototype.setFromUpdateMap = function (map) {
+            for (var member in this.members()) {
+                var m = this.members()[member];
+                m.update(map.attributes["members"][member]);
+            }
+
+            this.set(map.attributes);
+        };
+
+        DomainObjectRepresentation.prototype.setFromPersistMap = function (map) {
+            this.set(map.attributes);
+            this.resetMemberMaps();
+        };
+
+        DomainObjectRepresentation.prototype.preFetch = function () {
+            this.memberMap = null;
+        };
         return DomainObjectRepresentation;
     })(ResourceRepresentation);
     Spiro.DomainObjectRepresentation = DomainObjectRepresentation;
@@ -750,6 +947,28 @@ var Spiro;
     })(ResourceRepresentation);
     Spiro.ErrorRepresentation = ErrorRepresentation;
 
+    var PersistMap = (function (_super) {
+        __extends(PersistMap, _super);
+        function PersistMap(domainObject, map) {
+            _super.call(this, map, domainObject, domainObject.instanceId());
+            this.domainObject = domainObject;
+            domainObject.persistLink().copyToHateoasModel(this);
+        }
+        PersistMap.prototype.onChange = function () {
+            this.domainObject.setFromPersistMap(this);
+        };
+
+        PersistMap.prototype.onError = function (map, statusCode, warnings) {
+            return new ErrorMap(map, statusCode, warnings);
+        };
+
+        PersistMap.prototype.setMember = function (name, value) {
+            value.set(this.attributes["members"], name);
+        };
+        return PersistMap;
+    })(Spiro.ArgumentMap);
+    Spiro.PersistMap = PersistMap;
+
     var VersionRepresentation = (function (_super) {
         __extends(VersionRepresentation, _super);
         function VersionRepresentation() {
@@ -788,8 +1007,8 @@ var Spiro;
 
     var DomainServicesRepresentation = (function (_super) {
         __extends(DomainServicesRepresentation, _super);
-        function DomainServicesRepresentation(obj) {
-            _super.call(this, obj);
+        function DomainServicesRepresentation() {
+            _super.apply(this, arguments);
         }
         DomainServicesRepresentation.prototype.upLink = function () {
             return this.links().linkByRel("up");
@@ -944,7 +1163,7 @@ var Spiro;
             return target;
         };
         return Link;
-    })(Spiro.SpiroModel);
+    })(Spiro.ModelShim);
     Spiro.Link = Link;
 })(Spiro || (Spiro = {}));
 //@ sourceMappingURL=spiro.models.js.map

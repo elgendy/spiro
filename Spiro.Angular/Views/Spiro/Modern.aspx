@@ -98,7 +98,8 @@
     <script type="text/javascript" src="<%= Url.Content("~/Scripts/jquery-ui-1.10.3.js") %>"></script>
     <script type="text/javascript" src="<%= Url.Content("~/Scripts/angular.js") %>"></script>
     <script type="text/javascript" src="<%= Url.Content("~/Scripts/angular-resource.js") %>"></script>
-    <script type="text/javascript" src="<%= Url.Content("~/Scripts/spiro.models.angularjs.js") %>"></script>
+    <script type="text/javascript" src="<%= Url.Content("~/Scripts/spiro.models.helpers.js") %>"></script>
+    <script type="text/javascript" src="<%= Url.Content("~/Scripts/spiro.models.shims.js") %>"></script>
     <script type="text/javascript" src="<%= Url.Content("~/Scripts/spiro.models.js") %>"></script>
     <script type="text/javascript" src="<%= Url.Content("~/Scripts/app.js") %>"></script>
     <script type="text/javascript" src="<%= Url.Content("~/Scripts/controllers.js") %>"></script>

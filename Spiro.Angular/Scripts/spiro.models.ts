@@ -14,25 +14,12 @@
 // following links to other resources.
 
 /// <reference path="typings/jquery/jquery.d.ts" />
-/// <reference path="spiro.models.angularjs.ts" />
-
-declare var _: any;
+/// <reference path="typings/underscore/underscore.d.ts" />
+/// <reference path="spiro.models.shims.ts" />
 
 declare var appPath: any;
 
 module Spiro {
-
-  
-    // TODO should we implement an event cascade ? 
-    // eg when you 'get' a resource from another resource shoul;d it wire it up so that 
-    // events are passed up to parent resources ? 
-
-    // option helpers 
-    export interface Options {
-        success?: (originalModel, resp, iOptions) => void;
-        error?: (originalModel, resp, iOptions) => void;
-    }
-
 
     function isScalarType(typeName: string) {
         return typeName === "string" || typeName === "number" || typeName === "boolean" || typeName === "integer";
@@ -43,7 +30,7 @@ module Spiro {
     export interface HateoasModel {
         hateoasUrl: string;
         method: string;
-        url(): string;
+        url: any;
     }
 
     export interface Extensions {
@@ -269,29 +256,158 @@ module Spiro {
     }
 
     // base class for all representations that can be directly loaded from the server 
-  
+    export class HateoasModelBase extends HateoasModelBaseShim implements HateoasModel {
+        constructor(object?) {
+            super(object);
+        }
+
+        onError(map: Object, statusCode: string, warnings: string) {
+            return new ErrorMap(map, statusCode, warnings);
+        }
+    }
 
    
+    export class ErrorMap extends HateoasModelBase {
 
-    // backbone helper - collection of Links 
-    export class Links extends SpiroCollection implements HateoasModel {
+        constructor(map: Object, public statusCode: string, public warningMessage: string) {
+            super(map);
+        }
+
+        values(): ErrorValueMap {
+            var vs: ErrorValueMap = {};
+
+            for (var v in this.attributes) {
+
+                if (this.attributes[v].hasOwnProperty("value")) {
+                    var ev: ErrorValue = {
+                        value: new Value(this.attributes[v].value),
+                        invalidReason: this.attributes[v].invalidReason
+                    };
+                    vs[v] = ev;
+                }
+            }
+
+            return vs;
+        }
+
+        invalidReason() {
+            return this.get("x-ro-invalid-reason");
+        }
+    }
+
+
+    export class UpdateMap extends ArgumentMap implements HateoasModel {
+        constructor(private domainObject: DomainObjectRepresentation, map: Object) {
+            super(map, domainObject, domainObject.instanceId());
+
+            domainObject.updateLink().copyToHateoasModel(this);
+
+            for (var member in this.properties()) {
+                var currentValue = domainObject.propertyMembers()[member].value();
+                this.setProperty(member, currentValue);
+            }
+        }
+
+        onChange() {
+            // if the update map changes as a result of server changes (eg title changes) update the 
+            // associated domain object
+            this.domainObject.setFromUpdateMap(this);
+        }
+
+        onError(map: Object, statusCode: string, warnings: string) {
+            return new ErrorMap(map, statusCode, warnings);
+        }
+
+        properties(): ValueMap {
+            var pps = {};
+
+            for (var p in this.attributes) {
+                pps[p] = new Value(this.attributes[p].value);
+            }
+
+            return pps;
+        }
+
+        setProperty(name: string, value: Value) {
+            value.set(this.attributes, name);
+        }
+    }
+
+    export class AddToRemoveFromMap extends ArgumentMap implements HateoasModel {
+        constructor(private collectionResource: CollectionRepresentation, map: Object, add: bool) {
+            super(map, collectionResource, collectionResource.instanceId());
+
+            var link = add ? collectionResource.addToLink() : collectionResource.removeFromLink();
+
+            link.copyToHateoasModel(this);
+        }
+
+        onChange() {
+            // if the update map changes as a result of server changes (eg title changes) update the 
+            // associated property
+            this.collectionResource.setFromMap(this);
+        }
+
+        onError(map: Object, statusCode: string, warnings: string) {
+            return new ErrorMap(map, statusCode, warnings);
+        }
+
+        setValue(value: Value) {
+            value.set(this.attributes);
+        }
+    }
+
+    export class ModifyMap extends ArgumentMap implements HateoasModel {
+        constructor(private propertyResource: PropertyRepresentation, map: Object) {
+            super(map, propertyResource, propertyResource.instanceId());
+
+            propertyResource.modifyLink().copyToHateoasModel(this);
+
+            this.setValue(propertyResource.value());
+        }
+
+        onChange() {
+            // if the update map changes as a result of server changes (eg title changes) update the 
+            // associated property
+            this.propertyResource.setFromModifyMap(this);
+        }
+
+        onError(map: Object, statusCode: string, warnings: string) {
+            return new ErrorMap(map, statusCode, warnings);
+        }
+
+
+        setValue(value: Value) {
+            value.set(this.attributes);
+        }
+    }
+
+    export class ClearMap extends ArgumentMap implements HateoasModel {
+        constructor(propertyResource: PropertyRepresentation) {
+            super({}, propertyResource, propertyResource.instanceId());
+
+            propertyResource.clearLink().copyToHateoasModel(this);
+        }
+
+        onError(map: Object, statusCode: string, warnings: string) {
+            return new ErrorMap(map, statusCode, warnings);
+        }
+    }
+
+    // helper - collection of Links 
+    export class Links extends CollectionShim implements HateoasModel {
 
         // cannot use constructor to initialise as model property is not yet set and so will 
         // not create members of correct type 
         constructor() {
-            super();
-            //this.url = this.getUrl;
+            super();        
         }
-
+      
         hateoasUrl: string;
         method: string;
         url(): string {
             return this.hateoasUrl || super.url();
         }
-
-        //private getUrl(): string {
-        //    return this.hateoasUrl || super.url();
-        //}
 
         model = Link;
 
@@ -367,9 +483,9 @@ module Spiro {
         }
 
         // helper
-        //setParameter(name: string, value: Value) {
-        //    value.set(this.attributes, name);
-        //}
+        setParameter(name: string, value: Value) {
+            value.set(this.attributes, name);
+        }
     }
 
     // matches an action representation 18.0 
@@ -495,9 +611,9 @@ module Spiro {
             return <DomainObjectRepresentation> this.upLink().getTarget();
         }
 
-        //setFromMap(map: AddToRemoveFromMap) {
-        //    this.set(map.attributes);
-        //}
+        setFromMap(map: AddToRemoveFromMap) {
+            this.set(map.attributes);
+        }
 
         private addToMap() {
             return this.addToLink().arguments();
@@ -569,23 +685,23 @@ module Spiro {
             return <DomainObjectRepresentation> this.upLink().getTarget();
         }
 
-        //setFromModifyMap(map: ModifyMap) {
-        //    this.set(map.attributes);
-        //}
+        setFromModifyMap(map: ModifyMap) {
+            this.set(map.attributes);
+        }
 
-        //getModifyMap(): ModifyMap {
-        //    if (this.modifyLink()) {
-        //        return new ModifyMap(this, this.modifyMap());
-        //    }
-        //    return null;
-        //}
+        getModifyMap(): ModifyMap {
+            if (this.modifyLink()) {
+                return new ModifyMap(this, this.modifyMap());
+            }
+            return null;
+        }
 
-        //getClearMap(): ClearMap {
-        //    if (this.clearLink()) {
-        //        return new ClearMap(this);
-        //    }
-        //    return null;
-        //}
+        getClearMap(): ClearMap {
+            if (this.clearLink()) {
+                return new ClearMap(this);
+            }
+            return null;
+        }
 
         // properties 
 
@@ -743,10 +859,10 @@ module Spiro {
 
         constructor(object?) {
             super(object);
-            //this.url = this.getUrl;
+            this.url = this.getUrl;
         }
 
-        url(): string {
+        getUrl(): string {
             return this.hateoasUrl || this.selfLink().href() || super.url();
         }
 
@@ -870,34 +986,33 @@ module Spiro {
             return <DomainObjectRepresentation> this.selfLink().getTarget();
         }
 
-        //getPersistMap(): PersistMap {
-        //    return new PersistMap(this, this.persistMap());
-        //}
+        getPersistMap(): PersistMap {
+            return new PersistMap(this, this.persistMap());
+        }
 
-        //getUpdateMap(): UpdateMap {
-        //    return new UpdateMap(this, this.updateMap());
-        //}
+        getUpdateMap(): UpdateMap {
+            return new UpdateMap(this, this.updateMap());
+        }
 
-        //setFromUpdateMap(map: UpdateMap) {
-        //    for (var member in this.members()) {
-        //        var m = this.members()[member];
-        //        m.update(map.attributes["members"][member]);
-        //    }
+        setFromUpdateMap(map: UpdateMap) {
+            for (var member in this.members()) {
+                var m = this.members()[member];
+                m.update(map.attributes["members"][member]);
+            }
 
-        //    // to trigger an update on the domainobject
-        //    this.set(map.attributes);
-        //}
+            // to trigger an update on the domainobject
+            this.set(map.attributes);
+        }
 
-        //setFromPersistMap(map: PersistMap) {
-        //    // to trigger an update on the domainobject
-        //    this.set(map.attributes);
-        //    this.resetMemberMaps();
-        //}
+        setFromPersistMap(map: PersistMap) {
+            // to trigger an update on the domainobject
+            this.set(map.attributes);
+            this.resetMemberMaps();
+        }
 
-        //fetch(options?) {
-        //    this.memberMap = null; // to ensure everything gets reset
-        //    super.fetch(options);
-        //}
+        preFetch() {
+            this.memberMap = null; // to ensure everything gets reset
+        }
     }
 
     // matches scalar representation 12.0 
@@ -956,7 +1071,25 @@ module Spiro {
     }
 
     // matches Objects of Type Resource 9.0 
-  
+    export class PersistMap extends ArgumentMap implements HateoasModel {
+
+        constructor(private domainObject: DomainObjectRepresentation, map: Object) {
+            super(map, domainObject, domainObject.instanceId());
+            domainObject.persistLink().copyToHateoasModel(this);
+        }
+
+        onChange() {
+            this.domainObject.setFromPersistMap(this);
+        }
+
+        onError(map: Object, statusCode: string, warnings: string) {
+            return new ErrorMap(map, statusCode, warnings);
+        }
+
+        setMember(name: string, value: Value) {
+            value.set(this.attributes["members"], name);
+        }
+    }
 
     // matches the version representation 8.0 
     export class VersionRepresentation extends ResourceRepresentation {
@@ -998,11 +1131,6 @@ module Spiro {
 
     // matches Domain Services Representation 7.0
     export class DomainServicesRepresentation extends ListRepresentation {
-
-        constructor(obj? : Object) {
-            super(obj);
-        }
-
 
         // links
         upLink(): Link {
@@ -1102,7 +1230,7 @@ module Spiro {
     }
 
     // matches the Link representation 2.7
-    export class Link extends SpiroModel {
+    export class Link extends ModelShim {
 
         constructor(object?) {
             super(object);
