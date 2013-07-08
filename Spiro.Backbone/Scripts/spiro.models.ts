@@ -21,28 +21,11 @@ module Spiro {
 
     declare var _: any;
 
-    // TODO should we implement an event cascade ? 
-    // eg when you 'get' a resource from another resource shoul;d it wire it up so that 
-    // events are passed up to parent resources ? 
-
-    // option helpers 
-    export interface Options {
-        success?: (originalModel, resp, iOptions) => void;
-        error?: (originalModel, resp, iOptions) => void;
-    }
-
-
     function isScalarType(typeName: string) {
         return typeName === "string" || typeName === "number" || typeName === "boolean" || typeName === "integer";
     }
 
     // interfaces 
-
-    export interface HateoasModel {
-        hateoasUrl: string;
-        method: string;
-        url: any;
-    }
 
     export interface Extensions {
         friendlyName: string;
@@ -267,70 +250,17 @@ module Spiro {
     }
 
     // base class for all representations that can be directly loaded from the server 
-    export class HateoasModelBase extends ModelShim implements HateoasModel {
+    export class HateoasModelBase extends HateoasModelBaseShim implements HateoasModel {
         constructor(object?) {
-            super(object);         
-            this.once('error', this.error);
+            super(object);
         }
 
-        hateoasUrl: string;
-        method: string = "GET"; // default to GET 
-        private suffix: string = "";
-
-        url(): string {
-            return (this.hateoasUrl || super.url()) + this.suffix;
-        }
-
-        error(originalModel, resp, iOptions) {
-            var rs = resp.responseText ? $.parseJSON(resp.responseText) : {};
-            var warnings = resp.getResponseHeader("Warning");
-            this.trigger("error", new ErrorMap(rs, resp.status, warnings));
-        }
-
-        private appendUrlSuffix() {
-            this.suffix = "";
-            var asJson = this.toJSON();
-
-            if (_.toArray(asJson).length > 0) {
-                var map = JSON.stringify(asJson);
-                var encodedMap = encodeURI(map);
-                this.suffix = "?" + encodedMap;
-            }
-        }
-
-        fetch(options?) {
-            if (this.method === "GET") {
-                this.appendUrlSuffix();
-                super.fetch(options);
-            }
-            else if (this.method === "POST") {
-                super.save(null, options);
-            }
-            else if (this.method === "PUT") {
-                // set id so not new ? 
-                super.save(null, options);
-            }
-            else if (this.method === "DELETE") {
-                this.appendUrlSuffix();
-                super.destroy(options);
-            }
-        }
-
-        save(options?) {
-            super.save(null, options);
-        }
-
-        destroy(options?) {
-            this.appendUrlSuffix();
-            super.destroy(options);
-        }
-
-        sync(method, model, options) {
-            model.id = model.url();
-            sync(method, model, options);
+        onError(map: Object, statusCode: string, warnings: string) {
+            return new ErrorMap(map, statusCode, warnings);
         }
     }
 
+   
     export class ErrorMap extends HateoasModelBase {
 
         constructor(map: Object, public statusCode: string, public warningMessage: string) {
@@ -360,39 +290,26 @@ module Spiro {
     }
 
 
-    export class ArgumentMap extends HateoasModelBase {
-
-        constructor(map: Object, parent: Backbone.Model, public id: string, link: Link) {
-            super(map);
-
-            link.copyToHateoasModel(this);
-
-            this.id = id;
-
-            this.on("requestFailed", (args) => {
-                parent.trigger("requestFailed", args);
-            });
-
-            this.on("requestSucceeded", (args) => {
-                parent.trigger("requestSucceeded", args);
-            });
-        }
-    }
-
     export class UpdateMap extends ArgumentMap {
-        constructor(domainObject: DomainObjectRepresentation, map: Object) {
-            super(map, domainObject, domainObject.instanceId(), domainObject.updateLink());
+        constructor(private domainObject: DomainObjectRepresentation, map: Object) {
+            super(map, domainObject, domainObject.instanceId());
+
+            domainObject.updateLink().copyToHateoasModel(this);
 
             for (var member in this.properties()) {
                 var currentValue = domainObject.propertyMembers()[member].value();
                 this.setProperty(member, currentValue);
             }
+        }
 
-            this.on("change", () => {
-                // if the update map changes as a result of server changes (eg title changes) update the 
-                // associated domain object
-                domainObject.setFromUpdateMap(this);
-            });
+        onChange() {
+            // if the update map changes as a result of server changes (eg title changes) update the 
+            // associated domain object
+            this.domainObject.setFromUpdateMap(this);
+        }
+
+        onError(map: Object, statusCode: string, warnings: string) {
+            return new ErrorMap(map, statusCode, warnings);
         }
 
         properties(): ValueMap {
@@ -411,14 +328,22 @@ module Spiro {
     }
 
     export class AddToRemoveFromMap extends ArgumentMap {
-        constructor(collectionResource: CollectionRepresentation, map: Object, add: bool) {
-            super(map, collectionResource, collectionResource.instanceId(), add ? collectionResource.addToLink() : collectionResource.removeFromLink());
+        constructor(private collectionResource: CollectionRepresentation, map: Object, add: bool) {
+            super(map, collectionResource, collectionResource.instanceId());
 
-            this.on("change", () => {
-                // if the update map changes as a result of server changes (eg title changes) update the 
-                // associated property
-                collectionResource.setFromMap(this);
-            });
+            var link = add ? collectionResource.addToLink() : collectionResource.removeFromLink();
+
+            link.copyToHateoasModel(this);
+        }
+
+        onChange() {
+            // if the update map changes as a result of server changes (eg title changes) update the 
+            // associated property
+            this.collectionResource.setFromMap(this);
+        }
+
+        onError(map: Object, statusCode: string, warnings: string) {
+            return new ErrorMap(map, statusCode, warnings);
         }
 
         setValue(value: Value) {
@@ -427,17 +352,24 @@ module Spiro {
     }
 
     export class ModifyMap extends ArgumentMap {
-        constructor(propertyResource: PropertyRepresentation, map: Object) {
-            super(map, propertyResource, propertyResource.instanceId(), propertyResource.modifyLink());
+        constructor(private propertyResource: PropertyRepresentation, map: Object) {
+            super(map, propertyResource, propertyResource.instanceId());
+
+            propertyResource.modifyLink().copyToHateoasModel(this);
 
             this.setValue(propertyResource.value());
-
-            this.on("change", () => {
-                // if the update map changes as a result of server changes (eg title changes) update the 
-                // associated property
-                propertyResource.setFromModifyMap(this);
-            });
         }
+
+        onChange() {
+            // if the update map changes as a result of server changes (eg title changes) update the 
+            // associated property
+            this.propertyResource.setFromModifyMap(this);
+        }
+
+        onError(map: Object, statusCode: string, warnings: string) {
+            return new ErrorMap(map, statusCode, warnings);
+        }
+
 
         setValue(value: Value) {
             value.set(this.attributes);
@@ -446,11 +378,17 @@ module Spiro {
 
     export class ClearMap extends ArgumentMap {
         constructor(propertyResource: PropertyRepresentation) {
-            super({}, propertyResource, propertyResource.instanceId(), propertyResource.clearLink());
+            super({}, propertyResource, propertyResource.instanceId());
+
+            propertyResource.clearLink().copyToHateoasModel(this);
+        }
+
+        onError(map: Object, statusCode: string, warnings: string) {
+            return new ErrorMap(map, statusCode, warnings);
         }
     }
 
-    // backbone helper - collection of Links 
+    // helper - collection of Links 
     export class Links extends CollectionShim implements HateoasModel {
 
         // cannot use constructor to initialise as model property is not yet set and so will 
@@ -1066,9 +1004,8 @@ module Spiro {
             this.resetMemberMaps();
         }
 
-        fetch(options?) {
+        preFetch() {
             this.memberMap = null; // to ensure everything gets reset
-            super.fetch(options);
         }
     }
 
@@ -1130,14 +1067,17 @@ module Spiro {
     // matches Objects of Type Resource 9.0 
     export class PersistMap extends ArgumentMap {
 
-        constructor(domainObject: DomainObjectRepresentation, map: Object) {
-            super(map, domainObject, domainObject.instanceId(), domainObject.persistLink());
+        constructor(private domainObject: DomainObjectRepresentation, map: Object) {
+            super(map, domainObject, domainObject.instanceId());
+            domainObject.persistLink().copyToHateoasModel(this);
+        }
 
-            this.on("change", () => {
-                // if the update map changes as a result of server changes (eg title changes) update the 
-                // associated domain object
-                domainObject.setFromPersistMap(this);
-            });
+        onChange() {
+            this.domainObject.setFromPersistMap(this);
+        }
+
+        onError(map: Object, statusCode: string, warnings: string) {
+            return new ErrorMap(map, statusCode, warnings);
         }
 
         setMember(name: string, value: Value) {

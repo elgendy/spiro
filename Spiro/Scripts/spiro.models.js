@@ -185,60 +185,12 @@ var Spiro;
         __extends(HateoasModelBase, _super);
         function HateoasModelBase(object) {
             _super.call(this, object);
-            this.method = "GET";
-            this.suffix = "";
-            this.once('error', this.error);
         }
-        HateoasModelBase.prototype.url = function () {
-            return (this.hateoasUrl || _super.prototype.url.call(this)) + this.suffix;
-        };
-
-        HateoasModelBase.prototype.error = function (originalModel, resp, iOptions) {
-            var rs = resp.responseText ? $.parseJSON(resp.responseText) : {};
-            var warnings = resp.getResponseHeader("Warning");
-            this.trigger("error", new ErrorMap(rs, resp.status, warnings));
-        };
-
-        HateoasModelBase.prototype.appendUrlSuffix = function () {
-            this.suffix = "";
-            var asJson = this.toJSON();
-
-            if (_.toArray(asJson).length > 0) {
-                var map = JSON.stringify(asJson);
-                var encodedMap = encodeURI(map);
-                this.suffix = "?" + encodedMap;
-            }
-        };
-
-        HateoasModelBase.prototype.fetch = function (options) {
-            if (this.method === "GET") {
-                this.appendUrlSuffix();
-                _super.prototype.fetch.call(this, options);
-            } else if (this.method === "POST") {
-                _super.prototype.save.call(this, null, options);
-            } else if (this.method === "PUT") {
-                _super.prototype.save.call(this, null, options);
-            } else if (this.method === "DELETE") {
-                this.appendUrlSuffix();
-                _super.prototype.destroy.call(this, options);
-            }
-        };
-
-        HateoasModelBase.prototype.save = function (options) {
-            _super.prototype.save.call(this, null, options);
-        };
-
-        HateoasModelBase.prototype.destroy = function (options) {
-            this.appendUrlSuffix();
-            _super.prototype.destroy.call(this, options);
-        };
-
-        HateoasModelBase.prototype.sync = function (method, model, options) {
-            model.id = model.url();
-            Spiro.sync(method, model, options);
+        HateoasModelBase.prototype.onError = function (map, statusCode, warnings) {
+            return new ErrorMap(map, statusCode, warnings);
         };
         return HateoasModelBase;
-    })(Spiro.ModelShim);
+    })(Spiro.HateoasModelBaseShim);
     Spiro.HateoasModelBase = HateoasModelBase;
 
     var ErrorMap = (function (_super) {
@@ -271,43 +223,27 @@ var Spiro;
     })(HateoasModelBase);
     Spiro.ErrorMap = ErrorMap;
 
-    var ArgumentMap = (function (_super) {
-        __extends(ArgumentMap, _super);
-        function ArgumentMap(map, parent, id, link) {
-            _super.call(this, map);
-            this.id = id;
-
-            link.copyToHateoasModel(this);
-
-            this.id = id;
-
-            this.on("requestFailed", function (args) {
-                parent.trigger("requestFailed", args);
-            });
-
-            this.on("requestSucceeded", function (args) {
-                parent.trigger("requestSucceeded", args);
-            });
-        }
-        return ArgumentMap;
-    })(HateoasModelBase);
-    Spiro.ArgumentMap = ArgumentMap;
-
     var UpdateMap = (function (_super) {
         __extends(UpdateMap, _super);
         function UpdateMap(domainObject, map) {
-            var _this = this;
-            _super.call(this, map, domainObject, domainObject.instanceId(), domainObject.updateLink());
+            _super.call(this, map, domainObject, domainObject.instanceId());
+            this.domainObject = domainObject;
+
+            domainObject.updateLink().copyToHateoasModel(this);
 
             for (var member in this.properties()) {
                 var currentValue = domainObject.propertyMembers()[member].value();
                 this.setProperty(member, currentValue);
             }
-
-            this.on("change", function () {
-                domainObject.setFromUpdateMap(_this);
-            });
         }
+        UpdateMap.prototype.onChange = function () {
+            this.domainObject.setFromUpdateMap(this);
+        };
+
+        UpdateMap.prototype.onError = function (map, statusCode, warnings) {
+            return new ErrorMap(map, statusCode, warnings);
+        };
+
         UpdateMap.prototype.properties = function () {
             var pps = {};
 
@@ -322,52 +258,71 @@ var Spiro;
             value.set(this.attributes, name);
         };
         return UpdateMap;
-    })(ArgumentMap);
+    })(Spiro.ArgumentMap);
     Spiro.UpdateMap = UpdateMap;
 
     var AddToRemoveFromMap = (function (_super) {
         __extends(AddToRemoveFromMap, _super);
         function AddToRemoveFromMap(collectionResource, map, add) {
-            var _this = this;
-            _super.call(this, map, collectionResource, collectionResource.instanceId(), add ? collectionResource.addToLink() : collectionResource.removeFromLink());
+            _super.call(this, map, collectionResource, collectionResource.instanceId());
+            this.collectionResource = collectionResource;
 
-            this.on("change", function () {
-                collectionResource.setFromMap(_this);
-            });
+            var link = add ? collectionResource.addToLink() : collectionResource.removeFromLink();
+
+            link.copyToHateoasModel(this);
         }
+        AddToRemoveFromMap.prototype.onChange = function () {
+            this.collectionResource.setFromMap(this);
+        };
+
+        AddToRemoveFromMap.prototype.onError = function (map, statusCode, warnings) {
+            return new ErrorMap(map, statusCode, warnings);
+        };
+
         AddToRemoveFromMap.prototype.setValue = function (value) {
             value.set(this.attributes);
         };
         return AddToRemoveFromMap;
-    })(ArgumentMap);
+    })(Spiro.ArgumentMap);
     Spiro.AddToRemoveFromMap = AddToRemoveFromMap;
 
     var ModifyMap = (function (_super) {
         __extends(ModifyMap, _super);
         function ModifyMap(propertyResource, map) {
-            var _this = this;
-            _super.call(this, map, propertyResource, propertyResource.instanceId(), propertyResource.modifyLink());
+            _super.call(this, map, propertyResource, propertyResource.instanceId());
+            this.propertyResource = propertyResource;
+
+            propertyResource.modifyLink().copyToHateoasModel(this);
 
             this.setValue(propertyResource.value());
-
-            this.on("change", function () {
-                propertyResource.setFromModifyMap(_this);
-            });
         }
+        ModifyMap.prototype.onChange = function () {
+            this.propertyResource.setFromModifyMap(this);
+        };
+
+        ModifyMap.prototype.onError = function (map, statusCode, warnings) {
+            return new ErrorMap(map, statusCode, warnings);
+        };
+
         ModifyMap.prototype.setValue = function (value) {
             value.set(this.attributes);
         };
         return ModifyMap;
-    })(ArgumentMap);
+    })(Spiro.ArgumentMap);
     Spiro.ModifyMap = ModifyMap;
 
     var ClearMap = (function (_super) {
         __extends(ClearMap, _super);
         function ClearMap(propertyResource) {
-            _super.call(this, {}, propertyResource, propertyResource.instanceId(), propertyResource.clearLink());
+            _super.call(this, {}, propertyResource, propertyResource.instanceId());
+
+            propertyResource.clearLink().copyToHateoasModel(this);
         }
+        ClearMap.prototype.onError = function (map, statusCode, warnings) {
+            return new ErrorMap(map, statusCode, warnings);
+        };
         return ClearMap;
-    })(ArgumentMap);
+    })(Spiro.ArgumentMap);
     Spiro.ClearMap = ClearMap;
 
     var Links = (function (_super) {
@@ -932,9 +887,8 @@ var Spiro;
             this.resetMemberMaps();
         };
 
-        DomainObjectRepresentation.prototype.fetch = function (options) {
+        DomainObjectRepresentation.prototype.preFetch = function () {
             this.memberMap = null;
-            _super.prototype.fetch.call(this, options);
         };
         return DomainObjectRepresentation;
     })(ResourceRepresentation);
@@ -996,18 +950,23 @@ var Spiro;
     var PersistMap = (function (_super) {
         __extends(PersistMap, _super);
         function PersistMap(domainObject, map) {
-            var _this = this;
-            _super.call(this, map, domainObject, domainObject.instanceId(), domainObject.persistLink());
-
-            this.on("change", function () {
-                domainObject.setFromPersistMap(_this);
-            });
+            _super.call(this, map, domainObject, domainObject.instanceId());
+            this.domainObject = domainObject;
+            domainObject.persistLink().copyToHateoasModel(this);
         }
+        PersistMap.prototype.onChange = function () {
+            this.domainObject.setFromPersistMap(this);
+        };
+
+        PersistMap.prototype.onError = function (map, statusCode, warnings) {
+            return new ErrorMap(map, statusCode, warnings);
+        };
+
         PersistMap.prototype.setMember = function (name, value) {
             value.set(this.attributes["members"], name);
         };
         return PersistMap;
-    })(ArgumentMap);
+    })(Spiro.ArgumentMap);
     Spiro.PersistMap = PersistMap;
 
     var VersionRepresentation = (function (_super) {
