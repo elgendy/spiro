@@ -27,6 +27,12 @@ module Spiro {
 
     // interfaces 
 
+    export interface HateoasModel {
+        hateoasUrl: string;
+        method: string;
+        url: any;
+    }
+
     export interface Extensions {
         friendlyName: string;
         description: string;
@@ -290,7 +296,7 @@ module Spiro {
     }
 
 
-    export class UpdateMap extends ArgumentMap {
+    export class UpdateMap extends ArgumentMap implements HateoasModel {
         constructor(private domainObject: DomainObjectRepresentation, map: Object) {
             super(map, domainObject, domainObject.instanceId());
 
@@ -327,7 +333,7 @@ module Spiro {
         }
     }
 
-    export class AddToRemoveFromMap extends ArgumentMap {
+    export class AddToRemoveFromMap extends ArgumentMap implements HateoasModel {
         constructor(private collectionResource: CollectionRepresentation, map: Object, add: bool) {
             super(map, collectionResource, collectionResource.instanceId());
 
@@ -351,7 +357,7 @@ module Spiro {
         }
     }
 
-    export class ModifyMap extends ArgumentMap {
+    export class ModifyMap extends ArgumentMap implements HateoasModel {
         constructor(private propertyResource: PropertyRepresentation, map: Object) {
             super(map, propertyResource, propertyResource.instanceId());
 
@@ -376,7 +382,7 @@ module Spiro {
         }
     }
 
-    export class ClearMap extends ArgumentMap {
+    export class ClearMap extends ArgumentMap implements HateoasModel {
         constructor(propertyResource: PropertyRepresentation) {
             super({}, propertyResource, propertyResource.instanceId());
 
@@ -1065,7 +1071,7 @@ module Spiro {
     }
 
     // matches Objects of Type Resource 9.0 
-    export class PersistMap extends ArgumentMap {
+    export class PersistMap extends ArgumentMap implements HateoasModel {
 
         constructor(private domainObject: DomainObjectRepresentation, map: Object) {
             super(map, domainObject, domainObject.instanceId());

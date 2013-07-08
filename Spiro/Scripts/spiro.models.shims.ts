@@ -16,12 +16,6 @@ module Spiro {
 
     declare var _: any;
 
-    export interface HateoasModel {
-        hateoasUrl: string;
-        method: string;
-        url: any;
-    }
-
     // option helpers 
     export interface Options {
         success?: (originalModel, resp, iOptions) => void;
@@ -32,13 +26,12 @@ module Spiro {
         Backbone.sync(method, model, options);
     }
 
-
     export class ModelShim extends Backbone.Model {
 
     }
 
     // base class for all representations that can be directly loaded from the server 
-    export class HateoasModelBaseShim extends ModelShim implements HateoasModel {
+    export class HateoasModelBaseShim extends ModelShim  {
         constructor(object?) {
             super(object);
             this.once('error', this.error);
