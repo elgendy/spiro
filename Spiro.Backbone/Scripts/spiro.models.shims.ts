@@ -8,13 +8,12 @@
 // following links to other resources.
 
 /// <reference path="typings/jquery/jquery.d.ts" />
+/// <reference path="typings/underscore/underscore.d.ts" />
 /// <reference path="typings/backbone/backbone.d.ts" />
 
 // Backbone version of shims 
 
 module Spiro {
-
-    declare var _: any;
 
     // option helpers 
     export interface Options {

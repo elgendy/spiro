@@ -253,7 +253,11 @@
     <Content Include="Scripts\jquery-ui-1.10.2.js" />
     <Content Include="Scripts\modernizr-2.6.2.js" />
     <TypeScriptCompile Include="Scripts\spiro.models.shims.ts" />
-    <Content Include="Scripts\spiro.models.shims.js" >
+    <Content Include="Scripts\spiro.backbone.helpers.js" >
+      <DependentUpon>spiro.backbone.helpers.ts</DependentUpon>
+    </Content>
+    <TypeScriptCompile Include="Scripts\spiro.models.helpers.ts" />
+    <Content Include="Scripts\spiro.models.shims.js">
       <DependentUpon>spiro.models.shims.ts</DependentUpon>
     </Content>
     <Content Include="Scripts\spiro.modern.presentations.handlebars.js.map">
@@ -276,7 +280,7 @@
     <Content Include="Scripts\typings\backbone\backbone.mine.d.ts" />
     <Content Include="Scripts\typings\jquery\jquery.d.ts" />
     <Content Include="Scripts\modernizr-2.5.3.js" />
-    <TypeScriptCompile Include="Scripts\spiro.models.helpers.ts" />
+    <TypeScriptCompile Include="Scripts\spiro.backbone.helpers.ts" />
     <Content Include="Scripts\spiro.models.helpers.js">
       <DependentUpon>spiro.models.helpers.ts</DependentUpon>
     </Content>
@@ -345,6 +349,11 @@
   <ItemGroup>
     <Content Include="Scripts\spiro.modern.presentations.handlebars.templates.js.map">
       <DependentUpon>spiro.modern.presentations.handlebars.templates.ts</DependentUpon>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Scripts\spiro.backbone.helpers.js.map" >
+      <DependentUpon>spiro.backbone.helpers.ts</DependentUpon>
     </Content>
   </ItemGroup>
   <PropertyGroup>

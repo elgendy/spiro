@@ -62,9 +62,6 @@
   <ItemGroup>
     <Content Include="Scripts\spiro-model-tests.js" />
     <Content Include="Scripts\spiro-model-tests.ts" />
-    <Content Include="Scripts\typings\backbone\backbone.d.ts" />
-    <Content Include="Scripts\typings\backbone\backbone.mine.d.ts" />
-    <Content Include="Scripts\typings\jquery\jquery.d.ts" />
     <TypeScriptCompile Include="Scripts\spiro.models.helpers.ts" />
     <Content Include="Scripts\spiro.models.helpers.js">
       <DependentUpon>spiro.models.helpers.ts</DependentUpon>
@@ -73,10 +70,7 @@
     <Content Include="Scripts\spiro.models.js">
       <DependentUpon>spiro.models.ts</DependentUpon>
     </Content>
-    <Content Include="Scripts\typings\handlebars\handlebars.d.ts" />
-    <Content Include="Scripts\typings\modernizr\modernizr.d.ts" />
-    <Content Include="Scripts\typings\underscore\underscore-typed-1.4.2.d.ts" />
-    <Content Include="Scripts\typings\underscore\underscore-typed-1.4.3.d.ts" />
+    <Content Include="Scripts\typings\jquery\jquery.d.ts" />
     <Content Include="Scripts\typings\underscore\underscore-typed.d.ts" />
     <Content Include="Scripts\typings\underscore\underscore.d.ts" />
     <Content Include="Scripts\_references.js" />
@@ -92,6 +86,7 @@
       <DependentUpon>spiro.models.shims.ts</DependentUpon>
     </Content>
   </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <Content Include="packages.config" />
   </ItemGroup>

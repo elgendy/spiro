@@ -13,13 +13,13 @@
 // resources.  These classes provide convenient methods for navigating the contents of those representations, and for
 // following links to other resources.
 
+/// <reference path="typings/jquery/jquery.d.ts" />
+/// <reference path="typings/underscore/underscore.d.ts" />
 /// <reference path="spiro.models.shims.ts" />
 
 declare var appPath: any;
 
 module Spiro {
-
-    declare var _: any;
 
     function isScalarType(typeName: string) {
         return typeName === "string" || typeName === "number" || typeName === "boolean" || typeName === "integer";

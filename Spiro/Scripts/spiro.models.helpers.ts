@@ -8,51 +8,9 @@
 //See the License for the specific language governing permissions and
 //limitations under the License.
 
-/// <reference path="typings/jquery/jquery.d.ts" />
-/// <reference path="typings/backbone/backbone.d.ts" />
-/// <reference path="spiro.models.ts" />
-
-//declare var _: any;
-
 // helpers for common tasks with spiro model 
 
 module Spiro.Helpers {
-
-    export function createActionInvoke(domainObject: DomainObjectRepresentation, actionName: string, method?: string) {
-        var action = domainObject.actionMembers()[actionName];
-        return createUrlInvoke(action.links().linkByRel("urn:org.restfulobjects:rels/details").href() + "/invoke", method);
-    }
-
-    export function createUrlInvoke(url: string, method?: string) {
-        var result = new Spiro.ActionResultRepresentation();
-        result.hateoasUrl = url;
-        result.method = method || "POST";
-        return result;
-    }
-
-    export function persist(domainObject: DomainObjectRepresentation, members, options) {
-        var map = domainObject.getPersistMap();
-        for (var m in members || {}) {
-            map.setMember(m, new Value(members[m]));
-        }
-        map.save(options);
-    }
-
-    export function invokeAction(domainObject: DomainObjectRepresentation, actionName: string, parameters?: Object, options?: Options): void {
-        var actionInvoke = createActionInvoke(domainObject, actionName);
-        invoke(actionInvoke, parameters, options);
-    }
-
-    export function invoke(invoke: ActionResultRepresentation, parameters?: Object, options?: Options): void {
-
-        invoke.attributes = {};
-
-        for (var p in parameters || {}) {
-            invoke.setParameter(p, new Value(parameters[p]));
-        }
-
-        invoke.fetch(options);
-    }
 
     export function getClassName(obj: any) {
         var funcNameRegex = /function (.{1,})\(/;
