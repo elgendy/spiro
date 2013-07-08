@@ -208,8 +208,14 @@
     <Content Include="Content\partials\service.html" />
     <Content Include="fonts\iconFont.svg" />
     <Content Include="fonts\license.txt" />
-    <Content Include="Scripts\app.js" />
-    <Content Include="Scripts\controllers.js" />
+    <Content Include="Scripts\spiro.angular.app.js.map">
+      <DependentUpon>spiro.angular.app.ts</DependentUpon>
+    </Content>
+    <Content Include="Scripts\spiro.angular.controllers.js.map" >
+      <DependentUpon>spiro.angular.controllers.ts</DependentUpon>
+    </Content>
+    <TypeScriptCompile Include="Scripts\spiro.angular.app.ts" />
+    <TypeScriptCompile Include="Scripts\spiro.angular.controllers.ts" />
     <Content Include="Content\partials\services.html" />
     <Content Include="Content\spiro-modern.css" />
     <Content Include="Content\themes\base\images\animated-overlay.gif" />
@@ -598,11 +604,17 @@
     <Content Include="Scripts\knockout-2.2.0.debug.js" />
     <Content Include="Scripts\knockout-2.2.0.js" />
     <Content Include="Scripts\modernizr-2.6.2.js" />
-    <Content Include="Scripts\spiro.models.helpers.js.map" >
+    <Content Include="Scripts\spiro.angular.app.js">
+      <DependentUpon>spiro.angular.app.ts</DependentUpon>
+    </Content>
+    <Content Include="Scripts\spiro.angular.controllers.js" >
+      <DependentUpon>spiro.angular.controllers.ts</DependentUpon>
+    </Content>
+    <Content Include="Scripts\spiro.models.helpers.js.map">
       <DependentUpon>spiro.models.helpers.ts</DependentUpon>
     </Content>
     <TypeScriptCompile Include="Scripts\spiro.models.helpers.ts" />
-    <Content Include="Scripts\spiro.models.helpers.js" >
+    <Content Include="Scripts\spiro.models.helpers.js">
       <DependentUpon>spiro.models.helpers.ts</DependentUpon>
     </Content>
     <Content Include="Scripts\spiro.models.shims.js.map">
@@ -616,6 +628,12 @@
     <Content Include="Scripts\spiro.models.shims.js">
       <DependentUpon>spiro.models.shims.ts</DependentUpon>
     </Content>
+    <Content Include="Scripts\typings\angularjs\angular-cookies.d.ts" />
+    <Content Include="Scripts\typings\angularjs\angular-mocks.d.ts" />
+    <Content Include="Scripts\typings\angularjs\angular-resource.d.ts" />
+    <Content Include="Scripts\typings\angularjs\angular-sanitize.d.ts" />
+    <Content Include="Scripts\typings\angularjs\angular-scenario.d.ts" />
+    <Content Include="Scripts\typings\angularjs\angular.d.ts" />
     <Content Include="Scripts\typings\jquery\jquery.d.ts" />
     <Content Include="Scripts\typings\underscore\underscore-typed.d.ts" />
     <Content Include="Scripts\typings\underscore\underscore.d.ts" />

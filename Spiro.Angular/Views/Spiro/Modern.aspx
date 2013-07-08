@@ -101,8 +101,8 @@
     <script type="text/javascript" src="<%= Url.Content("~/Scripts/spiro.models.helpers.js") %>"></script>
     <script type="text/javascript" src="<%= Url.Content("~/Scripts/spiro.models.shims.js") %>"></script>
     <script type="text/javascript" src="<%= Url.Content("~/Scripts/spiro.models.js") %>"></script>
-    <script type="text/javascript" src="<%= Url.Content("~/Scripts/app.js") %>"></script>
-    <script type="text/javascript" src="<%= Url.Content("~/Scripts/controllers.js") %>"></script>
+    <script type="text/javascript" src="<%= Url.Content("~/Scripts/spiro.angular.app.js") %>"></script>
+    <script type="text/javascript" src="<%= Url.Content("~/Scripts/spiro.angular.controllers.js") %>"></script>
 
 </body>
 </html>
