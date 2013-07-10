@@ -1,7 +1,7 @@
 ﻿var Spiro;
 (function (Spiro) {
     (function (Angular) {
-        Angular.app = angular.module('app', []);
+        Angular.app = angular.module('app', ['ngResource']);
 
         Angular.app.config(function ($routeProvider) {
             $routeProvider.when('/services', {
@@ -12,106 +12,77 @@
                 controller: 'ServiceController'
             }).when('/objects/:dt/:id', {
                 templateUrl: 'Content/partials/object.html',
-                controller: 'ObjectController'
+                controller: 'LinkController'
             }).when('/services/:sid/actions/:aid/', {
                 templateUrl: 'Content/partials/service.html',
-                controller: 'ServiceController'
+                controller: 'ActionController'
+            }).when('/objects/:dt/:id/properties/:pid/', {
+                templateUrl: 'Content/partials/object.html',
+                controller: 'LinkController'
             }).otherwise({
                 redirectTo: '/services'
             });
         });
 
-        Angular.app.service("RoServer", function ($http) {
-            this.getServices = function () {
-                return $http.get("http://mvc.nakedobjects.net:1081/RestDemo/services");
+        Angular.app.service('Context', function (Home) {
+            var currentServices = null;
+
+            this.getCurrentServices = function () {
+                return currentServices;
             };
 
-            this.getService = function (sid) {
-                return $http.get("http://mvc.nakedobjects.net:1081/RestDemo/services/" + sid);
+            this.setCurrentServices = function (css) {
+                currentServices = css;
             };
 
-            this.getObject = function (dt, id) {
-                return $http.get("http://mvc.nakedobjects.net:1081/RestDemo/objects/" + dt + "/" + id);
+            var currentObject = null;
+
+            this.getCurrentObject = function () {
+                return currentObject;
             };
 
-            this.getAction = function (sid, aid) {
-                return $http.get("http://mvc.nakedobjects.net:1081/RestDemo/services/" + sid + "/actions/" + aid);
+            this.setCurrentObject = function (co) {
+                currentObject = co;
             };
 
-            this.getResult = function (sid, aid) {
-                return $http.get("http://mvc.nakedobjects.net:1081/RestDemo/services/" + sid + "/actions/" + aid + "/invoke");
-            };
-        });
+            var currentNestedObject = null;
 
-        Angular.app.filter('toLocalUrl', function () {
-            return function (href) {
-                var urlRegex = /(services)\/([\w|\.]+)/;
-                var results = (urlRegex).exec(href);
-                return (results && results.length > 2) ? "#/" + results[1] + "/" + results[2] : "";
+            this.getCurrentNestedObject = function () {
+                return currentNestedObject;
             };
-        });
 
-        Angular.app.filter('toObjectLocalUrl', function () {
-            return function (href) {
-                var urlRegex = /(objects)\/([\w|\.]+)\/([\w|\.]+)/;
-                var results = (urlRegex).exec(href);
-                return (results && results.length > 2) ? "#/" + results[1] + "/" + results[2] + "/" + results[3] : "";
+            this.setCurrentNestedObject = function (cno) {
+                currentNestedObject = cno;
             };
         });
 
-        Angular.app.filter('toActionUrl', function () {
-            return function (href) {
-                var urlRegex = /(objects|services)\/([\w|\.]+)\/actions\/([\w|\.]+)/;
+        Angular.app.factory('Home', function ($http, $q) {
+            var home = new Spiro.HomePageRepresentation();
 
-                var results = (urlRegex).exec(href);
-                if (results && results.length > 3) {
-                    return "#/" + results[1] + "/" + results[2] + "/actions/" + results[3];
-                }
+            var delay = $q.defer();
 
-                return "";
-            };
+            $http.get(home.url()).success(function (data, status, headers, config) {
+                home.attributes = data;
+                delay.resolve(home);
+            }).error(function (data, status, headers, config) {
+                delay.reject('Unable to find home page');
+            });
+
+            return delay.promise;
         });
 
-        function hashCode(toHash) {
-            var hash = 0, i, char;
-            if (toHash.length == 0)
-                return hash;
-            for (i = 0; i < toHash.length; i++) {
-                char = toHash.charCodeAt(i);
-                hash = ((hash << 5) - hash) + char;
-                hash = hash & hash;
-            }
-            return hash;
-        }
-        ;
+        Angular.app.service("RepresentationLoader", function ($http, $q) {
+            this.populate = function (model) {
+                var delay = $q.defer();
 
-        function getColourMapValues(dt) {
-            var map = dt ? colourMap[dt] : defaultColour;
-            if (!map) {
-                var hash = Math.abs(hashCode(dt));
-                var index = hash % 18;
-                map = defaultColourArray[index];
-                colourMap[dt] = map;
-            }
-            return map;
-        }
+                $http.get(model.url()).success(function (data, status, headers, config) {
+                    (model).attributes = data;
+                    delay.resolve(model);
+                }).error(function (data, status, headers, config) {
+                    delay.reject('Unable to find page');
+                });
 
-        function typeFromUrl(url) {
-            var typeRegex = /(objects|services)\/([\w|\.]+)/;
-            var results = (typeRegex).exec(url);
-            return (results && results.length > 2) ? results[2] : "";
-        }
-
-        Angular.app.filter('toColorFromHref', function () {
-            return function (href) {
-                var type = typeFromUrl(href);
-                return "bg-color-" + getColourMapValues(type)["backgroundColor"];
-            };
-        });
-
-        Angular.app.filter('toColorFromType', function () {
-            return function (type) {
-                return "bg-color-" + getColourMapValues(type)["backgroundColor"];
+                return delay.promise;
             };
         });
     })(Spiro.Angular || (Spiro.Angular = {}));

@@ -30,9 +30,9 @@ module Spiro {
         constructor(object?) {
             super(object);
         }
-        hateoasUrl: string;
-        method: string;
-        private suffix: string;
+        hateoasUrl: string = "";
+        method: string = "GET";
+        private suffix: string = "";
         url(): string {
             return (this.hateoasUrl || super.url()) + this.suffix;
         }

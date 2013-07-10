@@ -1,17 +1,17 @@
-﻿<div class="object-view" ng-class="object.domainType | toColorFromType">
+﻿<div class="object-view" ng-class="object.color">
     <div class="header">
         <div class="title">{{object.title}}</div>
         <div class="type"></div>
         <div class="messages"></div>
     </div>
-    <div class="properties-pane" ng-class="object.domainType | toColorFromType">
+    <div class="properties-pane" ng-class="object.color">
         <div class="object-properties">
             <div class="properties bg-color-" >
                 <div class="property" ng-repeat="property in object.properties" ng-switch="property.type">
                     
                     <div class="property-name">{{property.title}}:</div>
-                    <div ng-switch-when="ref"   class="property-reference clickable-area" ng-class="property.returnType | toColorFromType">
-                        <a href="{{property.href | toObjectLocalUrl }}">
+                    <div ng-switch-when="ref"   class="property-reference clickable-area" ng-class="property.color">
+                        <a href="{{property.href}}">
                             <span></span>
                             {{property.value}}
                         </a>
@@ -31,11 +31,11 @@
             </div>
         </div>
     </div>
-    <div class="actions-pane" ng-class="object.domainType | toColorFromType">
+    <div class="actions-pane" ng-class="object.color">
         <div>
             <div class="actions" ng-repeat="action in object.actions">
                 <div class="action-button clickable-area">
-                    <a class="action" href="{{action.href | toActionUrl}}">
+                    <a class="action" href="{{action.href}}">
                         <span></span>
                         {{action.title}}
                     </a>

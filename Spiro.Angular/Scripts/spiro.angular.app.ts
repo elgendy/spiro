@@ -2,20 +2,8 @@
 
 module Spiro.Angular {
 
-    interface ColourMapItemInterface {
-        [index: string]: string;
-    }
-
-    interface ColourMapInterface {
-        [index: string]: ColourMapItemInterface;
-    }
-
-    declare var colourMap: ColourMapInterface;
-    declare var defaultColourArray: ColourMapItemInterface[];
-    declare var defaultColour: ColourMapItemInterface;
-
     /* Declare app level module */
-    export var app = angular.module('app', []);
+    export var app = angular.module('app', ['ngResource']);
 
     app.config(function ($routeProvider) {
         $routeProvider.when('/services', {
@@ -26,107 +14,98 @@ module Spiro.Angular {
                 controller: 'ServiceController'
             }).when('/objects/:dt/:id', {
                 templateUrl: 'Content/partials/object.html',
-                controller: 'ObjectController'
+                controller: 'LinkController'
             }).when('/services/:sid/actions/:aid/', {
                 templateUrl: 'Content/partials/service.html',
-                controller: 'ServiceController'
+                controller: 'ActionController'
+            }).when('/objects/:dt/:id/properties/:pid/', {
+                templateUrl: 'Content/partials/object.html',
+                controller: 'LinkController'
             }).otherwise({
                 redirectTo: '/services'
             });
     });
 
-    app.service("RoServer", function ($http) {
-        this.getServices = function () {
-            return $http.get("http://mvc.nakedobjects.net:1081/RestDemo/services");
-        };
-        
-        this.getService = function (sid) {
-            return $http.get("http://mvc.nakedobjects.net:1081/RestDemo/services/" + sid);
-        };
-        
-        this.getObject = function (dt, id) {
-            return $http.get("http://mvc.nakedobjects.net:1081/RestDemo/objects/" + dt + "/" + id);
-        };
+    export interface ContextInterface {
 
-        this.getAction = function (sid, aid) {
-            return $http.get("http://mvc.nakedobjects.net:1081/RestDemo/services/" + sid + "/actions/" + aid);
-        };
+        getCurrentServices: () => DomainServicesRepresentation;
+        setCurrentServices: (dsr : DomainServicesRepresentation) => void;
 
-        this.getResult = function (sid, aid) {
-            return $http.get("http://mvc.nakedobjects.net:1081/RestDemo/services/" + sid + "/actions/" + aid + "/invoke");
-        };
+        getCurrentObject: () => DomainObjectRepresentation;
+        setCurrentObject: (dor : DomainObjectRepresentation) => void;
 
-    });
-
-    app.filter('toLocalUrl', function () {
-        return function (href) {
-            var urlRegex = /(services)\/([\w|\.]+)/;
-            var results = (urlRegex).exec(href);
-            return (results && results.length > 2) ? "#/" + results[1] + "/" + results[2] : "";
-        };
-    });
-
-    app.filter('toObjectLocalUrl', function () {
-        return function (href) {
-            var urlRegex = /(objects)\/([\w|\.]+)\/([\w|\.]+)/;
-            var results = (urlRegex).exec(href);
-            return (results && results.length > 2) ? "#/" + results[1] + "/" + results[2] + "/" + results[3] : "";
-        };
-    });
-
-    app.filter('toActionUrl', function () {
-        return function (href) {
-
-            var urlRegex = /(objects|services)\/([\w|\.]+)\/actions\/([\w|\.]+)/;
-
-            var results = (urlRegex).exec(href);
-            if (results && results.length > 3) {
-                return "#/" + results[1] + "/" + results[2] + "/actions/" + results[3];
-            }
-
-            return "";
-        };
-    });
-
-    function hashCode(toHash) {
-        var hash = 0, i, char;
-        if (toHash.length == 0) return hash;
-        for (i = 0; i < toHash.length; i++) {
-            char = toHash.charCodeAt(i);
-            hash = ((hash << 5) - hash) + char;
-            hash = hash & hash; // Convert to 32bit integer
-        }
-        return hash;
-    };
-
-    function getColourMapValues(dt) {
-        var map = dt ? colourMap[dt] : defaultColour;
-        if (!map) {
-            var hash = Math.abs(hashCode(dt));
-            var index = hash % 18;
-            map = defaultColourArray[index];
-            colourMap[dt] = map;
-        }
-        return map;
+        getCurrentNestedObject: () => DomainObjectRepresentation;
+        setCurrentNestedObject: (dor : DomainObjectRepresentation) => void;
     }
 
-    function typeFromUrl(url) {
-        var typeRegex = /(objects|services)\/([\w|\.]+)/;
-        var results = (typeRegex).exec(url);
-        return (results && results.length > 2) ? results[2] : "";
+    app.service('Context', function (Home : ng.IPromise) {
+        var currentServices: DomainServicesRepresentation = null;
+
+        this.getCurrentServices = function () {
+            return currentServices;
+        }
+
+        this.setCurrentServices = function (css) {
+            currentServices = css;
+        }
+
+        var currentObject: DomainObjectRepresentation = null;
+
+        this.getCurrentObject = function () {
+            return currentObject;
+        }
+
+        this.setCurrentObject = function (co) {
+            currentObject = co;
+        }
+
+        var currentNestedObject: DomainObjectRepresentation = null;
+
+        this.getCurrentNestedObject = function () {
+            return currentNestedObject;
+        }
+
+        this.setCurrentNestedObject = function (cno) {
+            currentNestedObject = cno;
+        }
+
+    });
+
+
+    // TODO investigate usisng transformations to transform results 
+  
+    app.factory('Home', function ($http, $q) {
+        var home = new HomePageRepresentation();
+
+        var delay = $q.defer();
+        
+        $http.get(home.url()).success(function (data, status, headers, config) {
+            home.attributes = data;
+            delay.resolve(home);
+        }).error(function (data, status, headers, config) {
+            delay.reject('Unable to find home page');
+        });
+
+        return delay.promise;
+    });
+
+    export interface RLInterface {
+        populate: (m: HateoasModel) => ng.IPromise; 
     }
 
-    app.filter('toColorFromHref', function () {
-        return function (href) {
-            var type = typeFromUrl(href);
-            return "bg-color-" + getColourMapValues(type)["backgroundColor"];
+    app.service("RepresentationLoader", function ($http, $q) {
+        this.populate = function (model: HateoasModel) {
+
+            var delay = $q.defer();
+
+            $http.get(model.url()).success(function (data, status, headers, config) {
+                (<any>model).attributes = data; // TODO make typed 
+                delay.resolve(model);
+            }).error(function (data, status, headers, config) {
+                    delay.reject('Unable to find page');
+                });
+
+            return delay.promise;
         };
     });
-
-    app.filter('toColorFromType', function () {
-        return function (type) {
-            return "bg-color-" + getColourMapValues(type)["backgroundColor"];
-        };
-    });
-
 }

@@ -1,171 +1,97 @@
-﻿/* Controllers */
-
-
-// todo - 
-// change so that raw values are loaded in viewmodels ($scope) - keep all spiro models in the controller code 
-// and then change controller code to be typescript. 
-// simplfy and merge controller code 
-// need to think about correct role/name for these controllers 
-
-// for spiro need to decouple models from backbone 
-
-/// <reference path="typings/angularjs/angular.d.ts" />
+﻿/// <reference path="typings/angularjs/angular.d.ts" />
 /// <reference path="spiro.models.ts" />
+/// <reference path="spiro.angular.viewmodels.ts" />
 /// <reference path="spiro.angular.app.ts" />
 
 module Spiro.Angular {
 
-    app.controller('ServicesController', function ($scope, RoServer) {
+    // inject home by using resolve ?  
+    app.controller('ServicesController', function ($scope, RepresentationLoader : RLInterface, Home : ng.IPromise, Context: ContextInterface) {
 
-        var services = RoServer.getServices();
-
-        services.success(function (data, status) {
-            var services = new Spiro.DomainServicesRepresentation(data);
-            var links = services.value().models;
-
-            $scope.services = {}; 
-
-            $scope.services.title = "Services";
-            $scope.services.backGroundColor = "bg-color-darkBlue";
-            $scope.services.items = _.map(links, (link) => { return { href: link.href(), title: link.title() } });
-        }).error(function (data, status) {
+        Home.
+            then(function (home: HomePageRepresentation) {
+                var ds = home.getDomainServices();
+                return RepresentationLoader.populate(ds); 
+            }).
+            then(function (services: DomainServicesRepresentation) {
+                $scope.services = ServicesViewModel.create(services); 
+                Context.setCurrentServices(services);
+            }, function (error) {
                 $scope.services = [];
-            });     
+            });    
     });
 
-    app.controller('ServiceController', function ($scope, $routeParams, RoServer) {
+    app.controller('ServiceController', function ($scope, $routeParams, RepresentationLoader: RLInterface, Context: ContextInterface) {
+        
+        var services = (<DomainServicesRepresentation>Context.getCurrentServices());
+        var serviceLink = _.find(services.value().models, (model) => { return model.rel().parms[0] === 'serviceId="' +  $routeParams.sid  +'"'; }); 
+        var service = serviceLink.getTarget(); 
 
-        var service = RoServer.getService($routeParams.sid);
+        RepresentationLoader.populate(service).then(function (service: DomainObjectRepresentation) {     
+            $scope.service = ServiceViewModel.create(service); 
+            Context.setCurrentObject(service);
+        }, function (error) {
+            $scope.service = {};
+        });  
+    });
 
-        service.success(function (data, status) {
-            var service = new Spiro.DomainObjectRepresentation(data);
-            var actions = service.actionMembers();
+    app.controller('ActionController', function ($scope, $routeParams, RepresentationLoader: RLInterface, Context: ContextInterface) {
 
-            $scope.service = {}; 
+        var object = (<DomainObjectRepresentation>Context.getCurrentObject());
 
-            $scope.service.serviceId = service.serviceId();
-            $scope.service.title = service.title(); 
-            $scope.service.actions = _.map(actions, (action) => { return { href: action.detailsLink().href(), title: action.extensions().friendlyName } });
-                       
-        }).error(function (data, status) {
-                $scope.service = {};
+        if (object.extensions().isService) {     
+            $scope.service = ServiceViewModel.create(object);   
+            $scope.backGroundColor = "bg-color-darkBlue";         
+        };
+
+        var actions: { key: string; value: ActionMember }[] = _.map(object.actionMembers(), (value, key) => {
+            return { key: key, value: value };
         });
+        var action = _.find(actions, (kvp) => { return kvp.key === $routeParams.aid; });
+        var actionTarget = action.value.getDetails();
 
-        if ($routeParams.aid) {
+        RepresentationLoader.populate(actionTarget).then(function (action: ActionRepresentation) {
+            if (action.extensions().hasParams) {
+                // dosomething
+                // $scope.dialogTemplate = "Content/partials/dialog.html";
 
-            var actionDetails = RoServer.getAction($routeParams.sid, $routeParams.aid);
+                // $scope.invoke = function (parms) {
+                // var parm = $scope.parm;
+            } else {
+                var result = action.getInvoke();
+                return RepresentationLoader.populate(result);
+            }
+        }).then(function (result: ActionResultRepresentation) {
+           
+            $scope.result = DomainObjectViewModel.create(result.result().object()); 
+            $scope.nestedTemplate = "Content/partials/nestedObject.html";
+            Context.setCurrentNestedObject(result.result().object());
 
-            actionDetails.success(function (data, status) {
-                var action = new Spiro.ActionRepresentation(data);
-
-                $scope.action = action;
-
-                if (action.extensions().hasParams) {
-                    
-                    $scope.dialogTemplate = "Content/partials/dialog.html";
-
-                    $scope.invoke = function (parms) {
-                        var parm = $scope.parm;
-
-
-                    };
-                } else {
-                    
-                    var result = RoServer.getResult($routeParams.sid, $routeParams.aid);
-
-                    result.success(function (data, status) {
-                        var result = new Spiro.ActionResultRepresentation(data);
-                        var properties = result.result().object().propertyMembers();
-                        var collections = result.result().object().collectionMembers();
-
-                        $scope.result = {};
-
-                        $scope.result.domainType = result.result().object().domainType();
-                        $scope.result.title = result.result().object().title();
-                        $scope.result.href = result.result().object().selfLink().href();
-
-                        $scope.result.properties = _.map(properties, (property) => {
-                            return {
-                                title: property.extensions().friendlyName,
-                                value: property.value().toString(),
-                                type: property.isScalar() ? "scalar" : "ref",
-                                returnType: property.extensions().returnType,
-                                href: property.isScalar() ? "" : property.value().link().href()
-                            }
-                        });
-
-                        $scope.result.collections = _.map(collections, (collection) => { 
-                            return {
-                                title: collection.extensions().friendlyName,
-                                size: collection.size(),
-                                pluralName: collection.extensions().pluralName,
-                            }
-                        });
-
-                        $scope.nestedTemplate = "Content/partials/nestedObject.html";
-                    }).error(function (data, status) {
-                            $scope.result = {};
-                        });
-
-                }
-            }).error(function (data, status) {
-                    $scope.object = {};
-                });
-        }
-
-        $scope.backGroundColor = "bg-color-darkBlue";
-   
-        $scope.propertyType = function (property) { return property.isScalar() ? "scalar" : "ref"; };
-
+        }, function (error) {
+            $scope.service = {};
+        });
     });
 
-    app.controller('ObjectController', function ($scope, $routeParams, RoServer) {
 
-        var object = RoServer.getObject($routeParams.dt, $routeParams.id);
+    app.controller('LinkController', function ($scope, $routeParams, RepresentationLoader: RLInterface, Context: ContextInterface) {
 
-        object.success(function (data, status) {
-            var object = new Spiro.DomainObjectRepresentation(data);
-            var properties = object.propertyMembers();
-            var collections = object.collectionMembers();
-            var actions = object.actionMembers();
+        var object = (<DomainObjectRepresentation>Context.getCurrentNestedObject());
 
+        var properties: { key: string; value: PropertyMember }[] = _.map(object.propertyMembers(), (value, key) => {
+            return { key: key, value: value };
+        });
+        var property = _.find(properties, (kvp) => { return kvp.key === $routeParams.pid; });
+        var propertyDetails = property.value.getDetails();
+
+        RepresentationLoader.populate(propertyDetails).then(function (details: PropertyRepresentation) {
+            var target = details.value().link().getTarget()
+            return RepresentationLoader.populate(target);
+        }).then(function (object: DomainObjectRepresentation) {
+            $scope.object = DomainObjectViewModel.create(object); 
+            Context.setCurrentObject(object); 
+        }, function (error) {
             $scope.object = {};
-
-            $scope.object.domainType = object.domainType();
-            $scope.object.title = object.title();
-
-            $scope.object.properties = _.map(properties, (property) => {
-                return {
-                    title: property.extensions().friendlyName,
-                    value: property.value().toString(),
-                    type: property.isScalar() ? "scalar" : "ref",
-                    returnType: property.extensions().returnType,
-                    href: property.isScalar() ? "" : property.value().link().href()
-                }
-            });
-
-            $scope.object.collections = _.map(collections, (collection) => { 
-                return {
-                    title: collection.extensions().friendlyName,
-                    size: collection.size(),
-                    pluralName: collection.extensions().pluralName,
-                }
-            });
-
-            $scope.object.actions = _.map(actions, (action) => {
-                 return {
-                    title: action.extensions().friendlyName,
-                    href: action.detailsLink().href()
-                }
-            });
-
-        }).error(function (data, status) {
-                $scope.object = {};
-            });
-
-        $scope.propertyType = function (property) { return property.isScalar() ? "scalar" : "ref"; };
-
-        $scope.backGroundColor = "bg-color-darkBlue";
+        });      
     });
 
     app.controller('AppBarController', function ($scope) {

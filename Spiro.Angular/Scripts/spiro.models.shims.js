@@ -27,6 +27,9 @@ var Spiro;
         __extends(HateoasModelBaseShim, _super);
         function HateoasModelBaseShim(object) {
             _super.call(this, object);
+            this.hateoasUrl = "";
+            this.method = "GET";
+            this.suffix = "";
         }
         HateoasModelBaseShim.prototype.url = function () {
             return (this.hateoasUrl || _super.prototype.url.call(this)) + this.suffix;

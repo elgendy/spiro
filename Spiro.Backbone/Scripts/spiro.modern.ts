@@ -20,6 +20,7 @@
 /// <reference path="typings/backbone/backbone.mine.d.ts" />
 /// <reference path="spiro.models.ts" />
 /// <reference path="spiro.models.helpers.ts" />
+/// <reference path="spiro.backbone.helpers.ts" />
 /// <reference path="spiro.modern.presentations.ts" />
 
 module Spiro.Modern {
