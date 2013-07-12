@@ -60,6 +60,13 @@ var Spiro;
             return (results && results.length > 5) ? "#/" + results[1] + "/" + results[2] + "/" + results[3] + "?collection=" + results[5] + propertyParm : "";
         }
 
+        function toItemUrl(href, index, $routeParams) {
+            var urlRegex = /(objects)\/([\w|\.]+)\/([\w|\.]+)/;
+            var results = (urlRegex).exec(href);
+            var collectionParm = $routeParams.collection ? "&collection=" + $routeParams.collection : "";
+            return (results && results.length > 2) ? "#/" + results[1] + "/" + results[2] + "/" + results[3] + "?collectionItem=" + $routeParams.collection + "/" + index + collectionParm : "";
+        }
+
         var LinkViewModel = (function () {
             function LinkViewModel() {
             }
@@ -73,6 +80,20 @@ var Spiro;
             return LinkViewModel;
         })();
         Angular.LinkViewModel = LinkViewModel;
+
+        var ItemViewModel = (function () {
+            function ItemViewModel() {
+            }
+            ItemViewModel.create = function (linkRep, parentHref, index, $routeParams) {
+                var linkViewModel = new LinkViewModel();
+                linkViewModel.title = linkRep.title();
+                linkViewModel.href = toItemUrl(parentHref, index, $routeParams);
+                linkViewModel.color = toColorFromHref(linkRep.href());
+                return linkViewModel;
+            };
+            return ItemViewModel;
+        })();
+        Angular.ItemViewModel = ItemViewModel;
 
         var ActionViewModel = (function () {
             function ActionViewModel() {
@@ -136,8 +157,9 @@ var Spiro;
                 collectionViewModel.href = toCollectionUrl(collectionRep.selfLink().href(), $routeParams);
                 collectionViewModel.color = toColorFromType(collectionRep.extensions().elementType);
 
+                var i = 0;
                 collectionViewModel.items = _.map(links, function (link) {
-                    return LinkViewModel.create(link);
+                    return ItemViewModel.create(link, collectionViewModel.href, i++, $routeParams);
                 });
 
                 return collectionViewModel;

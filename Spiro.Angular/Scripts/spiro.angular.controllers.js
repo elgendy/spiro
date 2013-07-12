@@ -48,7 +48,7 @@
             });
         });
 
-        Angular.app.controller('LinkController', function ($scope, $routeParams, $location, RepresentationLoader, Context) {
+        function getProperty($scope, $routeParams, $location, RepresentationLoader, Context) {
             Context.getObject($routeParams.dt, $routeParams.id).then(function (object) {
                 var properties = _.map(object.propertyMembers(), function (value, key) {
                     return { key: key, value: value };
@@ -68,6 +68,40 @@
             }, function (error) {
                 $scope.object = {};
             });
+        }
+
+        function getCollectionItem($scope, $routeParams, $location, RepresentationLoader, Context) {
+            var collectionIndex = $routeParams.collectionItem.split("/");
+            var collectionName = collectionIndex[0];
+            var itemIndex = parseInt(collectionIndex[1]);
+
+            Context.getObject($routeParams.dt, $routeParams.id).then(function (object) {
+                var collections = _.map(object.collectionMembers(), function (value, key) {
+                    return { key: key, value: value };
+                });
+                var collection = _.find(collections, function (kvp) {
+                    return kvp.key === collectionName;
+                });
+                var collectionDetails = collection.value.getDetails();
+                return RepresentationLoader.populate(collectionDetails);
+            }).then(function (details) {
+                var target = details.value().models[itemIndex].getTarget();
+                return RepresentationLoader.populate(target);
+            }).then(function (object) {
+                $scope.result = Angular.DomainObjectViewModel.create(object, $routeParams);
+                $scope.nestedTemplate = "Content/partials/nestedObject.html";
+                Context.setNestedObject(object);
+            }, function (error) {
+                $scope.object = {};
+            });
+        }
+
+        Angular.app.controller('LinkController', function ($scope, $routeParams, $location, RepresentationLoader, Context) {
+            if ($routeParams.property) {
+                getProperty($scope, $routeParams, $location, RepresentationLoader, Context);
+            } else if ($routeParams.collectionItem) {
+                getCollectionItem($scope, $routeParams, $location, RepresentationLoader, Context);
+            }
         });
 
         Angular.app.controller('CollectionController', function ($scope, $routeParams, $location, RepresentationLoader, Context) {

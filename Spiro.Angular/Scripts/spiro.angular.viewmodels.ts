@@ -72,6 +72,13 @@ module Spiro.Angular {
         return (results && results.length > 5) ? "#/" + results[1] + "/" + results[2] + "/" + results[3] + "?collection=" + results[5] + propertyParm : "";
     }
 
+    function toItemUrl(href: string, index : number, $routeParams): string {
+        var urlRegex = /(objects)\/([\w|\.]+)\/([\w|\.]+)/;
+        var results = (urlRegex).exec(href);
+        var collectionParm = $routeParams.collection ? "&collection=" + $routeParams.collection : "";
+        return (results && results.length > 2) ? "#/" + results[1] + "/" + results[2] + "/" + results[3] + "?collectionItem=" + $routeParams.collection + "/" + index  + collectionParm : "";
+    }
+
     export class LinkViewModel {
 
         title: string;
@@ -86,6 +93,23 @@ module Spiro.Angular {
             return linkViewModel;
         }
     } 
+
+    export class ItemViewModel {
+
+        title: string;
+        href: string;
+        color: string;
+
+        static create(linkRep: Link, parentHref : string, index : number, $routeParams) {
+            var linkViewModel = new LinkViewModel();
+            linkViewModel.title = linkRep.title();
+            linkViewModel.href = toItemUrl(parentHref, index, $routeParams);
+            linkViewModel.color = toColorFromHref(linkRep.href());
+            return linkViewModel;
+        }
+    }
+
+
 
     export class ActionViewModel {
 
@@ -160,7 +184,8 @@ module Spiro.Angular {
             collectionViewModel.href = toCollectionUrl(collectionRep.selfLink().href(), $routeParams);
             collectionViewModel.color = toColorFromType(collectionRep.extensions().elementType);
 
-            collectionViewModel.items = _.map(links, (link) => { return LinkViewModel.create(link); });
+            var i = 0; 
+            collectionViewModel.items = _.map(links, (link) => { return ItemViewModel.create(link, collectionViewModel.href, i++, $routeParams); });
 
             return collectionViewModel;
         }
@@ -225,7 +250,7 @@ module Spiro.Angular {
             objectViewModel.title = objectRep.title();
             objectViewModel.href = toAppUrl(objectRep.getUrl()); 
 
-            objectViewModel.color = toColorFromType( objectRep.domainType()); 
+            objectViewModel.color = toColorFromType(objectRep.domainType()); 
 
             objectViewModel.properties = _.map(properties, (property) => { return PropertyViewModel.create(property, $routeParams); });
             objectViewModel.collections = _.map(collections, (collection) => { return CollectionViewModel.create(collection, $routeParams); });

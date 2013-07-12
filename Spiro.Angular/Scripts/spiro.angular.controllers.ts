@@ -64,31 +64,70 @@ module Spiro.Angular {
             });
     });
 
-    app.controller('LinkController', function ($scope, $routeParams, $location, RepresentationLoader: RLInterface, Context: ContextInterface) {
-        
+    function getProperty($scope, $routeParams, $location, RepresentationLoader: RLInterface, Context: ContextInterface) {
         Context.getObject($routeParams.dt, $routeParams.id).
             then(function (object: DomainObjectRepresentation) {
-
                 var properties: { key: string; value: PropertyMember }[] = _.map(object.propertyMembers(), (value, key) => {
                     return { key: key, value: value };
                 });
                 var property = _.find(properties, (kvp) => { return kvp.key === $routeParams.property; });
                 var propertyDetails = property.value.getDetails();
-                return RepresentationLoader.populate(propertyDetails)
+                return RepresentationLoader.populate(propertyDetails);
             }).
             then(function (details: PropertyRepresentation) {
                 var target = details.value().link().getTarget()
                 return RepresentationLoader.populate(target);
-            }).then(function (object: DomainObjectRepresentation) {
-                
+            }).
+            then(function (object: DomainObjectRepresentation) {
+
                 $scope.result = DomainObjectViewModel.create(object, $routeParams); // todo rename result
                 $scope.nestedTemplate = "Content/partials/nestedObject.html";
-                Context.setNestedObject(object);          
+                Context.setNestedObject(object);
+            }, function (error) {
+                $scope.object = {};
+            }); 
+    }
+
+    function getCollectionItem($scope, $routeParams, $location, RepresentationLoader: RLInterface, Context: ContextInterface) {
+        var collectionIndex = $routeParams.collectionItem.split("/");
+        var collectionName = collectionIndex[0];
+        var itemIndex = parseInt(collectionIndex[1]);
+
+        Context.getObject($routeParams.dt, $routeParams.id).
+            then(function (object: DomainObjectRepresentation) {
+
+                var collections: { key: string; value: CollectionMember }[] = _.map(object.collectionMembers(), (value, key) => {
+                    return { key: key, value: value };
+                });
+                var collection = _.find(collections, (kvp) => { return kvp.key === collectionName; });
+                var collectionDetails = collection.value.getDetails();
+                return RepresentationLoader.populate(collectionDetails);
+            }).
+            then(function (details: CollectionRepresentation) {
+                var target = details.value().models[itemIndex].getTarget();
+                return RepresentationLoader.populate(target);
+            }).
+            then(function (object: DomainObjectRepresentation) {
+                $scope.result = DomainObjectViewModel.create(object, $routeParams); // todo rename result
+                $scope.nestedTemplate = "Content/partials/nestedObject.html";
+                Context.setNestedObject(object);
             }, function (error) {
                 $scope.object = {};
             });
+    
+    }
+
+    app.controller('LinkController', function ($scope, $routeParams, $location, RepresentationLoader: RLInterface, Context: ContextInterface) {
+
+        if ($routeParams.property) {
+            getProperty($scope, $routeParams, $location, RepresentationLoader, Context);
+        }
+        else if ($routeParams.collectionItem) {
+            getCollectionItem($scope, $routeParams, $location, RepresentationLoader, Context);
+        }
     });
 
+   
     app.controller('CollectionController', function ($scope, $routeParams, $location, RepresentationLoader: RLInterface, Context: ContextInterface) {
 
         Context.getObject($routeParams.dt, $routeParams.id).
