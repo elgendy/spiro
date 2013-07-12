@@ -83,6 +83,8 @@ var Spiro;
                 propertyViewModel.type = propertyRep.isScalar() ? "scalar" : "ref";
                 propertyViewModel.returnType = propertyRep.extensions().returnType;
                 propertyViewModel.href = toAppUrl(propertyRep.isScalar() ? "" : propertyRep.detailsLink().href());
+                propertyViewModel.target = toAppUrl(propertyRep.isScalar() ? "" : propertyRep.value().link().href());
+
                 propertyViewModel.color = toColorFromType(propertyRep.extensions().returnType);
 
                 return propertyViewModel;

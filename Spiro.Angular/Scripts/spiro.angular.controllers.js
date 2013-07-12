@@ -49,14 +49,8 @@
         });
 
         Angular.app.controller('LinkController', function ($scope, $routeParams, $location, RepresentationLoader, Context) {
-            var isNestedContext = Context.isNestedContext($routeParams.dt, $routeParams.id);
-
-            var promise = isNestedContext ? Context.getNestedObject($routeParams.dt, $routeParams.id) : Context.getObject($routeParams.dt, $routeParams.id);
-
-            promise.then(function (object) {
-                if (!isNestedContext) {
-                    $scope.object = Angular.DomainObjectViewModel.create(object);
-                }
+            Context.getObject($routeParams.dt, $routeParams.id).then(function (object) {
+                $scope.object = Angular.DomainObjectViewModel.create(object);
 
                 var properties = _.map(object.propertyMembers(), function (value, key) {
                     return { key: key, value: value };
@@ -70,15 +64,9 @@
                 var target = details.value().link().getTarget();
                 return RepresentationLoader.populate(target);
             }).then(function (object) {
-                if (isNestedContext) {
-                    $scope.object = Angular.DomainObjectViewModel.create(object);
-                    Context.setObject(object);
-                    Context.setNestedObject(null);
-                } else {
-                    $scope.result = Angular.DomainObjectViewModel.create(object);
-                    $scope.nestedTemplate = "Content/partials/nestedObject.html";
-                    Context.setNestedObject(object);
-                }
+                $scope.result = Angular.DomainObjectViewModel.create(object);
+                $scope.nestedTemplate = "Content/partials/nestedObject.html";
+                Context.setNestedObject(object);
             }, function (error) {
                 $scope.object = {};
             });

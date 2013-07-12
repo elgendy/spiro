@@ -9,7 +9,7 @@
                              
              <div class="property-name">{{property.title}}:</div>
              <div ng-switch-when="ref"   class="property-reference clickable-area" ng-class="property.color">
-                 <a href="{{property.href}}">
+                 <a href="{{property.target}}">
                      <span></span>
                      {{property.value}}
                  </a>
@@ -20,7 +20,7 @@
          <div class="property" ng-repeat="collection in result.collections">
                              
              <div class='property-name'>{{collection.title}}:</div>
-             <div class='property-collection clickable-area' ng-class="collection.color">
+             <div class='property-collection clickable-area'>
                  <a href='{{collection.href}}'><span></span><i class='icon-plus' />{{collection.size}}-{{collection.pluralName}}</a>
              </div>        
          </div>

@@ -64,22 +64,13 @@ module Spiro.Angular {
             });
     });
 
-
     app.controller('LinkController', function ($scope, $routeParams, $location, RepresentationLoader: RLInterface, Context: ContextInterface) {
-
-        var isNestedContext = Context.isNestedContext($routeParams.dt, $routeParams.id);
-
-        var promise = isNestedContext ?
-            Context.getNestedObject($routeParams.dt, $routeParams.id) :
-            Context.getObject($routeParams.dt, $routeParams.id);
-
-        promise.
+        
+        Context.getObject($routeParams.dt, $routeParams.id).
             then(function (object: DomainObjectRepresentation) {
 
-                if (!isNestedContext) {
-                    $scope.object = DomainObjectViewModel.create(object);
-                }
-
+                $scope.object = DomainObjectViewModel.create(object);
+                
                 var properties: { key: string; value: PropertyMember }[] = _.map(object.propertyMembers(), (value, key) => {
                     return { key: key, value: value };
                 });
@@ -91,16 +82,11 @@ module Spiro.Angular {
                 var target = details.value().link().getTarget()
                 return RepresentationLoader.populate(target);
             }).then(function (object: DomainObjectRepresentation) {
-                if (isNestedContext) {
-                    $scope.object = DomainObjectViewModel.create(object);
-                    Context.setObject(object);
-                    Context.setNestedObject(null);
-                }
-                else {
-                    $scope.result = DomainObjectViewModel.create(object); // todo rename result
-                    $scope.nestedTemplate = "Content/partials/nestedObject.html";
-                    Context.setNestedObject(object);
-                }
+                
+                $scope.result = DomainObjectViewModel.create(object); // todo rename result
+                $scope.nestedTemplate = "Content/partials/nestedObject.html";
+                Context.setNestedObject(object);
+            
             }, function (error) {
                 $scope.object = {};
             });

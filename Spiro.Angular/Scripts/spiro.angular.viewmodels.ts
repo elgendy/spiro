@@ -93,6 +93,7 @@ module Spiro.Angular {
         type: string;
         returnType: string;
         href: string;
+        target: string;
         color : string; 
 
         static create(propertyRep: PropertyMember) {
@@ -102,6 +103,8 @@ module Spiro.Angular {
             propertyViewModel.type = propertyRep.isScalar() ? "scalar" : "ref";
             propertyViewModel.returnType = propertyRep.extensions().returnType;
             propertyViewModel.href = toAppUrl(propertyRep.isScalar() ? "" : propertyRep.detailsLink().href());
+            propertyViewModel.target = toAppUrl(propertyRep.isScalar() ? "" : propertyRep.value().link().href());
+
             propertyViewModel.color = toColorFromType(propertyRep.extensions().returnType); 
 
             return propertyViewModel;
