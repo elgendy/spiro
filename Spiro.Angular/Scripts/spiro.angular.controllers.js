@@ -1,82 +1,113 @@
 ﻿var Spiro;
 (function (Spiro) {
     (function (Angular) {
-        Angular.app.controller('ServicesController', function ($scope, RepresentationLoader, Home, Context) {
-            Home.then(function (home) {
-                var ds = home.getDomainServices();
-                return RepresentationLoader.populate(ds);
-            }).then(function (services) {
+        Angular.app.controller('ServicesController', function ($scope, RepresentationLoader, Context) {
+            Context.getServices().then(function (services) {
                 $scope.services = Angular.ServicesViewModel.create(services);
-                Context.setCurrentServices(services);
+                Context.setObject(null);
+                Context.setNestedObject(null);
             }, function (error) {
                 $scope.services = [];
             });
         });
 
         Angular.app.controller('ServiceController', function ($scope, $routeParams, RepresentationLoader, Context) {
-            var services = (Context.getCurrentServices());
-            var serviceLink = _.find(services.value().models, function (model) {
-                return model.rel().parms[0] === 'serviceId="' + $routeParams.sid + '"';
-            });
-            var service = serviceLink.getTarget();
-
-            RepresentationLoader.populate(service).then(function (service) {
-                $scope.service = Angular.ServiceViewModel.create(service);
-                Context.setCurrentObject(service);
+            Context.getObject($routeParams.sid).then(function (service) {
+                $scope.object = Angular.ServiceViewModel.create(service);
+                Context.setNestedObject(null);
             }, function (error) {
                 $scope.service = {};
             });
         });
 
         Angular.app.controller('ActionController', function ($scope, $routeParams, RepresentationLoader, Context) {
-            var object = (Context.getCurrentObject());
+            Context.getObject($routeParams.sid || $routeParams.dt, $routeParams.id).then(function (object) {
+                $scope.object = object.extensions().isService ? Angular.ServiceViewModel.create(object) : Angular.DomainObjectViewModel.create(object);
 
-            if (object.extensions().isService) {
-                $scope.service = Angular.ServiceViewModel.create(object);
-                $scope.backGroundColor = "bg-color-darkBlue";
-            }
-            ;
+                var actions = _.map(object.actionMembers(), function (value, key) {
+                    return { key: key, value: value };
+                });
+                var action = _.find(actions, function (kvp) {
+                    return kvp.key === $routeParams.aid;
+                });
+                var actionTarget = action.value.getDetails();
 
-            var actions = _.map(object.actionMembers(), function (value, key) {
-                return { key: key, value: value };
-            });
-            var action = _.find(actions, function (kvp) {
-                return kvp.key === $routeParams.aid;
-            });
-            var actionTarget = action.value.getDetails();
-
-            RepresentationLoader.populate(actionTarget).then(function (action) {
+                return RepresentationLoader.populate(actionTarget);
+            }).then(function (action) {
                 if (action.extensions().hasParams) {
                 } else {
                     var result = action.getInvoke();
-                    return RepresentationLoader.populate(result);
+                    return RepresentationLoader.populate(result, true);
                 }
             }).then(function (result) {
                 $scope.result = Angular.DomainObjectViewModel.create(result.result().object());
                 $scope.nestedTemplate = "Content/partials/nestedObject.html";
-                Context.setCurrentNestedObject(result.result().object());
+                Context.setNestedObject(result.result().object());
             }, function (error) {
                 $scope.service = {};
             });
         });
 
-        Angular.app.controller('LinkController', function ($scope, $routeParams, RepresentationLoader, Context) {
-            var object = (Context.getCurrentNestedObject());
+        Angular.app.controller('LinkController', function ($scope, $routeParams, $location, RepresentationLoader, Context) {
+            var isNestedContext = Context.isNestedContext($routeParams.dt, $routeParams.id);
 
-            var properties = _.map(object.propertyMembers(), function (value, key) {
-                return { key: key, value: value };
-            });
-            var property = _.find(properties, function (kvp) {
-                return kvp.key === $routeParams.pid;
-            });
-            var propertyDetails = property.value.getDetails();
+            var promise = isNestedContext ? Context.getNestedObject($routeParams.dt, $routeParams.id) : Context.getObject($routeParams.dt, $routeParams.id);
 
-            RepresentationLoader.populate(propertyDetails).then(function (details) {
+            promise.then(function (object) {
+                if (!isNestedContext) {
+                    $scope.object = Angular.DomainObjectViewModel.create(object);
+                }
+
+                var properties = _.map(object.propertyMembers(), function (value, key) {
+                    return { key: key, value: value };
+                });
+                var property = _.find(properties, function (kvp) {
+                    return kvp.key === $routeParams.pid;
+                });
+                var propertyDetails = property.value.getDetails();
+                return RepresentationLoader.populate(propertyDetails);
+            }).then(function (details) {
                 var target = details.value().link().getTarget();
                 return RepresentationLoader.populate(target);
             }).then(function (object) {
+                if (isNestedContext) {
+                    $scope.object = Angular.DomainObjectViewModel.create(object);
+                    Context.setObject(object);
+                    Context.setNestedObject(null);
+                } else {
+                    $scope.result = Angular.DomainObjectViewModel.create(object);
+                    $scope.nestedTemplate = "Content/partials/nestedObject.html";
+                    Context.setNestedObject(object);
+                }
+            }, function (error) {
+                $scope.object = {};
+            });
+        });
+
+        Angular.app.controller('CollectionController', function ($scope, $routeParams, $location, RepresentationLoader, Context) {
+            Context.getObject($routeParams.dt, $routeParams.id).then(function (object) {
                 $scope.object = Angular.DomainObjectViewModel.create(object);
-                Context.setCurrentObject(object);
+
+                var collections = _.map(object.collectionMembers(), function (value, key) {
+                    return { key: key, value: value };
+                });
+                var collection = _.find(collections, function (kvp) {
+                    return kvp.key === $routeParams.cid;
+                });
+                var collectionDetails = collection.value.getDetails();
+                return RepresentationLoader.populate(collectionDetails);
+            }).then(function (details) {
+                $scope.collection = Angular.CollectionViewModel.createFromDetails(details);
+                $scope.collectionTemplate = "Content/partials/nestedCollection.html";
+            }, function (error) {
+                $scope.collection = {};
+            });
+        });
+
+        Angular.app.controller('ObjectController', function ($scope, $routeParams, $location, RepresentationLoader, Context) {
+            Context.getObject($routeParams.dt, $routeParams.id).then(function (object) {
+                $scope.object = Angular.DomainObjectViewModel.create(object);
+                Context.setNestedObject(null);
             }, function (error) {
                 $scope.object = {};
             });

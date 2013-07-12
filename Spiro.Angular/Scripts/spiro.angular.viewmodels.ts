@@ -93,7 +93,7 @@ module Spiro.Angular {
         type: string;
         returnType: string;
         href: string;
-        color; 
+        color : string; 
 
         static create(propertyRep: PropertyMember) {
             var propertyViewModel = new PropertyViewModel();
@@ -113,14 +113,41 @@ module Spiro.Angular {
         title: string;
         size: number;
         pluralName: string;
+        href: string;
+        color: string; 
+        items: LinkViewModel[]; 
         
         static create(collectionRep: CollectionMember) {
             var collectionViewModel = new CollectionViewModel();
+          
             collectionViewModel.title = collectionRep.extensions().friendlyName;
             collectionViewModel.size = collectionRep.size();
             collectionViewModel.pluralName = collectionRep.extensions().pluralName;
+            
+            collectionViewModel.href = toAppUrl(collectionRep.detailsLink().href());
+            collectionViewModel.color = toColorFromType(collectionRep.extensions().elementType);
+            
+            collectionViewModel.items = [];
+
             return collectionViewModel;
         }
+
+        static createFromDetails(collectionRep: CollectionRepresentation) {
+            var collectionViewModel = new CollectionViewModel();
+            var links = collectionRep.value().models;
+            
+            collectionViewModel.title = collectionRep.extensions().friendlyName;
+            collectionViewModel.size = links.length;
+            collectionViewModel.pluralName = collectionRep.extensions().pluralName;
+
+            collectionViewModel.href = toAppUrl(collectionRep.selfLink().href());
+            collectionViewModel.color = toColorFromType(collectionRep.extensions().elementType);
+
+            collectionViewModel.items = _.map(links, (link) => { return LinkViewModel.create(link); });
+
+            return collectionViewModel;
+        }
+
     } 
 
     export class ServicesViewModel {
@@ -145,6 +172,7 @@ module Spiro.Angular {
         serviceId: string;
         actions: ActionViewModel[];
         color: string; 
+        href: string; 
 
         static create(serviceRep: DomainObjectRepresentation) {
             var serviceViewModel = new ServiceViewModel();
@@ -153,6 +181,7 @@ module Spiro.Angular {
             serviceViewModel.title = serviceRep.title();
             serviceViewModel.actions = _.map(actions, (action) => { return ActionViewModel.create(action); });
             serviceViewModel.color = toColorFromType(serviceRep.serviceId());
+            serviceViewModel.href = toAppUrl(serviceRep.getUrl()); 
 
             return serviceViewModel;
         }
@@ -166,6 +195,7 @@ module Spiro.Angular {
         collections: CollectionViewModel[];
         actions: ActionViewModel[];
         color: string; 
+        href: string; 
 
         static create(objectRep: DomainObjectRepresentation) {
             var objectViewModel = new DomainObjectViewModel();
@@ -176,6 +206,7 @@ module Spiro.Angular {
         
             objectViewModel.domainType = objectRep.domainType();
             objectViewModel.title = objectRep.title();
+            objectViewModel.href = toAppUrl(objectRep.getUrl()); 
 
             objectViewModel.color = toColorFromType( objectRep.domainType()); 
 

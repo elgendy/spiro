@@ -23,8 +23,8 @@
                 <div class="property" ng-repeat="collection in object.collections">
                              
                     <div class='property-name'>{{collection.title}}:</div>
-                    <div class='property-collection clickable-area'>
-                        <a href='{{collectionUrl}}'><span></span><i class='icon-plus' />{{collection.size}}-{{collection.pluralName}}</a>
+                    <div class='property-collection clickable-area' ng-class="collection.color">
+                        <a href='{{collection.href}}'><span></span><i class='icon-plus' />{{collection.size}}-{{collection.pluralName}}</a>
                     </div>        
                 </div>
                 
@@ -44,7 +44,7 @@
         </div>
     </div>
     <div class="dialog-pane"></div>
-    <div class="collection-pane"></div>
+    <div class="collection-pane" ng-include="collectionTemplate"></div>
     <div class="object-pane" ng-include="nestedTemplate"></div>
     <div class="app-bar"  ng-controller="AppBarController" ng-include="'Content/partials/appbar.html'"></div>
 </div>

@@ -200,6 +200,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Content\partials\appbar.html" />
+    <Content Include="Content\partials\nestedCollection.html" />
     <Content Include="Content\partials\dialog.html" />
     <Content Include="Content\partials\object.html" />
     <Content Include="Content\partials\nestedObject.html" />
@@ -214,8 +215,8 @@
     <Content Include="Scripts\spiro.angular.controllers.js.map">
       <DependentUpon>spiro.angular.controllers.ts</DependentUpon>
     </Content>
-    <Content Include="Scripts\spiro.angular.viewmodels.js.map" >
-     <DependentUpon>spiro.angular.viewmodels.ts</DependentUpon>
+    <Content Include="Scripts\spiro.angular.viewmodels.js.map">
+      <DependentUpon>spiro.angular.viewmodels.ts</DependentUpon>
     </Content>
     <TypeScriptCompile Include="Scripts\spiro.angular.app.ts" />
     <TypeScriptCompile Include="Scripts\spiro.angular.controllers.ts" />

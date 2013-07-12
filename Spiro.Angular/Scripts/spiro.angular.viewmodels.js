@@ -96,9 +96,34 @@ var Spiro;
             }
             CollectionViewModel.create = function (collectionRep) {
                 var collectionViewModel = new CollectionViewModel();
+
                 collectionViewModel.title = collectionRep.extensions().friendlyName;
                 collectionViewModel.size = collectionRep.size();
                 collectionViewModel.pluralName = collectionRep.extensions().pluralName;
+
+                collectionViewModel.href = toAppUrl(collectionRep.detailsLink().href());
+                collectionViewModel.color = toColorFromType(collectionRep.extensions().elementType);
+
+                collectionViewModel.items = [];
+
+                return collectionViewModel;
+            };
+
+            CollectionViewModel.createFromDetails = function (collectionRep) {
+                var collectionViewModel = new CollectionViewModel();
+                var links = collectionRep.value().models;
+
+                collectionViewModel.title = collectionRep.extensions().friendlyName;
+                collectionViewModel.size = links.length;
+                collectionViewModel.pluralName = collectionRep.extensions().pluralName;
+
+                collectionViewModel.href = toAppUrl(collectionRep.selfLink().href());
+                collectionViewModel.color = toColorFromType(collectionRep.extensions().elementType);
+
+                collectionViewModel.items = _.map(links, function (link) {
+                    return LinkViewModel.create(link);
+                });
+
                 return collectionViewModel;
             };
             return CollectionViewModel;
@@ -134,6 +159,7 @@ var Spiro;
                     return ActionViewModel.create(action);
                 });
                 serviceViewModel.color = toColorFromType(serviceRep.serviceId());
+                serviceViewModel.href = toAppUrl(serviceRep.getUrl());
 
                 return serviceViewModel;
             };
@@ -153,6 +179,7 @@ var Spiro;
 
                 objectViewModel.domainType = objectRep.domainType();
                 objectViewModel.title = objectRep.title();
+                objectViewModel.href = toAppUrl(objectRep.getUrl());
 
                 objectViewModel.color = toColorFromType(objectRep.domainType());
 
