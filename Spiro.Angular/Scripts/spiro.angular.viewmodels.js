@@ -46,6 +46,20 @@ var Spiro;
             return (results && results.length > 2) ? "#/" + results[1] + "/" + results[2] : "";
         }
 
+        function toPropertyUrl(href, $routeParams) {
+            var urlRegex = /(objects)\/([\w|\.]+)\/([\w|\.]+)\/(properties)\/([\w|\.]+)/;
+            var results = (urlRegex).exec(href);
+            var collectionParm = $routeParams.collection ? "&collection=" + $routeParams.collection : "";
+            return (results && results.length > 5) ? "#/" + results[1] + "/" + results[2] + "/" + results[3] + "?property=" + results[5] + collectionParm : "";
+        }
+
+        function toCollectionUrl(href, $routeParams) {
+            var urlRegex = /(objects)\/([\w|\.]+)\/([\w|\.]+)\/(collections)\/([\w|\.]+)/;
+            var results = (urlRegex).exec(href);
+            var propertyParm = $routeParams.property ? "&property=" + $routeParams.property : "";
+            return (results && results.length > 5) ? "#/" + results[1] + "/" + results[2] + "/" + results[3] + "?collection=" + results[5] + propertyParm : "";
+        }
+
         var LinkViewModel = (function () {
             function LinkViewModel() {
             }
@@ -76,14 +90,14 @@ var Spiro;
         var PropertyViewModel = (function () {
             function PropertyViewModel() {
             }
-            PropertyViewModel.create = function (propertyRep) {
+            PropertyViewModel.create = function (propertyRep, $routeParams) {
                 var propertyViewModel = new PropertyViewModel();
                 propertyViewModel.title = propertyRep.extensions().friendlyName;
                 propertyViewModel.value = propertyRep.value().toString();
                 propertyViewModel.type = propertyRep.isScalar() ? "scalar" : "ref";
                 propertyViewModel.returnType = propertyRep.extensions().returnType;
-                propertyViewModel.href = toAppUrl(propertyRep.isScalar() ? "" : propertyRep.detailsLink().href());
-                propertyViewModel.target = toAppUrl(propertyRep.isScalar() ? "" : propertyRep.value().link().href());
+                propertyViewModel.href = propertyRep.isScalar() ? "" : toPropertyUrl(propertyRep.detailsLink().href(), $routeParams);
+                propertyViewModel.target = propertyRep.isScalar() ? "" : toAppUrl(propertyRep.value().link().href());
 
                 propertyViewModel.color = toColorFromType(propertyRep.extensions().returnType);
 
@@ -96,14 +110,14 @@ var Spiro;
         var CollectionViewModel = (function () {
             function CollectionViewModel() {
             }
-            CollectionViewModel.create = function (collectionRep) {
+            CollectionViewModel.create = function (collectionRep, $routeParams) {
                 var collectionViewModel = new CollectionViewModel();
 
                 collectionViewModel.title = collectionRep.extensions().friendlyName;
                 collectionViewModel.size = collectionRep.size();
                 collectionViewModel.pluralName = collectionRep.extensions().pluralName;
 
-                collectionViewModel.href = toAppUrl(collectionRep.detailsLink().href());
+                collectionViewModel.href = toCollectionUrl(collectionRep.detailsLink().href(), $routeParams);
                 collectionViewModel.color = toColorFromType(collectionRep.extensions().elementType);
 
                 collectionViewModel.items = [];
@@ -111,7 +125,7 @@ var Spiro;
                 return collectionViewModel;
             };
 
-            CollectionViewModel.createFromDetails = function (collectionRep) {
+            CollectionViewModel.createFromDetails = function (collectionRep, $routeParams) {
                 var collectionViewModel = new CollectionViewModel();
                 var links = collectionRep.value().models;
 
@@ -119,7 +133,7 @@ var Spiro;
                 collectionViewModel.size = links.length;
                 collectionViewModel.pluralName = collectionRep.extensions().pluralName;
 
-                collectionViewModel.href = toAppUrl(collectionRep.selfLink().href());
+                collectionViewModel.href = toCollectionUrl(collectionRep.selfLink().href(), $routeParams);
                 collectionViewModel.color = toColorFromType(collectionRep.extensions().elementType);
 
                 collectionViewModel.items = _.map(links, function (link) {
@@ -172,7 +186,7 @@ var Spiro;
         var DomainObjectViewModel = (function () {
             function DomainObjectViewModel() {
             }
-            DomainObjectViewModel.create = function (objectRep) {
+            DomainObjectViewModel.create = function (objectRep, $routeParams) {
                 var objectViewModel = new DomainObjectViewModel();
 
                 var properties = objectRep.propertyMembers();
@@ -186,10 +200,10 @@ var Spiro;
                 objectViewModel.color = toColorFromType(objectRep.domainType());
 
                 objectViewModel.properties = _.map(properties, function (property) {
-                    return PropertyViewModel.create(property);
+                    return PropertyViewModel.create(property, $routeParams);
                 });
                 objectViewModel.collections = _.map(collections, function (collection) {
-                    return CollectionViewModel.create(collection);
+                    return CollectionViewModel.create(collection, $routeParams);
                 });
 
                 objectViewModel.actions = _.map(actions, function (action) {

@@ -19,12 +19,6 @@
             }).when('/objects/:dt/:id/actions/:aid/', {
                 templateUrl: 'Content/partials/object.html',
                 controller: 'ActionController'
-            }).when('/objects/:dt/:id/properties/:pid/', {
-                templateUrl: 'Content/partials/object.html',
-                controller: 'LinkController'
-            }).when('/objects/:dt/:id/collections/:cid/', {
-                templateUrl: 'Content/partials/object.html',
-                controller: 'CollectionController'
             }).otherwise({
                 redirectTo: '/services'
             });

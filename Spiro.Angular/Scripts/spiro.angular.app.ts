@@ -6,28 +6,28 @@ module Spiro.Angular {
     export var app = angular.module('app', ['ngResource']);
 
     app.config(function ($routeProvider) {
-        $routeProvider.when('/services', {
-            templateUrl: 'Content/partials/services.html',
-            controller: 'ServicesController'
-        }).when('/services/:sid', {
+        $routeProvider.
+            when('/services', {
+                templateUrl: 'Content/partials/services.html',
+                controller: 'ServicesController'
+            }).
+            when('/services/:sid', {
                 templateUrl: 'Content/partials/service.html',
                 controller: 'ServiceController'
-            }).when('/objects/:dt/:id', {
+            }).
+            when('/objects/:dt/:id', {
                 templateUrl: 'Content/partials/object.html',
                 controller: 'ObjectController'
-            }).when('/services/:sid/actions/:aid/', {
+            }).
+            when('/services/:sid/actions/:aid/', {
                 templateUrl: 'Content/partials/service.html',
                 controller: 'ActionController'
-            }).when('/objects/:dt/:id/actions/:aid/', {
+            }).
+            when('/objects/:dt/:id/actions/:aid/', {
                 templateUrl: 'Content/partials/object.html',
                 controller: 'ActionController'
-            }).when('/objects/:dt/:id/properties/:pid/', {
-                templateUrl: 'Content/partials/object.html',
-                controller: 'LinkController'
-            }).when('/objects/:dt/:id/collections/:cid/', {
-                templateUrl: 'Content/partials/object.html',
-                controller: 'CollectionController'
-            }).otherwise({
+            }).
+            otherwise({
                 redirectTo: '/services'
             });
     });

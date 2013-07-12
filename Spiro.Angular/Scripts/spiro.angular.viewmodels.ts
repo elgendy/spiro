@@ -58,6 +58,20 @@ module Spiro.Angular {
         return (results && results.length > 2) ? "#/" + results[1] + "/" + results[2] : "";
     }
     
+    function toPropertyUrl(href: string, $routeParams): string {
+        var urlRegex = /(objects)\/([\w|\.]+)\/([\w|\.]+)\/(properties)\/([\w|\.]+)/;
+        var results = (urlRegex).exec(href);
+        var collectionParm = $routeParams.collection ? "&collection=" + $routeParams.collection : ""; 
+        return (results && results.length > 5) ? "#/" + results[1] + "/" + results[2] + "/" + results[3] + "?property=" +   results[5] + collectionParm: "";
+    }
+
+    function toCollectionUrl(href: string, $routeParams): string {
+        var urlRegex = /(objects)\/([\w|\.]+)\/([\w|\.]+)\/(collections)\/([\w|\.]+)/;
+        var results = (urlRegex).exec(href);
+        var propertyParm = $routeParams.property ? "&property=" + $routeParams.property : ""; 
+        return (results && results.length > 5) ? "#/" + results[1] + "/" + results[2] + "/" + results[3] + "?collection=" + results[5] + propertyParm : "";
+    }
+
     export class LinkViewModel {
 
         title: string;
@@ -96,14 +110,14 @@ module Spiro.Angular {
         target: string;
         color : string; 
 
-        static create(propertyRep: PropertyMember) {
+        static create(propertyRep: PropertyMember, $routeParams) {
             var propertyViewModel = new PropertyViewModel();
             propertyViewModel.title = propertyRep.extensions().friendlyName;
             propertyViewModel.value = propertyRep.value().toString();
             propertyViewModel.type = propertyRep.isScalar() ? "scalar" : "ref";
             propertyViewModel.returnType = propertyRep.extensions().returnType;
-            propertyViewModel.href = toAppUrl(propertyRep.isScalar() ? "" : propertyRep.detailsLink().href());
-            propertyViewModel.target = toAppUrl(propertyRep.isScalar() ? "" : propertyRep.value().link().href());
+            propertyViewModel.href = propertyRep.isScalar() ? "" : toPropertyUrl(propertyRep.detailsLink().href(), $routeParams);
+            propertyViewModel.target = propertyRep.isScalar() ? "" : toAppUrl(propertyRep.value().link().href());
 
             propertyViewModel.color = toColorFromType(propertyRep.extensions().returnType); 
 
@@ -120,14 +134,14 @@ module Spiro.Angular {
         color: string; 
         items: LinkViewModel[]; 
         
-        static create(collectionRep: CollectionMember) {
+        static create(collectionRep: CollectionMember, $routeParams) {
             var collectionViewModel = new CollectionViewModel();
           
             collectionViewModel.title = collectionRep.extensions().friendlyName;
             collectionViewModel.size = collectionRep.size();
             collectionViewModel.pluralName = collectionRep.extensions().pluralName;
             
-            collectionViewModel.href = toAppUrl(collectionRep.detailsLink().href());
+            collectionViewModel.href = toCollectionUrl(collectionRep.detailsLink().href(), $routeParams);
             collectionViewModel.color = toColorFromType(collectionRep.extensions().elementType);
             
             collectionViewModel.items = [];
@@ -135,7 +149,7 @@ module Spiro.Angular {
             return collectionViewModel;
         }
 
-        static createFromDetails(collectionRep: CollectionRepresentation) {
+        static createFromDetails(collectionRep: CollectionRepresentation, $routeParams) {
             var collectionViewModel = new CollectionViewModel();
             var links = collectionRep.value().models;
             
@@ -143,7 +157,7 @@ module Spiro.Angular {
             collectionViewModel.size = links.length;
             collectionViewModel.pluralName = collectionRep.extensions().pluralName;
 
-            collectionViewModel.href = toAppUrl(collectionRep.selfLink().href());
+            collectionViewModel.href = toCollectionUrl(collectionRep.selfLink().href(), $routeParams);
             collectionViewModel.color = toColorFromType(collectionRep.extensions().elementType);
 
             collectionViewModel.items = _.map(links, (link) => { return LinkViewModel.create(link); });
@@ -200,7 +214,7 @@ module Spiro.Angular {
         color: string; 
         href: string; 
 
-        static create(objectRep: DomainObjectRepresentation) {
+        static create(objectRep: DomainObjectRepresentation, $routeParams) {
             var objectViewModel = new DomainObjectViewModel();
             
             var properties = objectRep.propertyMembers();
@@ -213,8 +227,8 @@ module Spiro.Angular {
 
             objectViewModel.color = toColorFromType( objectRep.domainType()); 
 
-            objectViewModel.properties = _.map(properties, (property) => { return PropertyViewModel.create(property); });
-            objectViewModel.collections = _.map(collections, (collection) => { return CollectionViewModel.create(collection); });
+            objectViewModel.properties = _.map(properties, (property) => { return PropertyViewModel.create(property, $routeParams); });
+            objectViewModel.collections = _.map(collections, (collection) => { return CollectionViewModel.create(collection, $routeParams); });
 
             objectViewModel.actions = _.map(actions, (action) => { return ActionViewModel.create(action); });
 

@@ -22,7 +22,7 @@
 
         Angular.app.controller('ActionController', function ($scope, $routeParams, RepresentationLoader, Context) {
             Context.getObject($routeParams.sid || $routeParams.dt, $routeParams.id).then(function (object) {
-                $scope.object = object.extensions().isService ? Angular.ServiceViewModel.create(object) : Angular.DomainObjectViewModel.create(object);
+                $scope.object = object.extensions().isService ? Angular.ServiceViewModel.create(object) : Angular.DomainObjectViewModel.create(object, $routeParams);
 
                 var actions = _.map(object.actionMembers(), function (value, key) {
                     return { key: key, value: value };
@@ -40,7 +40,7 @@
                     return RepresentationLoader.populate(result, true);
                 }
             }).then(function (result) {
-                $scope.result = Angular.DomainObjectViewModel.create(result.result().object());
+                $scope.result = Angular.DomainObjectViewModel.create(result.result().object(), $routeParams);
                 $scope.nestedTemplate = "Content/partials/nestedObject.html";
                 Context.setNestedObject(result.result().object());
             }, function (error) {
@@ -50,13 +50,11 @@
 
         Angular.app.controller('LinkController', function ($scope, $routeParams, $location, RepresentationLoader, Context) {
             Context.getObject($routeParams.dt, $routeParams.id).then(function (object) {
-                $scope.object = Angular.DomainObjectViewModel.create(object);
-
                 var properties = _.map(object.propertyMembers(), function (value, key) {
                     return { key: key, value: value };
                 });
                 var property = _.find(properties, function (kvp) {
-                    return kvp.key === $routeParams.pid;
+                    return kvp.key === $routeParams.property;
                 });
                 var propertyDetails = property.value.getDetails();
                 return RepresentationLoader.populate(propertyDetails);
@@ -64,7 +62,7 @@
                 var target = details.value().link().getTarget();
                 return RepresentationLoader.populate(target);
             }).then(function (object) {
-                $scope.result = Angular.DomainObjectViewModel.create(object);
+                $scope.result = Angular.DomainObjectViewModel.create(object, $routeParams);
                 $scope.nestedTemplate = "Content/partials/nestedObject.html";
                 Context.setNestedObject(object);
             }, function (error) {
@@ -74,18 +72,16 @@
 
         Angular.app.controller('CollectionController', function ($scope, $routeParams, $location, RepresentationLoader, Context) {
             Context.getObject($routeParams.dt, $routeParams.id).then(function (object) {
-                $scope.object = Angular.DomainObjectViewModel.create(object);
-
                 var collections = _.map(object.collectionMembers(), function (value, key) {
                     return { key: key, value: value };
                 });
                 var collection = _.find(collections, function (kvp) {
-                    return kvp.key === $routeParams.cid;
+                    return kvp.key === $routeParams.collection;
                 });
                 var collectionDetails = collection.value.getDetails();
                 return RepresentationLoader.populate(collectionDetails);
             }).then(function (details) {
-                $scope.collection = Angular.CollectionViewModel.createFromDetails(details);
+                $scope.collection = Angular.CollectionViewModel.createFromDetails(details, $routeParams);
                 $scope.collectionTemplate = "Content/partials/nestedCollection.html";
             }, function (error) {
                 $scope.collection = {};
@@ -94,7 +90,7 @@
 
         Angular.app.controller('ObjectController', function ($scope, $routeParams, $location, RepresentationLoader, Context) {
             Context.getObject($routeParams.dt, $routeParams.id).then(function (object) {
-                $scope.object = Angular.DomainObjectViewModel.create(object);
+                $scope.object = Angular.DomainObjectViewModel.create(object, $routeParams);
                 Context.setNestedObject(null);
             }, function (error) {
                 $scope.object = {};

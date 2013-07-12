@@ -33,7 +33,7 @@ module Spiro.Angular {
         Context.getObject($routeParams.sid || $routeParams.dt, $routeParams.id).
             then(function (object: DomainObjectRepresentation) {
          
-                $scope.object = object.extensions().isService ? <any>ServiceViewModel.create(object) : DomainObjectViewModel.create(object);
+                $scope.object = object.extensions().isService ? <any>ServiceViewModel.create(object) : DomainObjectViewModel.create(object, $routeParams);
                 
                 var actions: { key: string; value: ActionMember }[] = _.map(object.actionMembers(), (value, key) => {
                     return { key: key, value: value };
@@ -56,7 +56,7 @@ module Spiro.Angular {
                 }
             }).
             then(function (result: ActionResultRepresentation) {
-                $scope.result = DomainObjectViewModel.create(result.result().object());
+                $scope.result = DomainObjectViewModel.create(result.result().object(), $routeParams);
                 $scope.nestedTemplate = "Content/partials/nestedObject.html";
                 Context.setNestedObject(result.result().object());
             }, function (error) {
@@ -69,12 +69,10 @@ module Spiro.Angular {
         Context.getObject($routeParams.dt, $routeParams.id).
             then(function (object: DomainObjectRepresentation) {
 
-                $scope.object = DomainObjectViewModel.create(object);
-                
                 var properties: { key: string; value: PropertyMember }[] = _.map(object.propertyMembers(), (value, key) => {
                     return { key: key, value: value };
                 });
-                var property = _.find(properties, (kvp) => { return kvp.key === $routeParams.pid; });
+                var property = _.find(properties, (kvp) => { return kvp.key === $routeParams.property; });
                 var propertyDetails = property.value.getDetails();
                 return RepresentationLoader.populate(propertyDetails)
             }).
@@ -83,10 +81,9 @@ module Spiro.Angular {
                 return RepresentationLoader.populate(target);
             }).then(function (object: DomainObjectRepresentation) {
                 
-                $scope.result = DomainObjectViewModel.create(object); // todo rename result
+                $scope.result = DomainObjectViewModel.create(object, $routeParams); // todo rename result
                 $scope.nestedTemplate = "Content/partials/nestedObject.html";
-                Context.setNestedObject(object);
-            
+                Context.setNestedObject(object);          
             }, function (error) {
                 $scope.object = {};
             });
@@ -97,17 +94,15 @@ module Spiro.Angular {
         Context.getObject($routeParams.dt, $routeParams.id).
             then(function (object: DomainObjectRepresentation) {
 
-                $scope.object = DomainObjectViewModel.create(object); 
-
                 var collections: { key: string; value: CollectionMember }[] = _.map(object.collectionMembers(), (value, key) => {
                     return { key: key, value: value };
                 });
-                var collection = _.find(collections, (kvp) => { return kvp.key === $routeParams.cid; });
+                var collection = _.find(collections, (kvp) => { return kvp.key === $routeParams.collection; });
                 var collectionDetails = collection.value.getDetails();
                 return RepresentationLoader.populate(collectionDetails)
             }).
             then(function (details: CollectionRepresentation) {
-                $scope.collection = CollectionViewModel.createFromDetails(details);
+                $scope.collection = CollectionViewModel.createFromDetails(details, $routeParams);
                 $scope.collectionTemplate = "Content/partials/nestedCollection.html";
             }, function (error) {
                 $scope.collection = {};
@@ -118,7 +113,7 @@ module Spiro.Angular {
 
         Context.getObject($routeParams.dt, $routeParams.id).
             then(function (object: DomainObjectRepresentation) {
-                $scope.object = DomainObjectViewModel.create(object);
+                $scope.object = DomainObjectViewModel.create(object, $routeParams);
                 Context.setNestedObject(null);
             }, function (error) {
                 $scope.object = {};

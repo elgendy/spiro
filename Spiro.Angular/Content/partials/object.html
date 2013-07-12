@@ -44,7 +44,7 @@
         </div>
     </div>
     <div class="dialog-pane"></div>
-    <div class="collection-pane" ng-include="collectionTemplate"></div>
-    <div class="object-pane" ng-include="nestedTemplate"></div>
+    <div class="collection-pane" ng-controller="CollectionController" ng-include="collectionTemplate"></div>
+    <div class="object-pane"  ng-controller="LinkController" ng-include="nestedTemplate"></div>
     <div class="app-bar"  ng-controller="AppBarController" ng-include="'Content/partials/appbar.html'"></div>
 </div>
