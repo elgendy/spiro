@@ -52,10 +52,21 @@ module Spiro.Angular {
         return "bg-color-" + getColourMapValues(type)["backgroundColor"];
     }
 
-    function toAppUrl(href : string) : string {
+    function toAppUrl(href : string, $routeParams?, toClose? : string) : string {
         var urlRegex = /(objects|services)\/(.*)/;
         var results = (urlRegex).exec(href);
-        return (results && results.length > 2) ? "#/" + results[1] + "/" + results[2] : "";
+        var parms = ""; 
+
+        if (toClose) {
+            var collectionParm = $routeParams.collection && toClose !== "collection" ? "&collection=" + $routeParams.collection : ""; 
+            var propertyParm = $routeParams.property && toClose !== "property" ? "&property=" + $routeParams.property : "";
+            var collectionItemParm = $routeParams.collectionItem && toClose !== "property" ? "&collectionItem=" + $routeParams.collectionItem : "";
+
+            parms = collectionParm + propertyParm + collectionItemParm; 
+            parms = parms ? "?" + parms.substr(1) : ""; 
+        }
+
+        return (results && results.length > 2) ? "#/" + results[1] + "/" + results[2]  + parms: "";
     }
     
     function toPropertyUrl(href: string, $routeParams): string {
@@ -69,7 +80,8 @@ module Spiro.Angular {
         var urlRegex = /(objects)\/([\w|\.]+)\/([\w|\.]+)\/(collections)\/([\w|\.]+)/;
         var results = (urlRegex).exec(href);
         var propertyParm = $routeParams.property ? "&property=" + $routeParams.property : ""; 
-        return (results && results.length > 5) ? "#/" + results[1] + "/" + results[2] + "/" + results[3] + "?collection=" + results[5] + propertyParm : "";
+        var collectionItemParm = $routeParams.collectionItem ? "&collectionItem=" + $routeParams.collectionItem : "";
+        return (results && results.length > 5) ? "#/" + results[1] + "/" + results[2] + "/" + results[3] + "?collection=" + results[5] + propertyParm + collectionItemParm : "";
     }
 
     function toItemUrl(href: string, index : number, $routeParams): string {
@@ -216,6 +228,8 @@ module Spiro.Angular {
         color: string; 
         href: string; 
 
+        closeNestedObject: string; 
+
         static create(serviceRep: DomainObjectRepresentation) {
             var serviceViewModel = new ServiceViewModel();
             var actions = serviceRep.actionMembers();
@@ -224,6 +238,7 @@ module Spiro.Angular {
             serviceViewModel.actions = _.map(actions, (action) => { return ActionViewModel.create(action); });
             serviceViewModel.color = toColorFromType(serviceRep.serviceId());
             serviceViewModel.href = toAppUrl(serviceRep.getUrl()); 
+            serviceViewModel.closeNestedObject = toAppUrl(serviceRep.getUrl()); 
 
             return serviceViewModel;
         }
@@ -239,6 +254,9 @@ module Spiro.Angular {
         color: string; 
         href: string; 
 
+        closeNestedObject: string; 
+        closeCollection: string; 
+     
         static create(objectRep: DomainObjectRepresentation, $routeParams) {
             var objectViewModel = new DomainObjectViewModel();
             
@@ -249,6 +267,9 @@ module Spiro.Angular {
             objectViewModel.domainType = objectRep.domainType();
             objectViewModel.title = objectRep.title();
             objectViewModel.href = toAppUrl(objectRep.getUrl()); 
+
+            objectViewModel.closeNestedObject = toAppUrl(objectRep.getUrl(), $routeParams, "property"); 
+            objectViewModel.closeCollection = toAppUrl(objectRep.getUrl(), $routeParams, "collection"); 
 
             objectViewModel.color = toColorFromType(objectRep.domainType()); 
 

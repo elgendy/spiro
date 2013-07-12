@@ -40,10 +40,21 @@ var Spiro;
             return "bg-color-" + getColourMapValues(type)["backgroundColor"];
         }
 
-        function toAppUrl(href) {
+        function toAppUrl(href, $routeParams, toClose) {
             var urlRegex = /(objects|services)\/(.*)/;
             var results = (urlRegex).exec(href);
-            return (results && results.length > 2) ? "#/" + results[1] + "/" + results[2] : "";
+            var parms = "";
+
+            if (toClose) {
+                var collectionParm = $routeParams.collection && toClose !== "collection" ? "&collection=" + $routeParams.collection : "";
+                var propertyParm = $routeParams.property && toClose !== "property" ? "&property=" + $routeParams.property : "";
+                var collectionItemParm = $routeParams.collectionItem && toClose !== "property" ? "&collectionItem=" + $routeParams.collectionItem : "";
+
+                parms = collectionParm + propertyParm + collectionItemParm;
+                parms = parms ? "?" + parms.substr(1) : "";
+            }
+
+            return (results && results.length > 2) ? "#/" + results[1] + "/" + results[2] + parms : "";
         }
 
         function toPropertyUrl(href, $routeParams) {
@@ -57,7 +68,8 @@ var Spiro;
             var urlRegex = /(objects)\/([\w|\.]+)\/([\w|\.]+)\/(collections)\/([\w|\.]+)/;
             var results = (urlRegex).exec(href);
             var propertyParm = $routeParams.property ? "&property=" + $routeParams.property : "";
-            return (results && results.length > 5) ? "#/" + results[1] + "/" + results[2] + "/" + results[3] + "?collection=" + results[5] + propertyParm : "";
+            var collectionItemParm = $routeParams.collectionItem ? "&collectionItem=" + $routeParams.collectionItem : "";
+            return (results && results.length > 5) ? "#/" + results[1] + "/" + results[2] + "/" + results[3] + "?collection=" + results[5] + propertyParm + collectionItemParm : "";
         }
 
         function toItemUrl(href, index, $routeParams) {
@@ -198,6 +210,7 @@ var Spiro;
                 });
                 serviceViewModel.color = toColorFromType(serviceRep.serviceId());
                 serviceViewModel.href = toAppUrl(serviceRep.getUrl());
+                serviceViewModel.closeNestedObject = toAppUrl(serviceRep.getUrl());
 
                 return serviceViewModel;
             };
@@ -218,6 +231,9 @@ var Spiro;
                 objectViewModel.domainType = objectRep.domainType();
                 objectViewModel.title = objectRep.title();
                 objectViewModel.href = toAppUrl(objectRep.getUrl());
+
+                objectViewModel.closeNestedObject = toAppUrl(objectRep.getUrl(), $routeParams, "property");
+                objectViewModel.closeCollection = toAppUrl(objectRep.getUrl(), $routeParams, "collection");
 
                 objectViewModel.color = toColorFromType(objectRep.domainType());
 
