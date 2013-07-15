@@ -19,35 +19,7 @@
             });
         });
 
-        Angular.app.controller('ActionController', function ($scope, $routeParams, RepresentationLoader, Context) {
-            if ($routeParams.action) {
-                Context.getObject($routeParams.sid || $routeParams.dt, $routeParams.id).then(function (object) {
-                    var actions = _.map(object.actionMembers(), function (value, key) {
-                        return { key: key, value: value };
-                    });
-                    var action = _.find(actions, function (kvp) {
-                        return kvp.key === $routeParams.action;
-                    });
-                    var actionTarget = action.value.getDetails();
-
-                    return RepresentationLoader.populate(actionTarget);
-                }).then(function (action) {
-                    if (action.extensions().hasParams) {
-                    } else {
-                        var result = action.getInvoke();
-                        return RepresentationLoader.populate(result, true);
-                    }
-                }).then(function (result) {
-                    $scope.result = Angular.DomainObjectViewModel.create(result.result().object(), $routeParams);
-                    $scope.nestedTemplate = "Content/partials/nestedObject.html";
-                    Context.setNestedObject(result.result().object());
-                }, function (error) {
-                    $scope.service = {};
-                });
-            }
-        });
-
-        function getAction($scope, $routeParams, $location, RepresentationLoader, Context) {
+        function getActionDialog($scope, $routeParams, $location, RepresentationLoader, Context) {
             Context.getObject($routeParams.sid || $routeParams.dt, $routeParams.id).then(function (object) {
                 var actions = _.map(object.actionMembers(), function (value, key) {
                     return { key: key, value: value };
@@ -60,7 +32,59 @@
                 return RepresentationLoader.populate(actionTarget);
             }).then(function (action) {
                 if (action.extensions().hasParams) {
-                } else {
+                    var invoke = action.getInvoke();
+                    invoke.attributes = {};
+                    $scope.dialogTemplate = "Content/partials/dialog.html";
+                    $scope.dialog = Angular.DialogViewModel.create(action, function (dvm) {
+                        var parameters = dvm.parameters;
+
+                        _.each(parameters, function (parm) {
+                            return invoke.setParameter(parm.id, new Spiro.Value(parm.value || ""));
+                        });
+
+                        RepresentationLoader.populate(invoke, true).then(function (result) {
+                            var resultObject = result.result().object();
+
+                            Context.setNestedObject(resultObject);
+
+                            if (resultObject) {
+                                var resultParm = "result=" + resultObject.domainType() + "-" + resultObject.instanceId();
+                                $location.search(resultParm);
+                            } else {
+                                dvm.error = "no result found";
+                            }
+                        }, function (errorMap) {
+                            _.each(parameters, function (parm) {
+                                var error = errorMap.values()[parm.id];
+
+                                if (error) {
+                                    parm.value = error.value.toValueString();
+                                    parm.error = error.invalidReason;
+                                }
+                            });
+
+                            dvm.error = errorMap.invalidReason();
+                        });
+                    });
+                }
+            }, function (error) {
+                $scope.service = {};
+            });
+        }
+
+        function getActionResult($scope, $routeParams, $location, RepresentationLoader, Context) {
+            Context.getObject($routeParams.sid || $routeParams.dt, $routeParams.id).then(function (object) {
+                var actions = _.map(object.actionMembers(), function (value, key) {
+                    return { key: key, value: value };
+                });
+                var action = _.find(actions, function (kvp) {
+                    return kvp.key === $routeParams.action;
+                });
+                var actionTarget = action.value.getDetails();
+
+                return RepresentationLoader.populate(actionTarget);
+            }).then(function (action) {
+                if (!action.extensions().hasParams) {
                     var result = action.getInvoke();
                     return RepresentationLoader.populate(result, true);
                 }
@@ -68,6 +92,7 @@
                 var resultObject = result.result().object();
 
                 Context.setNestedObject(resultObject);
+
                 var resultParm = "result=" + resultObject.domainType() + "-" + resultObject.instanceId();
                 $location.search(resultParm);
             }, function (error) {
@@ -123,13 +148,19 @@
             });
         }
 
+        Angular.app.controller('DialogController', function ($scope, $routeParams, $location, RepresentationLoader, Context) {
+            if ($routeParams.action) {
+                getActionDialog($scope, $routeParams, $location, RepresentationLoader, Context);
+            }
+        });
+
         Angular.app.controller('NestedObjectController', function ($scope, $routeParams, $location, RepresentationLoader, Context) {
             if ($routeParams.property) {
                 getProperty($scope, $routeParams, $location, RepresentationLoader, Context);
             } else if ($routeParams.collectionItem) {
                 getCollectionItem($scope, $routeParams, $location, RepresentationLoader, Context);
             } else if ($routeParams.action) {
-                getAction($scope, $routeParams, $location, RepresentationLoader, Context);
+                getActionResult($scope, $routeParams, $location, RepresentationLoader, Context);
             } else if ($routeParams.result) {
                 var result = $routeParams.result.split("-");
                 var dt = result[0];

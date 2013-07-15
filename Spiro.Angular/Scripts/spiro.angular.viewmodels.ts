@@ -128,6 +128,27 @@ module Spiro.Angular {
         }
     }
 
+    export class ParameterViewModel {
+
+        title: string;
+        dflt: string; 
+        value: string; 
+        error: string; 
+        id: string; 
+
+        static create(parmRep: Parameter, id : string) {
+            var parmViewModel = new ParameterViewModel();
+
+            parmViewModel.title = parmRep.extensions().friendlyName;
+            parmViewModel.dflt = parmRep.default().toValueString();
+            parmViewModel.error = ""; 
+            parmViewModel.value = ""; 
+            parmViewModel.id = id; 
+          
+            return parmViewModel;
+        }
+    } 
+
     export class ActionViewModel {
 
         title: string;
@@ -140,6 +161,31 @@ module Spiro.Angular {
             return actionViewModel;
         }
     } 
+
+    export class DialogViewModel {
+
+        title: string;
+        error: string;
+
+        parameters: ParameterViewModel[];
+
+        doInvoke() {}
+
+        static create(actionRep: ActionRepresentation, invoke: (dvm : DialogViewModel) => void ) {
+            var dialogViewModel = new DialogViewModel();
+            var parameters = actionRep.parameters();
+
+            dialogViewModel.title = actionRep.extensions().friendlyName;
+            dialogViewModel.error = "";
+
+            dialogViewModel.parameters = _.map(parameters, (parm, id) => { return ParameterViewModel.create(parm, id); });
+
+            dialogViewModel.doInvoke = () => invoke(dialogViewModel);  
+
+            return dialogViewModel;
+        }
+    } 
+    
 
     export class PropertyViewModel {
 

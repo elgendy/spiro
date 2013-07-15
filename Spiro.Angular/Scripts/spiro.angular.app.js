@@ -18,17 +18,40 @@
             });
         });
 
+        function getUrl(model) {
+            var url = model.url();
+
+            if (model.method === "GET" || model.method === "DELETE") {
+                var asJson = _.clone((model).attributes);
+
+                if (_.toArray(asJson).length > 0) {
+                    var map = JSON.stringify(asJson);
+                    var encodedMap = encodeURI(map);
+                    url += "?" + encodedMap;
+                }
+            }
+
+            return url;
+        }
+
         Angular.app.service("RepresentationLoader", function ($http, $q) {
             this.populate = function (model, ignoreCache) {
                 var useCache = !ignoreCache;
 
                 var delay = $q.defer();
 
-                $http.get(model.url(), { cache: useCache }).success(function (data, status, headers, config) {
+                var config = {
+                    url: getUrl(model),
+                    method: model.method,
+                    cache: useCache
+                };
+
+                $http(config).success(function (data, status, headers, config) {
                     (model).attributes = data;
                     delay.resolve(model);
                 }).error(function (data, status, headers, config) {
-                    delay.reject('Unable to find page');
+                    var errorMap = new Spiro.ErrorMap(data, status, headers().warning);
+                    delay.reject(errorMap);
                 });
 
                 return delay.promise;

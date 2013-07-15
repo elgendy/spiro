@@ -114,6 +114,24 @@ var Spiro;
         })();
         Angular.ItemViewModel = ItemViewModel;
 
+        var ParameterViewModel = (function () {
+            function ParameterViewModel() {
+            }
+            ParameterViewModel.create = function (parmRep, id) {
+                var parmViewModel = new ParameterViewModel();
+
+                parmViewModel.title = parmRep.extensions().friendlyName;
+                parmViewModel.dflt = parmRep.default().toValueString();
+                parmViewModel.error = "";
+                parmViewModel.value = "";
+                parmViewModel.id = id;
+
+                return parmViewModel;
+            };
+            return ParameterViewModel;
+        })();
+        Angular.ParameterViewModel = ParameterViewModel;
+
         var ActionViewModel = (function () {
             function ActionViewModel() {
             }
@@ -126,6 +144,33 @@ var Spiro;
             return ActionViewModel;
         })();
         Angular.ActionViewModel = ActionViewModel;
+
+        var DialogViewModel = (function () {
+            function DialogViewModel() {
+            }
+            DialogViewModel.prototype.doInvoke = function () {
+            };
+
+            DialogViewModel.create = function (actionRep, invoke) {
+                var dialogViewModel = new DialogViewModel();
+                var parameters = actionRep.parameters();
+
+                dialogViewModel.title = actionRep.extensions().friendlyName;
+                dialogViewModel.error = "";
+
+                dialogViewModel.parameters = _.map(parameters, function (parm, id) {
+                    return ParameterViewModel.create(parm, id);
+                });
+
+                dialogViewModel.doInvoke = function () {
+                    return invoke(dialogViewModel);
+                };
+
+                return dialogViewModel;
+            };
+            return DialogViewModel;
+        })();
+        Angular.DialogViewModel = DialogViewModel;
 
         var PropertyViewModel = (function () {
             function PropertyViewModel() {

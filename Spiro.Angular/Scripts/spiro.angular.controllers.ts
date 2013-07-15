@@ -21,51 +21,74 @@ module Spiro.Angular {
 
         Context.getObject($routeParams.sid).
             then(function (service: DomainObjectRepresentation) {
-                $scope.object = ServiceViewModel.create(service);
-                //Context.setNestedObject(null);
+                $scope.object = ServiceViewModel.create(service);          
             }, function (error) {
                 $scope.service = {};
             });
     });
 
-    app.controller('ActionController', function ($scope, $routeParams, RepresentationLoader: RLInterface, Context: ContextInterface) {
+  
 
-        if ($routeParams.action) {
+    function getActionDialog($scope, $routeParams, $location, RepresentationLoader: RLInterface, Context: ContextInterface) {
+        Context.getObject($routeParams.sid || $routeParams.dt, $routeParams.id).
+            then(function (object: DomainObjectRepresentation) {
 
-            Context.getObject($routeParams.sid || $routeParams.dt, $routeParams.id).
-                then(function (object: DomainObjectRepresentation) {
-                    
-                    var actions: { key: string; value: ActionMember }[] = _.map(object.actionMembers(), (value, key) => {
-                        return { key: key, value: value };
-                    });
-                    var action = _.find(actions, (kvp) => { return kvp.key === $routeParams.action; });
-                    var actionTarget = action.value.getDetails();
-
-                    return RepresentationLoader.populate(actionTarget);
-                }).
-                then(function (action: ActionRepresentation) {
-                    if (action.extensions().hasParams) {
-                        // dosomething
-                        // $scope.dialogTemplate = "Content/partials/dialog.html";
-
-                        // $scope.invoke = function (parms) {
-                        // var parm = $scope.parm;
-                    } else {
-                        var result = action.getInvoke();
-                        return RepresentationLoader.populate(result, true);
-                    }
-                }).
-                then(function (result: ActionResultRepresentation) {
-                    $scope.result = DomainObjectViewModel.create(result.result().object(), $routeParams);
-                    $scope.nestedTemplate = "Content/partials/nestedObject.html";
-                    Context.setNestedObject(result.result().object());
-                }, function (error) {
-                    $scope.service = {};
+                var actions: { key: string; value: ActionMember }[] = _.map(object.actionMembers(), (value, key) => {
+                    return { key: key, value: value };
                 });
-        }
-    });
+                var action = _.find(actions, (kvp) => { return kvp.key === $routeParams.action; });
+                var actionTarget = action.value.getDetails();
 
-    function getAction($scope, $routeParams, $location, RepresentationLoader: RLInterface, Context: ContextInterface) {
+                return RepresentationLoader.populate(actionTarget);
+            }).
+            then(function (action: ActionRepresentation) {
+                if (action.extensions().hasParams) {
+                    var invoke = action.getInvoke();
+                    invoke.attributes = {}; // todo make automatic 
+                    $scope.dialogTemplate = "Content/partials/dialog.html";
+                    $scope.dialog = DialogViewModel.create(action,
+                        function (dvm: DialogViewModel) {
+                            var parameters = dvm.parameters;
+
+                            _.each(parameters, (parm) => invoke.setParameter(parm.id, new Value(parm.value||"")));
+
+                            RepresentationLoader.populate(invoke, true).
+                                then(function (result: ActionResultRepresentation) {
+                                    var resultObject = result.result().object()
+
+                                    // set the nested object here and then update the url. That should reload the page but pick up this object 
+                                    // so we don't hit the server again. 
+                                    Context.setNestedObject(resultObject);
+
+                                    if (resultObject) {
+                                        var resultParm = "result=" + resultObject.domainType() + "-" + resultObject.instanceId();  // todo add some parm handling code 
+                                        $location.search(resultParm);
+                                    }
+                                    else {
+                                        dvm.error = "no result found"; 
+                                    }
+
+                                }, function (errorMap : ErrorMap) {
+                                    _.each(parameters, (parm) => {
+                                        var error = errorMap.values()[parm.id]; 
+
+                                        if (error) {
+                                            parm.value = error.value.toValueString();
+                                            parm.error = error.invalidReason; 
+                                        }   
+                                    });
+
+                                    dvm.error = errorMap.invalidReason();
+                                });
+                        });
+                }
+            }, function (error) {
+                $scope.service = {};
+            });
+    }
+
+
+    function getActionResult($scope, $routeParams, $location, RepresentationLoader: RLInterface, Context: ContextInterface) {
         Context.getObject($routeParams.sid || $routeParams.dt, $routeParams.id).
             then(function (object: DomainObjectRepresentation) {
                 
@@ -78,25 +101,23 @@ module Spiro.Angular {
                 return RepresentationLoader.populate(actionTarget);
             }).
             then(function (action: ActionRepresentation) {
-                if (action.extensions().hasParams) {
-                    // dosomething
-                    // $scope.dialogTemplate = "Content/partials/dialog.html";
-
-                    // $scope.invoke = function (parms) {
-                    // var parm = $scope.parm;
-                } else {
+                if (!action.extensions().hasParams) {
                     var result = action.getInvoke();
                     return RepresentationLoader.populate(result, true);
                 }
+                // how do we fail here 
             }).
             then(function (result: ActionResultRepresentation) {
                 var resultObject = result.result().object()
-             
+
                 // set the nested object here and then update the url. That should reload the page but pick up this object 
                 // so we don't hit the server again. 
                 Context.setNestedObject(resultObject);
-                var resultParm = "result=" + resultObject.domainType() +  "-" + resultObject.instanceId();  // todo add some parm handling code 
-                $location.search(resultParm); 
+
+                
+                var resultParm = "result=" + resultObject.domainType() + "-" + resultObject.instanceId();  // todo add some parm handling code 
+                $location.search(resultParm);
+            
 
             }, function (error) {
                 $scope.service = {};
@@ -157,6 +178,14 @@ module Spiro.Angular {
     
     }
 
+    app.controller('DialogController', function ($scope, $routeParams, $location, RepresentationLoader: RLInterface, Context: ContextInterface) {
+
+        if ($routeParams.action) {
+            getActionDialog($scope, $routeParams, $location, RepresentationLoader, Context);
+        }
+    });
+
+
     app.controller('NestedObjectController', function ($scope, $routeParams, $location, RepresentationLoader: RLInterface, Context: ContextInterface) {
 
         if ($routeParams.property) {
@@ -166,7 +195,7 @@ module Spiro.Angular {
             getCollectionItem($scope, $routeParams, $location, RepresentationLoader, Context);
         }
         else if ($routeParams.action) {
-            getAction($scope, $routeParams, $location, RepresentationLoader, Context);
+            getActionResult($scope, $routeParams, $location, RepresentationLoader, Context);
         }
         else if ($routeParams.result) {
             var result = $routeParams.result.split("-");

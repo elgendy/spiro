@@ -39,7 +39,24 @@ module Spiro.Angular {
         populate: (m: HateoasModel, ignoreCache? : bool) => ng.IPromise;
     }
 
-     // TODO investigate usisng transformations to transform results 
+    function getUrl(model: HateoasModel): string {
+
+        var url = model.url();
+
+        if (model.method === "GET" || model.method === "DELETE") {
+            var asJson = _.clone((<any>model).attributes);
+
+            if (_.toArray(asJson).length > 0) {
+                var map = JSON.stringify(asJson);
+                var encodedMap = encodeURI(map);
+                url += "?" + encodedMap;
+            }
+        }
+
+        return url;
+    }
+
+     // TODO investigate using transformations to transform results 
     app.service("RepresentationLoader", function ($http, $q) {
         this.populate = function (model: HateoasModel, ignoreCache?: bool) {
 
@@ -47,11 +64,20 @@ module Spiro.Angular {
 
             var delay = $q.defer();
 
-            $http.get(model.url(), { cache: useCache }).success(function (data, status, headers, config) {
-                (<any>model).attributes = data; // TODO make typed 
-                delay.resolve(model);
-            }).error(function (data, status, headers, config) {
-                    delay.reject('Unable to find page');
+            var config = {
+                url: getUrl(model), 
+                method: model.method,
+                cache: useCache
+            }
+
+            $http(config).
+                success(function (data, status, headers, config) {
+                    (<any>model).attributes = data; // TODO make typed 
+                    delay.resolve(model);
+                }).
+                error(function (data, status, headers, config) {
+                    var errorMap = new ErrorMap(data, status, headers().warning); 
+                    delay.reject(errorMap);
                 });
 
             return delay.promise;
