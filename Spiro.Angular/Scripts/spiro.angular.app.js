@@ -13,12 +13,6 @@
             }).when('/objects/:dt/:id', {
                 templateUrl: 'Content/partials/object.html',
                 controller: 'ObjectController'
-            }).when('/services/:sid/actions/:aid/', {
-                templateUrl: 'Content/partials/service.html',
-                controller: 'ActionController'
-            }).when('/objects/:dt/:id/actions/:aid/', {
-                templateUrl: 'Content/partials/object.html',
-                controller: 'ActionController'
             }).otherwise({
                 redirectTo: '/services'
             });
@@ -45,11 +39,8 @@
             var currentHome = null;
 
             function isSameObject(object, type, id) {
-                if (object.serviceId) {
-                    return object.serviceId() === type;
-                }
-
-                return object.domainType() == type && object.instanceId() === id;
+                var sid = object.serviceId();
+                return sid ? sid === type : (object.domainType() == type && object.instanceId() === id);
             }
 
             this.getDomainObject = function (type, id) {
@@ -154,10 +145,6 @@
 
             this.setNestedObject = function (cno) {
                 currentNestedObject = cno;
-            };
-
-            this.isNestedContext = function (type, id) {
-                return currentNestedObject && currentNestedObject.domainType() === type && currentNestedObject.instanceId() === id;
             };
         });
     })(Spiro.Angular || (Spiro.Angular = {}));

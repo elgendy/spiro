@@ -17,8 +17,8 @@
 
     <%-- Main defines the static structure of the page into which sections of html are dynamically inserted. The format of the
         inserted html is defined in spiro.modern.presentations.handlebars.templates --%>
-    <div id="main" class="bg-color-darkBlue"  ng-view>
-        <div class="object-view" ng-class="services.color" ng-controller="ServicesController" ng-view>
+    <div id="main"  ng-view>
+        <div class="object-view" ng-controller="ServicesController" ng-view>
         </div>
     </div>
 

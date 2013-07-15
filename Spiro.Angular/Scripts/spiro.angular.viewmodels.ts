@@ -68,7 +68,14 @@ module Spiro.Angular {
 
         return (results && results.length > 2) ? "#/" + results[1] + "/" + results[2]  + parms: "";
     }
-    
+
+    function toActionUrl(href: string): string {
+        var urlRegex = /(services|objects)\/([\w|\.]+(\/[\w|\.]+)?)\/actions\/([\w|\.]+)/;
+        var results = (urlRegex).exec(href);
+        
+        return (results && results.length > 3) ? "#/" + results[1] + "/" +  results[2]  + "?action=" + results[4] : "";
+    }
+
     function toPropertyUrl(href: string, $routeParams): string {
         var urlRegex = /(objects)\/([\w|\.]+)\/([\w|\.]+)\/(properties)\/([\w|\.]+)/;
         var results = (urlRegex).exec(href);
@@ -121,8 +128,6 @@ module Spiro.Angular {
         }
     }
 
-
-
     export class ActionViewModel {
 
         title: string;
@@ -131,7 +136,7 @@ module Spiro.Angular {
         static create(actionRep: ActionMember) {
             var actionViewModel = new ActionViewModel();
             actionViewModel.title = actionRep.extensions().friendlyName;
-            actionViewModel.href = toAppUrl(actionRep.detailsLink().href());
+            actionViewModel.href = toActionUrl(actionRep.detailsLink().href());
             return actionViewModel;
         }
     } 
@@ -153,7 +158,7 @@ module Spiro.Angular {
             propertyViewModel.type = propertyRep.isScalar() ? "scalar" : "ref";
             propertyViewModel.returnType = propertyRep.extensions().returnType;
             propertyViewModel.href = propertyRep.isScalar() ? "" : toPropertyUrl(propertyRep.detailsLink().href(), $routeParams);
-            propertyViewModel.target = propertyRep.isScalar() ? "" : toAppUrl(propertyRep.value().link().href());
+            propertyViewModel.target = propertyRep.isScalar() || propertyRep.value().isNull()  ? "" : toAppUrl(propertyRep.value().link().href());
 
             propertyViewModel.color = toColorFromType(propertyRep.extensions().returnType); 
 

@@ -22,7 +22,7 @@ module Spiro.Angular {
         Context.getObject($routeParams.sid).
             then(function (service: DomainObjectRepresentation) {
                 $scope.object = ServiceViewModel.create(service);
-                Context.setNestedObject(null);
+                //Context.setNestedObject(null);
             }, function (error) {
                 $scope.service = {};
             });
@@ -30,15 +30,49 @@ module Spiro.Angular {
 
     app.controller('ActionController', function ($scope, $routeParams, RepresentationLoader: RLInterface, Context: ContextInterface) {
 
+        if ($routeParams.action) {
+
+            Context.getObject($routeParams.sid || $routeParams.dt, $routeParams.id).
+                then(function (object: DomainObjectRepresentation) {
+                    
+                    var actions: { key: string; value: ActionMember }[] = _.map(object.actionMembers(), (value, key) => {
+                        return { key: key, value: value };
+                    });
+                    var action = _.find(actions, (kvp) => { return kvp.key === $routeParams.action; });
+                    var actionTarget = action.value.getDetails();
+
+                    return RepresentationLoader.populate(actionTarget);
+                }).
+                then(function (action: ActionRepresentation) {
+                    if (action.extensions().hasParams) {
+                        // dosomething
+                        // $scope.dialogTemplate = "Content/partials/dialog.html";
+
+                        // $scope.invoke = function (parms) {
+                        // var parm = $scope.parm;
+                    } else {
+                        var result = action.getInvoke();
+                        return RepresentationLoader.populate(result, true);
+                    }
+                }).
+                then(function (result: ActionResultRepresentation) {
+                    $scope.result = DomainObjectViewModel.create(result.result().object(), $routeParams);
+                    $scope.nestedTemplate = "Content/partials/nestedObject.html";
+                    Context.setNestedObject(result.result().object());
+                }, function (error) {
+                    $scope.service = {};
+                });
+        }
+    });
+
+    function getAction($scope, $routeParams, $location, RepresentationLoader: RLInterface, Context: ContextInterface) {
         Context.getObject($routeParams.sid || $routeParams.dt, $routeParams.id).
             then(function (object: DomainObjectRepresentation) {
-         
-                $scope.object = object.extensions().isService ? <any>ServiceViewModel.create(object) : DomainObjectViewModel.create(object, $routeParams);
                 
                 var actions: { key: string; value: ActionMember }[] = _.map(object.actionMembers(), (value, key) => {
                     return { key: key, value: value };
                 });
-                var action = _.find(actions, (kvp) => { return kvp.key === $routeParams.aid; });
+                var action = _.find(actions, (kvp) => { return kvp.key === $routeParams.action; });
                 var actionTarget = action.value.getDetails();
 
                 return RepresentationLoader.populate(actionTarget);
@@ -56,13 +90,19 @@ module Spiro.Angular {
                 }
             }).
             then(function (result: ActionResultRepresentation) {
-                $scope.result = DomainObjectViewModel.create(result.result().object(), $routeParams);
-                $scope.nestedTemplate = "Content/partials/nestedObject.html";
-                Context.setNestedObject(result.result().object());
+                var resultObject = result.result().object()
+             
+                // set the nested object here and then update the url. That should reload the page but pick up this object 
+                // so we don't hit the server again. 
+                Context.setNestedObject(resultObject);
+                var resultParm = "result=" + resultObject.domainType() +  "-" + resultObject.instanceId();  // todo add some parm handling code 
+                $location.search(resultParm); 
+
             }, function (error) {
                 $scope.service = {};
             });
-    });
+    }
+
 
     function getProperty($scope, $routeParams, $location, RepresentationLoader: RLInterface, Context: ContextInterface) {
         Context.getObject($routeParams.dt, $routeParams.id).
@@ -117,13 +157,30 @@ module Spiro.Angular {
     
     }
 
-    app.controller('LinkController', function ($scope, $routeParams, $location, RepresentationLoader: RLInterface, Context: ContextInterface) {
+    app.controller('NestedObjectController', function ($scope, $routeParams, $location, RepresentationLoader: RLInterface, Context: ContextInterface) {
 
         if ($routeParams.property) {
             getProperty($scope, $routeParams, $location, RepresentationLoader, Context);
         }
         else if ($routeParams.collectionItem) {
             getCollectionItem($scope, $routeParams, $location, RepresentationLoader, Context);
+        }
+        else if ($routeParams.action) {
+            getAction($scope, $routeParams, $location, RepresentationLoader, Context);
+        }
+        else if ($routeParams.result) {
+            var result = $routeParams.result.split("-");
+            var dt = result[0];
+            var id = result[1]; 
+
+            Context.getNestedObject(dt, id).
+                then(function (object: DomainObjectRepresentation) {
+                    $scope.result = DomainObjectViewModel.create(object, $routeParams); // todo rename result
+                    $scope.nestedTemplate = "Content/partials/nestedObject.html";
+                    Context.setNestedObject(object);
+                }, function (error) {
+                    $scope.object = {};
+                });
         }
     });
 

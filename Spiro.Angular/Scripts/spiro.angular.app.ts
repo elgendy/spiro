@@ -19,14 +19,6 @@ module Spiro.Angular {
                 templateUrl: 'Content/partials/object.html',
                 controller: 'ObjectController'
             }).
-            when('/services/:sid/actions/:aid/', {
-                templateUrl: 'Content/partials/service.html',
-                controller: 'ActionController'
-            }).
-            when('/objects/:dt/:id/actions/:aid/', {
-                templateUrl: 'Content/partials/object.html',
-                controller: 'ActionController'
-            }).
             otherwise({
                 redirectTo: '/services'
             });
@@ -70,13 +62,9 @@ module Spiro.Angular {
 
         var currentHome: HomePageRepresentation = null;
 
-        function isSameObject(object : DomainObjectRepresentation, type: string, id?: string) {
-            
-            if (object.serviceId) {
-                return object.serviceId() === type;
-            }
-
-            return object.domainType() == type && object.instanceId() === id;
+        function isSameObject(object: DomainObjectRepresentation, type: string, id?: string) {
+            var sid = object.serviceId();
+            return  sid ?  sid === type : (object.domainType() == type && object.instanceId() === id);
         } 
 
         this.getDomainObject = function(type: string, id: string) {
@@ -192,14 +180,5 @@ module Spiro.Angular {
         this.setNestedObject = function (cno) {
             currentNestedObject = cno;
         }
-
-        this.isNestedContext = function (type: string, id: string) {
-            return currentNestedObject && currentNestedObject.domainType() === type && currentNestedObject.instanceId() === id;
-        }
-
-
     });
-
-
-    
 }
