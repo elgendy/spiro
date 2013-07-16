@@ -112,6 +112,22 @@ module Spiro.Angular {
         return (results && results.length > 2) ? "#/" + results[1] + "/" + results[2] + "/" + results[3] + "?collectionItem=" + $routeParams.collection + "/" + index + getOtherParms($routeParams, ["property", "collectionItem", "result"])  : "";
     }
 
+    export class ErrorViewModel {
+
+        message: string;
+        stackTrace: string[];
+       
+        static create(errorRep: ErrorRepresentation) {
+            var errorViewModel = new ErrorViewModel();
+            errorViewModel.message = errorRep.message() || "An Error occurred";
+            var stackTrace = errorRep.stacktrace();
+
+            errorViewModel.stackTrace = !stackTrace || stackTrace.length === 0 ? ["Empty"] : stackTrace; 
+            return errorViewModel;
+        }
+    } 
+
+
     export class LinkViewModel {
 
         title: string;
@@ -150,6 +166,10 @@ module Spiro.Angular {
         error: string; 
         id: string; 
 
+        clearError() {
+            this.error = "";
+        }
+
         static create(parmRep: Parameter, id : string) {
             var parmViewModel = new ParameterViewModel();
 
@@ -184,7 +204,14 @@ module Spiro.Angular {
 
         parameters: ParameterViewModel[];
 
-        doInvoke() {}
+        doInvoke() { }
+
+        clearErrors() {
+            this.error = ""; 
+
+            _.each(this.parameters, (parm) => parm.clearError());
+
+        }
 
         static create(actionRep: ActionRepresentation, $routeParams,  invoke: (dvm : DialogViewModel) => void ) {
             var dialogViewModel = new DialogViewModel();

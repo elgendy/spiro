@@ -200,6 +200,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Content\partials\appbar.html" />
+    <Content Include="Content\partials\error.html" />
     <Content Include="Content\partials\nestedCollection.html" />
     <Content Include="Content\partials\dialog.html" />
     <Content Include="Content\partials\object.html" />

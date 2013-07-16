@@ -15,8 +15,7 @@
 
 <body style="cursor: auto;" class="spiro" >
 
-    <%-- Main defines the static structure of the page into which sections of html are dynamically inserted. The format of the
-        inserted html is defined in spiro.modern.presentations.handlebars.templates --%>
+  
     <div id="main"  ng-view>
         <div class="object-view" ng-controller="ServicesController" ng-view>
         </div>

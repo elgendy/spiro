@@ -1,13 +1,23 @@
 ﻿var Spiro;
 (function (Spiro) {
     (function (Angular) {
+        function handleError(Context, error) {
+            var errorRep;
+            if (error instanceof Spiro.ErrorRepresentation) {
+                errorRep = error;
+            } else {
+                errorRep = new Spiro.ErrorRepresentation({ message: "an unrecognised error has occurred" });
+            }
+            Context.setError(errorRep);
+        }
+
         Angular.app.controller('ServicesController', function ($scope, RepresentationLoader, Context) {
             Context.getServices().then(function (services) {
                 $scope.services = Angular.ServicesViewModel.create(services);
                 Context.setObject(null);
                 Context.setNestedObject(null);
             }, function (error) {
-                $scope.services = [];
+                handleError(Context, error);
             });
         });
 
@@ -15,7 +25,7 @@
             Context.getObject($routeParams.sid).then(function (service) {
                 $scope.object = Angular.ServiceViewModel.create(service, $routeParams);
             }, function (error) {
-                $scope.service = {};
+                handleError(Context, error);
             });
         });
 
@@ -32,12 +42,14 @@
                 return RepresentationLoader.populate(actionTarget);
             }).then(function (action) {
                 if (action.extensions().hasParams) {
-                    var invoke = action.getInvoke();
-                    invoke.attributes = {};
                     $scope.dialogTemplate = "Content/partials/dialog.html";
                     $scope.dialog = Angular.DialogViewModel.create(action, $routeParams, function (dvm) {
-                        var parameters = dvm.parameters;
+                        dvm.clearErrors();
 
+                        var invoke = action.getInvoke();
+                        invoke.attributes = {};
+
+                        var parameters = dvm.parameters;
                         _.each(parameters, function (parm) {
                             return invoke.setParameter(parm.id, new Spiro.Value(parm.value || ""));
                         });
@@ -53,26 +65,36 @@
                             } else {
                                 dvm.error = "no result found";
                             }
-                        }, function (errorMap) {
-                            _.each(parameters, function (parm) {
-                                var error = errorMap.values()[parm.id];
+                        }, function (error) {
+                            if (error instanceof Spiro.ErrorMap) {
+                                var errorMap = error;
 
-                                if (error) {
-                                    parm.value = error.value.toValueString();
-                                    parm.error = error.invalidReason;
-                                }
-                            });
+                                _.each(parameters, function (parm) {
+                                    var error = errorMap.values()[parm.id];
 
-                            dvm.error = errorMap.invalidReason();
+                                    if (error) {
+                                        parm.value = error.value.toValueString();
+                                        parm.error = error.invalidReason;
+                                    }
+                                });
+
+                                dvm.error = errorMap.invalidReason();
+                            } else if (error instanceof Spiro.ErrorRepresentation) {
+                                var errorRep = error;
+                                var evm = Angular.ErrorViewModel.create(errorRep);
+                                $scope.error = evm;
+
+                                $scope.dialogTemplate = "Content/partials/error.html";
+                            }
                         });
                     });
                 }
             }, function (error) {
-                $scope.service = {};
+                handleError(Context, error);
             });
         }
 
-        function getActionResult($scope, $routeParams, $location, RepresentationLoader, Context) {
+        function getActionResult($scope, $q, $routeParams, $location, RepresentationLoader, Context) {
             Context.getObject($routeParams.sid || $routeParams.dt, $routeParams.id).then(function (object) {
                 var actions = _.map(object.actionMembers(), function (value, key) {
                     return { key: key, value: value };
@@ -80,14 +102,17 @@
                 var action = _.find(actions, function (kvp) {
                     return kvp.key === $routeParams.action;
                 });
-                var actionTarget = action.value.getDetails();
 
+                if (action.value.extensions().hasParams) {
+                    var delay = $q.defer();
+                    delay.reject();
+                    return delay.promise;
+                }
+                var actionTarget = action.value.getDetails();
                 return RepresentationLoader.populate(actionTarget);
             }).then(function (action) {
-                if (!action.extensions().hasParams) {
-                    var result = action.getInvoke();
-                    return RepresentationLoader.populate(result, true);
-                }
+                var result = action.getInvoke();
+                return RepresentationLoader.populate(result, true);
             }).then(function (result) {
                 var resultObject = result.result().object();
 
@@ -98,7 +123,9 @@
 
                 $location.search(resultParm + otherParms);
             }, function (error) {
-                $scope.service = {};
+                if (error) {
+                    handleError(Context, error);
+                }
             });
         }
 
@@ -120,7 +147,7 @@
                 $scope.nestedTemplate = "Content/partials/nestedObject.html";
                 Context.setNestedObject(object);
             }, function (error) {
-                $scope.object = {};
+                handleError(Context, error);
             });
         }
 
@@ -146,7 +173,7 @@
                 $scope.nestedTemplate = "Content/partials/nestedObject.html";
                 Context.setNestedObject(object);
             }, function (error) {
-                $scope.object = {};
+                handleError(Context, error);
             });
         }
 
@@ -156,9 +183,9 @@
             }
         });
 
-        Angular.app.controller('NestedObjectController', function ($scope, $routeParams, $location, RepresentationLoader, Context) {
+        Angular.app.controller('NestedObjectController', function ($scope, $q, $routeParams, $location, RepresentationLoader, Context) {
             if ($routeParams.action) {
-                getActionResult($scope, $routeParams, $location, RepresentationLoader, Context);
+                getActionResult($scope, $q, $routeParams, $location, RepresentationLoader, Context);
             }
             if ($routeParams.property) {
                 getProperty($scope, $routeParams, $location, RepresentationLoader, Context);
@@ -193,7 +220,7 @@
                 $scope.collection = Angular.CollectionViewModel.createFromDetails(details, $routeParams);
                 $scope.collectionTemplate = "Content/partials/nestedCollection.html";
             }, function (error) {
-                $scope.collection = {};
+                handleError(Context, error);
             });
         });
 
@@ -204,6 +231,16 @@
             }, function (error) {
                 $scope.object = {};
             });
+        });
+
+        Angular.app.controller('ErrorController', function ($scope, Context) {
+            var error = Context.getError();
+
+            if (error) {
+                var evm = Angular.ErrorViewModel.create(error);
+                $scope.error = evm;
+                $scope.errorTemplate = "Content/partials/error.html";
+            }
         });
 
         Angular.app.controller('AppBarController', function ($scope) {

@@ -32,7 +32,10 @@ module Spiro.Angular {
         getNestedObject: (type: string, id: string) => ng.IPromise;
         setNestedObject: (object: DomainObjectRepresentation) => void;
 
-        isNestedContext: (type: string, id: string) => bool;
+        getError: () => ErrorRepresentation;
+        setError: (object: ErrorRepresentation) => void;
+
+        
     }
 
     export interface RLInterface {
@@ -76,8 +79,15 @@ module Spiro.Angular {
                     delay.resolve(model);
                 }).
                 error(function (data, status, headers, config) {
-                    var errorMap = new ErrorMap(data, status, headers().warning); 
-                    delay.reject(errorMap);
+
+                    if (status === 500) {
+                        var error = new ErrorRepresentation(data);
+                        delay.reject(error);
+                    }
+                    else {
+                        var errorMap = new ErrorMap(data, status, headers().warning);
+                        delay.reject(errorMap);
+                    }
                 });
 
             return delay.promise;
@@ -206,5 +216,17 @@ module Spiro.Angular {
         this.setNestedObject = function (cno) {
             currentNestedObject = cno;
         }
+
+        var currentError: ErrorRepresentation = null;
+
+        this.getError = function () {
+            return currentError;
+        }
+        this.setError = function (e: ErrorRepresentation) {
+            currentError = e; 
+        }
+
+
+
     });
 }

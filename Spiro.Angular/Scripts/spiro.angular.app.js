@@ -50,8 +50,13 @@
                     (model).attributes = data;
                     delay.resolve(model);
                 }).error(function (data, status, headers, config) {
-                    var errorMap = new Spiro.ErrorMap(data, status, headers().warning);
-                    delay.reject(errorMap);
+                    if (status === 500) {
+                        var error = new Spiro.ErrorRepresentation(data);
+                        delay.reject(error);
+                    } else {
+                        var errorMap = new Spiro.ErrorMap(data, status, headers().warning);
+                        delay.reject(errorMap);
+                    }
                 });
 
                 return delay.promise;
@@ -168,6 +173,15 @@
 
             this.setNestedObject = function (cno) {
                 currentNestedObject = cno;
+            };
+
+            var currentError = null;
+
+            this.getError = function () {
+                return currentError;
+            };
+            this.setError = function (e) {
+                currentError = e;
             };
         });
     })(Spiro.Angular || (Spiro.Angular = {}));

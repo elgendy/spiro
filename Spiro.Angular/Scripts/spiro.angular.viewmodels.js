@@ -98,6 +98,21 @@ var Spiro;
             return (results && results.length > 2) ? "#/" + results[1] + "/" + results[2] + "/" + results[3] + "?collectionItem=" + $routeParams.collection + "/" + index + getOtherParms($routeParams, ["property", "collectionItem", "result"]) : "";
         }
 
+        var ErrorViewModel = (function () {
+            function ErrorViewModel() {
+            }
+            ErrorViewModel.create = function (errorRep) {
+                var errorViewModel = new ErrorViewModel();
+                errorViewModel.message = errorRep.message() || "An Error occurred";
+                var stackTrace = errorRep.stacktrace();
+
+                errorViewModel.stackTrace = !stackTrace || stackTrace.length === 0 ? ["Empty"] : stackTrace;
+                return errorViewModel;
+            };
+            return ErrorViewModel;
+        })();
+        Angular.ErrorViewModel = ErrorViewModel;
+
         var LinkViewModel = (function () {
             function LinkViewModel() {
             }
@@ -129,6 +144,10 @@ var Spiro;
         var ParameterViewModel = (function () {
             function ParameterViewModel() {
             }
+            ParameterViewModel.prototype.clearError = function () {
+                this.error = "";
+            };
+
             ParameterViewModel.create = function (parmRep, id) {
                 var parmViewModel = new ParameterViewModel();
 
@@ -161,6 +180,14 @@ var Spiro;
             function DialogViewModel() {
             }
             DialogViewModel.prototype.doInvoke = function () {
+            };
+
+            DialogViewModel.prototype.clearErrors = function () {
+                this.error = "";
+
+                _.each(this.parameters, function (parm) {
+                    return parm.clearError();
+                });
             };
 
             DialogViewModel.create = function (actionRep, $routeParams, invoke) {
