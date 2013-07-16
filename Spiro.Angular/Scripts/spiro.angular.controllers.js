@@ -55,17 +55,23 @@
                         });
 
                         RepresentationLoader.populate(invoke, true).then(function (result) {
-                            var resultObject = result.result().object();
+                            if (result.resultType() === "object") {
+                                var resultObject = result.result().object();
 
-                            Context.setNestedObject(resultObject);
+                                Context.setNestedObject(resultObject);
 
-                            if (resultObject) {
-                                var resultParm = "result=" + resultObject.domainType() + "-" + resultObject.instanceId();
-                                var actionParm = show ? "&action=" + $routeParams.action : "";
+                                if (resultObject) {
+                                    var resultParm = "resultObject=" + resultObject.domainType() + "-" + resultObject.instanceId();
+                                    var actionParm = show ? "&action=" + $routeParams.action : "";
 
-                                $location.search(resultParm + actionParm);
-                            } else {
-                                dvm.error = "no result found";
+                                    $location.search(resultParm + actionParm);
+                                } else {
+                                    dvm.error = "no result found";
+                                }
+                            }
+
+                            if (result.resultType() === "list") {
+                                var resultList = result.result().list();
                             }
                         }, function (error) {
                             if (error instanceof Spiro.ErrorMap) {
@@ -120,8 +126,8 @@
 
                 Context.setNestedObject(resultObject);
 
-                var resultParm = "result=" + resultObject.domainType() + "-" + resultObject.instanceId();
-                var otherParms = Angular.getOtherParms($routeParams, ["property", "collectionItem", "result", "action"]);
+                var resultParm = "resultObject=" + resultObject.domainType() + "-" + resultObject.instanceId();
+                var otherParms = Angular.getOtherParms($routeParams, ["property", "collectionItem", "resultObject", "action"]);
 
                 $location.search(resultParm + otherParms);
             }, function (error) {
@@ -193,8 +199,8 @@
                 getProperty($scope, $routeParams, $location, RepresentationLoader, Context);
             } else if ($routeParams.collectionItem) {
                 getCollectionItem($scope, $routeParams, $location, RepresentationLoader, Context);
-            } else if ($routeParams.result) {
-                var result = $routeParams.result.split("-");
+            } else if ($routeParams.resultObject) {
+                var result = $routeParams.resultObject.split("-");
                 var dt = result[0];
                 var id = result[1];
 

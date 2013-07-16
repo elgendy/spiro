@@ -55,9 +55,9 @@ var Spiro;
             var collectionParm = include("collection") ? "&collection=" + $routeParams.collection : "";
             var collectionItemParm = include("collectionItem") ? "&collectionItem=" + $routeParams.collectionItem : "";
             var propertyParm = include("property") ? "&property=" + $routeParams.property : "";
-            var resultParm = include("result") ? "&result=" + $routeParams.result : "";
+            var resultObjectParm = include("resultObject") ? "&resultObject=" + $routeParams.resultObject : "";
 
-            return actionParm + collectionParm + collectionItemParm + propertyParm + resultParm;
+            return actionParm + collectionParm + collectionItemParm + propertyParm + resultObjectParm;
         }
         Angular.getOtherParms = getOtherParms;
 
@@ -83,7 +83,7 @@ var Spiro;
         function toPropertyUrl(href, $routeParams) {
             var urlRegex = /(objects)\/([\w|\.]+)\/([\w|\.]+)\/(properties)\/([\w|\.]+)/;
             var results = (urlRegex).exec(href);
-            return (results && results.length > 5) ? "#/" + results[1] + "/" + results[2] + "/" + results[3] + "?property=" + results[5] + getOtherParms($routeParams, ["property", "collectionItem", "result"]) : "";
+            return (results && results.length > 5) ? "#/" + results[1] + "/" + results[2] + "/" + results[3] + "?property=" + results[5] + getOtherParms($routeParams, ["property", "collectionItem", "resultObject"]) : "";
         }
 
         function toCollectionUrl(href, $routeParams) {
@@ -95,7 +95,7 @@ var Spiro;
         function toItemUrl(href, index, $routeParams) {
             var urlRegex = /(objects)\/([\w|\.]+)\/([\w|\.]+)/;
             var results = (urlRegex).exec(href);
-            return (results && results.length > 2) ? "#/" + results[1] + "/" + results[2] + "/" + results[3] + "?collectionItem=" + $routeParams.collection + "/" + index + getOtherParms($routeParams, ["property", "collectionItem", "result"]) : "";
+            return (results && results.length > 2) ? "#/" + results[1] + "/" + results[2] + "/" + results[3] + "?collectionItem=" + $routeParams.collection + "/" + index + getOtherParms($routeParams, ["property", "collectionItem", "resultObject"]) : "";
         }
 
         var ErrorViewModel = (function () {
@@ -309,7 +309,7 @@ var Spiro;
                 });
                 serviceViewModel.color = toColorFromType(serviceRep.serviceId());
                 serviceViewModel.href = toAppUrl(serviceRep.getUrl());
-                serviceViewModel.closeNestedObject = toAppUrl(serviceRep.getUrl(), $routeParams, ["result"]);
+                serviceViewModel.closeNestedObject = toAppUrl(serviceRep.getUrl(), $routeParams, ["resultObject"]);
 
                 return serviceViewModel;
             };
@@ -331,7 +331,7 @@ var Spiro;
                 objectViewModel.title = objectRep.title();
                 objectViewModel.href = toAppUrl(objectRep.getUrl());
 
-                objectViewModel.closeNestedObject = toAppUrl(objectRep.getUrl(), $routeParams, ["property", "collectionItem", "result"]);
+                objectViewModel.closeNestedObject = toAppUrl(objectRep.getUrl(), $routeParams, ["property", "collectionItem", "resultObject"]);
                 objectViewModel.closeCollection = toAppUrl(objectRep.getUrl(), $routeParams, ["collection"]);
 
                 objectViewModel.color = toColorFromType(objectRep.domainType());

@@ -67,21 +67,35 @@ module Spiro.Angular {
 
                         RepresentationLoader.populate(invoke, true).
                             then(function (result: ActionResultRepresentation) {
-                                var resultObject = result.result().object()
+
+                                if (result.resultType() === "object") {
+                                    var resultObject = result.result().object();
 
                                     // set the nested object here and then update the url. That should reload the page but pick up this object 
                                     // so we don't hit the server again. 
                                     Context.setNestedObject(resultObject);
 
-                                if (resultObject) {
-                                    var resultParm = "result=" + resultObject.domainType() + "-" + resultObject.instanceId();  // todo add some parm handling code 
-                                    var actionParm = show ? "&action=" + $routeParams.action : ""; 
+                                    if (resultObject) {
+                                        var resultParm = "resultObject=" + resultObject.domainType() + "-" + resultObject.instanceId();  // todo add some parm handling code 
+                                        var actionParm = show ? "&action=" + $routeParams.action : "";
 
-                                    $location.search(resultParm + actionParm);
+                                        $location.search(resultParm + actionParm);
+                                    }
+                                    else {
+                                        dvm.error = "no result found";
+                                    }
                                 }
-                                else {
-                                    dvm.error = "no result found";
+
+                                if (result.resultType() === "list") {
+                                    var resultList = result.result().list();
+                                
+                                
+                                
+                                
                                 }
+
+
+                            
 
                             }, function (error: HateoasModelBase) {
 
@@ -143,8 +157,8 @@ module Spiro.Angular {
                 // so we don't hit the server again. 
                 Context.setNestedObject(resultObject);
 
-                var resultParm = "result=" + resultObject.domainType() + "-" + resultObject.instanceId();  // todo add some parm handling code 
-                var otherParms = getOtherParms($routeParams, ["property", "collectionItem", "result", "action"]);
+                var resultParm = "resultObject=" + resultObject.domainType() + "-" + resultObject.instanceId();  // todo add some parm handling code 
+                var otherParms = getOtherParms($routeParams, ["property", "collectionItem", "resultObject", "action"]);
 
                 $location.search(resultParm + otherParms);
 
@@ -231,8 +245,8 @@ module Spiro.Angular {
         else if ($routeParams.collectionItem) {
             getCollectionItem($scope, $routeParams, $location, RepresentationLoader, Context);
         }
-        else if ($routeParams.result) {
-            var result = $routeParams.result.split("-");
+        else if ($routeParams.resultObject) {
+            var result = $routeParams.resultObject.split("-");
             var dt = result[0];
             var id = result[1]; 
 
