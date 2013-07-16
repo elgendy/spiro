@@ -43,7 +43,7 @@
             }).then(function (action) {
                 if (action.extensions().hasParams) {
                     $scope.dialogTemplate = "Content/partials/dialog.html";
-                    $scope.dialog = Angular.DialogViewModel.create(action, $routeParams, function (dvm) {
+                    $scope.dialog = Angular.DialogViewModel.create(action, $routeParams, function (dvm, show) {
                         dvm.clearErrors();
 
                         var invoke = action.getInvoke();
@@ -61,7 +61,9 @@
 
                             if (resultObject) {
                                 var resultParm = "result=" + resultObject.domainType() + "-" + resultObject.instanceId();
-                                $location.search(resultParm);
+                                var actionParm = show ? "&action=" + $routeParams.action : "";
+
+                                $location.search(resultParm + actionParm);
                             } else {
                                 dvm.error = "no result found";
                             }

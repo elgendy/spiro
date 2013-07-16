@@ -201,30 +201,33 @@ module Spiro.Angular {
         title: string;
         error: string;
         close: string; 
+        isQuery: bool; 
 
         parameters: ParameterViewModel[];
 
+        doShow() { }
         doInvoke() { }
 
         clearErrors() {
             this.error = ""; 
-
             _.each(this.parameters, (parm) => parm.clearError());
-
         }
 
-        static create(actionRep: ActionRepresentation, $routeParams,  invoke: (dvm : DialogViewModel) => void ) {
+        static create(actionRep: ActionRepresentation, $routeParams,  invoke: (dvm : DialogViewModel, show : boolean) => void ) {
             var dialogViewModel = new DialogViewModel();
             var parameters = actionRep.parameters();
 
             dialogViewModel.title = actionRep.extensions().friendlyName;
+            dialogViewModel.isQuery = actionRep.invokeLink().method() === "GET";
+
             dialogViewModel.error = "";
 
             dialogViewModel.close = toAppUrl(actionRep.upLink().href(), $routeParams, ["action"]); 
 
             dialogViewModel.parameters = _.map(parameters, (parm, id) => { return ParameterViewModel.create(parm, id); });
 
-            dialogViewModel.doInvoke = () => invoke(dialogViewModel);  
+            dialogViewModel.doShow = () => invoke(dialogViewModel, true); 
+            dialogViewModel.doInvoke = () => invoke(dialogViewModel, false);  
 
             return dialogViewModel;
         }

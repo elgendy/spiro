@@ -14,6 +14,13 @@
             </div>
             {{dialog.error}}
         </div>
-        <input class='go' type='submit' value='Do' style='float: right' ng-click="dialog.doInvoke()" />
+
+        <div ng-switch="dialog.isQuery">
+            <div ng-switch-when="true">                
+                <input class='show' type='submit' value='Show' style='float: right' ng-click="dialog.doShow()" />
+                <input class='go' type='submit' value='Go' style='float: right' ng-click="dialog.doInvoke()" />
+            </div>
+            <input ng-switch-when="false" class='go' type='submit' value='Do' style='float: right' ng-click="dialog.doInvoke()" />
+        </div>
     </form>
 </div>

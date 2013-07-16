@@ -40,7 +40,6 @@ module Spiro.Angular {
     });
 
   
-
     function getActionDialog($scope, $routeParams, $location, RepresentationLoader: RLInterface, Context: ContextInterface) {
         Context.getObject($routeParams.sid || $routeParams.dt, $routeParams.id).
             then(function (object: DomainObjectRepresentation) {
@@ -57,7 +56,7 @@ module Spiro.Angular {
                 if (action.extensions().hasParams) {
                  
                     $scope.dialogTemplate = "Content/partials/dialog.html";
-                    $scope.dialog = DialogViewModel.create(action, $routeParams, function (dvm: DialogViewModel) {
+                    $scope.dialog = DialogViewModel.create(action, $routeParams, function (dvm: DialogViewModel, show : boolean) {
                         dvm.clearErrors(); 
 
                         var invoke = action.getInvoke();
@@ -76,7 +75,9 @@ module Spiro.Angular {
 
                                 if (resultObject) {
                                     var resultParm = "result=" + resultObject.domainType() + "-" + resultObject.instanceId();  // todo add some parm handling code 
-                                    $location.search(resultParm);
+                                    var actionParm = show ? "&action=" + $routeParams.action : ""; 
+
+                                    $location.search(resultParm + actionParm);
                                 }
                                 else {
                                     dvm.error = "no result found";

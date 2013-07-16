@@ -179,12 +179,13 @@ var Spiro;
         var DialogViewModel = (function () {
             function DialogViewModel() {
             }
+            DialogViewModel.prototype.doShow = function () {
+            };
             DialogViewModel.prototype.doInvoke = function () {
             };
 
             DialogViewModel.prototype.clearErrors = function () {
                 this.error = "";
-
                 _.each(this.parameters, function (parm) {
                     return parm.clearError();
                 });
@@ -195,6 +196,8 @@ var Spiro;
                 var parameters = actionRep.parameters();
 
                 dialogViewModel.title = actionRep.extensions().friendlyName;
+                dialogViewModel.isQuery = actionRep.invokeLink().method() === "GET";
+
                 dialogViewModel.error = "";
 
                 dialogViewModel.close = toAppUrl(actionRep.upLink().href(), $routeParams, ["action"]);
@@ -203,8 +206,11 @@ var Spiro;
                     return ParameterViewModel.create(parm, id);
                 });
 
+                dialogViewModel.doShow = function () {
+                    return invoke(dialogViewModel, true);
+                };
                 dialogViewModel.doInvoke = function () {
-                    return invoke(dialogViewModel);
+                    return invoke(dialogViewModel, false);
                 };
 
                 return dialogViewModel;
