@@ -94,7 +94,9 @@
                 Context.setNestedObject(resultObject);
 
                 var resultParm = "result=" + resultObject.domainType() + "-" + resultObject.instanceId();
-                $location.search(resultParm);
+                var otherParms = Angular.getOtherParms($routeParams, ["property", "collectionItem", "result", "action"]);
+
+                $location.search(resultParm + otherParms);
             }, function (error) {
                 $scope.service = {};
             });
@@ -155,12 +157,13 @@
         });
 
         Angular.app.controller('NestedObjectController', function ($scope, $routeParams, $location, RepresentationLoader, Context) {
+            if ($routeParams.action) {
+                getActionResult($scope, $routeParams, $location, RepresentationLoader, Context);
+            }
             if ($routeParams.property) {
                 getProperty($scope, $routeParams, $location, RepresentationLoader, Context);
             } else if ($routeParams.collectionItem) {
                 getCollectionItem($scope, $routeParams, $location, RepresentationLoader, Context);
-            } else if ($routeParams.action) {
-                getActionResult($scope, $routeParams, $location, RepresentationLoader, Context);
             } else if ($routeParams.result) {
                 var result = $routeParams.result.split("-");
                 var dt = result[0];

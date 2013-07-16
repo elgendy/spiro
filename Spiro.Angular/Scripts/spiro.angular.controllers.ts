@@ -112,12 +112,12 @@ module Spiro.Angular {
                 // set the nested object here and then update the url. That should reload the page but pick up this object 
                 // so we don't hit the server again. 
                 Context.setNestedObject(resultObject);
-
                 
                 var resultParm = "result=" + resultObject.domainType() + "-" + resultObject.instanceId();  // todo add some parm handling code 
-                $location.search(resultParm);
-            
+                var otherParms = getOtherParms($routeParams, ["property", "collectionItem", "result", "action" ]); 
 
+                $location.search(resultParm + otherParms);
+            
             }, function (error) {
                 $scope.service = {};
             });
@@ -187,14 +187,15 @@ module Spiro.Angular {
 
     app.controller('NestedObjectController', function ($scope, $routeParams, $location, RepresentationLoader: RLInterface, Context: ContextInterface) {
 
+        // action takes priority 
+        if ($routeParams.action) {
+            getActionResult($scope, $routeParams, $location, RepresentationLoader, Context);
+        }
         if ($routeParams.property) {
             getProperty($scope, $routeParams, $location, RepresentationLoader, Context);
         }
         else if ($routeParams.collectionItem) {
             getCollectionItem($scope, $routeParams, $location, RepresentationLoader, Context);
-        }
-        else if ($routeParams.action) {
-            getActionResult($scope, $routeParams, $location, RepresentationLoader, Context);
         }
         else if ($routeParams.result) {
             var result = $routeParams.result.split("-");
