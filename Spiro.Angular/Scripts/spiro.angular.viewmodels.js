@@ -40,50 +40,60 @@ var Spiro;
             return "bg-color-" + getColourMapValues(type)["backgroundColor"];
         }
 
+        function getOtherParms($routeParams, excepts) {
+            function include(parm) {
+                return $routeParams[parm] && !_.any(excepts, function (except) {
+                    return parm === except;
+                });
+            }
+
+            function getParm(name) {
+                return include(name) ? "&" + name + "=" + $routeParams[name] : "";
+            }
+
+            var actionParm = include("action") ? "&action=" + $routeParams.action : "";
+            var collectionParm = include("collection") ? "&collection=" + $routeParams.collection : "";
+            var collectionItemParm = include("collectionItem") ? "&collectionItem=" + $routeParams.collectionItem : "";
+            var propertyParm = include("property") ? "&property=" + $routeParams.property : "";
+
+            return actionParm + collectionParm + collectionItemParm + propertyParm;
+        }
+
         function toAppUrl(href, $routeParams, toClose) {
             var urlRegex = /(objects|services)\/(.*)/;
             var results = (urlRegex).exec(href);
             var parms = "";
 
             if (toClose) {
-                var collectionParm = $routeParams.collection && toClose !== "collection" ? "&collection=" + $routeParams.collection : "";
-                var propertyParm = $routeParams.property && toClose !== "property" ? "&property=" + $routeParams.property : "";
-                var collectionItemParm = $routeParams.collectionItem && toClose !== "property" ? "&collectionItem=" + $routeParams.collectionItem : "";
-
-                parms = collectionParm + propertyParm + collectionItemParm;
+                parms = getOtherParms($routeParams, [toClose]);
                 parms = parms ? "?" + parms.substr(1) : "";
             }
 
             return (results && results.length > 2) ? "#/" + results[1] + "/" + results[2] + parms : "";
         }
 
-        function toActionUrl(href) {
+        function toActionUrl(href, $routeParams) {
             var urlRegex = /(services|objects)\/([\w|\.]+(\/[\w|\.]+)?)\/actions\/([\w|\.]+)/;
             var results = (urlRegex).exec(href);
-
-            return (results && results.length > 3) ? "#/" + results[1] + "/" + results[2] + "?action=" + results[4] : "";
+            return (results && results.length > 3) ? "#/" + results[1] + "/" + results[2] + "?action=" + results[4] + getOtherParms($routeParams, ["action"]) : "";
         }
 
         function toPropertyUrl(href, $routeParams) {
             var urlRegex = /(objects)\/([\w|\.]+)\/([\w|\.]+)\/(properties)\/([\w|\.]+)/;
             var results = (urlRegex).exec(href);
-            var collectionParm = $routeParams.collection ? "&collection=" + $routeParams.collection : "";
-            return (results && results.length > 5) ? "#/" + results[1] + "/" + results[2] + "/" + results[3] + "?property=" + results[5] + collectionParm : "";
+            return (results && results.length > 5) ? "#/" + results[1] + "/" + results[2] + "/" + results[3] + "?property=" + results[5] + getOtherParms($routeParams, ["property", "collectionItem"]) : "";
         }
 
         function toCollectionUrl(href, $routeParams) {
             var urlRegex = /(objects)\/([\w|\.]+)\/([\w|\.]+)\/(collections)\/([\w|\.]+)/;
             var results = (urlRegex).exec(href);
-            var propertyParm = $routeParams.property ? "&property=" + $routeParams.property : "";
-            var collectionItemParm = $routeParams.collectionItem ? "&collectionItem=" + $routeParams.collectionItem : "";
-            return (results && results.length > 5) ? "#/" + results[1] + "/" + results[2] + "/" + results[3] + "?collection=" + results[5] + propertyParm + collectionItemParm : "";
+            return (results && results.length > 5) ? "#/" + results[1] + "/" + results[2] + "/" + results[3] + "?collection=" + results[5] + getOtherParms($routeParams, []) : "";
         }
 
         function toItemUrl(href, index, $routeParams) {
             var urlRegex = /(objects)\/([\w|\.]+)\/([\w|\.]+)/;
             var results = (urlRegex).exec(href);
-            var collectionParm = $routeParams.collection ? "&collection=" + $routeParams.collection : "";
-            return (results && results.length > 2) ? "#/" + results[1] + "/" + results[2] + "/" + results[3] + "?collectionItem=" + $routeParams.collection + "/" + index + collectionParm : "";
+            return (results && results.length > 2) ? "#/" + results[1] + "/" + results[2] + "/" + results[3] + "?collectionItem=" + $routeParams.collection + "/" + index + getOtherParms($routeParams, ["property", "collectionItem"]) : "";
         }
 
         var LinkViewModel = (function () {
@@ -135,10 +145,10 @@ var Spiro;
         var ActionViewModel = (function () {
             function ActionViewModel() {
             }
-            ActionViewModel.create = function (actionRep) {
+            ActionViewModel.create = function (actionRep, $routeParams) {
                 var actionViewModel = new ActionViewModel();
                 actionViewModel.title = actionRep.extensions().friendlyName;
-                actionViewModel.href = toActionUrl(actionRep.detailsLink().href());
+                actionViewModel.href = toActionUrl(actionRep.detailsLink().href(), $routeParams);
                 return actionViewModel;
             };
             return ActionViewModel;
@@ -151,12 +161,14 @@ var Spiro;
             DialogViewModel.prototype.doInvoke = function () {
             };
 
-            DialogViewModel.create = function (actionRep, invoke) {
+            DialogViewModel.create = function (actionRep, $routeParams, invoke) {
                 var dialogViewModel = new DialogViewModel();
                 var parameters = actionRep.parameters();
 
                 dialogViewModel.title = actionRep.extensions().friendlyName;
                 dialogViewModel.error = "";
+
+                dialogViewModel.close = toAppUrl(actionRep.upLink().href(), $routeParams, "action");
 
                 dialogViewModel.parameters = _.map(parameters, function (parm, id) {
                     return ParameterViewModel.create(parm, id);
@@ -252,13 +264,13 @@ var Spiro;
         var ServiceViewModel = (function () {
             function ServiceViewModel() {
             }
-            ServiceViewModel.create = function (serviceRep) {
+            ServiceViewModel.create = function (serviceRep, $routeParams) {
                 var serviceViewModel = new ServiceViewModel();
                 var actions = serviceRep.actionMembers();
                 serviceViewModel.serviceId = serviceRep.serviceId();
                 serviceViewModel.title = serviceRep.title();
                 serviceViewModel.actions = _.map(actions, function (action) {
-                    return ActionViewModel.create(action);
+                    return ActionViewModel.create(action, $routeParams);
                 });
                 serviceViewModel.color = toColorFromType(serviceRep.serviceId());
                 serviceViewModel.href = toAppUrl(serviceRep.getUrl());
@@ -295,9 +307,8 @@ var Spiro;
                 objectViewModel.collections = _.map(collections, function (collection) {
                     return CollectionViewModel.create(collection, $routeParams);
                 });
-
                 objectViewModel.actions = _.map(actions, function (action) {
-                    return ActionViewModel.create(action);
+                    return ActionViewModel.create(action, $routeParams);
                 });
 
                 return objectViewModel;

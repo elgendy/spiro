@@ -1,5 +1,8 @@
 ﻿<div class='action-dialog'>
-    <div class='title'>{{dialog.title}}</div>
+    <div class='title'>
+        {{dialog.title}}
+         <a class="cancel icon-cancel" href="{{dialog.close}}" ></a>
+    </div>
     <form>
         <div class='parameters'>
             <div class='parameter' ng-repeat="parameter in dialog.parameters">

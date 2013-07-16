@@ -21,7 +21,7 @@ module Spiro.Angular {
 
         Context.getObject($routeParams.sid).
             then(function (service: DomainObjectRepresentation) {
-                $scope.object = ServiceViewModel.create(service);          
+                $scope.object = ServiceViewModel.create(service, $routeParams);          
             }, function (error) {
                 $scope.service = {};
             });
@@ -46,41 +46,40 @@ module Spiro.Angular {
                     var invoke = action.getInvoke();
                     invoke.attributes = {}; // todo make automatic 
                     $scope.dialogTemplate = "Content/partials/dialog.html";
-                    $scope.dialog = DialogViewModel.create(action,
-                        function (dvm: DialogViewModel) {
-                            var parameters = dvm.parameters;
+                    $scope.dialog = DialogViewModel.create(action, $routeParams, function (dvm: DialogViewModel) {
+                        var parameters = dvm.parameters;
 
-                            _.each(parameters, (parm) => invoke.setParameter(parm.id, new Value(parm.value||"")));
+                        _.each(parameters, (parm) => invoke.setParameter(parm.id, new Value(parm.value || "")));
 
-                            RepresentationLoader.populate(invoke, true).
-                                then(function (result: ActionResultRepresentation) {
-                                    var resultObject = result.result().object()
+                        RepresentationLoader.populate(invoke, true).
+                            then(function (result: ActionResultRepresentation) {
+                                var resultObject = result.result().object()
 
                                     // set the nested object here and then update the url. That should reload the page but pick up this object 
                                     // so we don't hit the server again. 
                                     Context.setNestedObject(resultObject);
 
-                                    if (resultObject) {
-                                        var resultParm = "result=" + resultObject.domainType() + "-" + resultObject.instanceId();  // todo add some parm handling code 
-                                        $location.search(resultParm);
+                                if (resultObject) {
+                                    var resultParm = "result=" + resultObject.domainType() + "-" + resultObject.instanceId();  // todo add some parm handling code 
+                                    $location.search(resultParm);
+                                }
+                                else {
+                                    dvm.error = "no result found";
+                                }
+
+                            }, function (errorMap: ErrorMap) {
+                                _.each(parameters, (parm) => {
+                                    var error = errorMap.values()[parm.id];
+
+                                    if (error) {
+                                        parm.value = error.value.toValueString();
+                                        parm.error = error.invalidReason;
                                     }
-                                    else {
-                                        dvm.error = "no result found"; 
-                                    }
-
-                                }, function (errorMap : ErrorMap) {
-                                    _.each(parameters, (parm) => {
-                                        var error = errorMap.values()[parm.id]; 
-
-                                        if (error) {
-                                            parm.value = error.value.toValueString();
-                                            parm.error = error.invalidReason; 
-                                        }   
-                                    });
-
-                                    dvm.error = errorMap.invalidReason();
                                 });
-                        });
+
+                                dvm.error = errorMap.invalidReason();
+                            });
+                    });
                 }
             }, function (error) {
                 $scope.service = {};

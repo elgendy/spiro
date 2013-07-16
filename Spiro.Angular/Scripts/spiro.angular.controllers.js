@@ -13,7 +13,7 @@
 
         Angular.app.controller('ServiceController', function ($scope, $routeParams, RepresentationLoader, Context) {
             Context.getObject($routeParams.sid).then(function (service) {
-                $scope.object = Angular.ServiceViewModel.create(service);
+                $scope.object = Angular.ServiceViewModel.create(service, $routeParams);
             }, function (error) {
                 $scope.service = {};
             });
@@ -35,7 +35,7 @@
                     var invoke = action.getInvoke();
                     invoke.attributes = {};
                     $scope.dialogTemplate = "Content/partials/dialog.html";
-                    $scope.dialog = Angular.DialogViewModel.create(action, function (dvm) {
+                    $scope.dialog = Angular.DialogViewModel.create(action, $routeParams, function (dvm) {
                         var parameters = dvm.parameters;
 
                         _.each(parameters, function (parm) {
