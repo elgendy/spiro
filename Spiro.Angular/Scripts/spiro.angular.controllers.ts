@@ -5,19 +5,9 @@
 
 module Spiro.Angular {
 
-    function handleError(Context, error) {
+    
 
-        var errorRep: ErrorRepresentation;
-        if (error instanceof ErrorRepresentation) {
-            errorRep = <ErrorRepresentation>error;   
-        }
-        else {
-            errorRep = new ErrorRepresentation({ message: "an unrecognised error has occurred" });
-        }
-        Context.setError(errorRep);
-    }
-
-    app.controller('ServicesController', function ($scope, RepresentationLoader : RLInterface, Context: ContextInterface) {
+    app.controller('ServicesController', function ($scope, RepresentationLoader: RLInterface, Context: ContextInterface, Handlers:HandlersInterface) {
 
         Context.getServices().
             then(function (services: DomainServicesRepresentation) {
@@ -25,212 +15,37 @@ module Spiro.Angular {
                 Context.setObject(null);
                 Context.setNestedObject(null);
             }, function (error) {
-                handleError(Context, error); 
+                Handlers.handleError(error); 
             });    
     });
 
-    app.controller('ServiceController', function ($scope, $routeParams, RepresentationLoader: RLInterface, Context: ContextInterface) {
+    app.controller('ServiceController', function ($scope, $routeParams, RepresentationLoader: RLInterface, Context: ContextInterface, Handlers: HandlersInterface) {
 
         Context.getObject($routeParams.sid).
             then(function (service: DomainObjectRepresentation) {
                 $scope.object = ServiceViewModel.create(service, $routeParams);          
             }, function (error) {
-                handleError(Context, error); 
+                Handlers.handleError(error); 
             });
     });
 
-    function handleResult(result: ActionResultRepresentation, $routeParams, $location, Context: ContextInterface, dvm?: DialogViewModel, show? : boolean) {
-        if (result.result().isNull()) {
-            if (dvm) {
-                dvm.error = "no result found";
-            }
-            return;
-        }
-
-        if (result.resultType() === "object") {
-            var resultObject = result.result().object();
-
-            // set the nested object here and then update the url. That should reload the page but pick up this object 
-            // so we don't hit the server again. 
-            Context.setNestedObject(resultObject);
-            
-            var resultParm = "resultObject=" + resultObject.domainType() + "-" + resultObject.instanceId();  // todo add some parm handling code 
-            var actionParm = show ? "&action=" + $routeParams.action : "";
-
-            $location.search(resultParm + actionParm);
-        }
-
-        if (result.resultType() === "list") {
-            var resultList = result.result().list();
-
-            Context.setCollection(resultList);
-            
-            var pps = dvm ? _.reduce(dvm.parameters, (memo, parm) => { return memo + parm.value  + "-"; }, "") : "";
-
-            var resultParm = "resultCollection=" + $routeParams.action + pps;  // todo add some parm handling code 
-            var actionParm = show ? "&action=" + $routeParams.action : "";
-
-            $location.search(resultParm + actionParm);
-        }
-    
-    }
-
-
-
-    function getActionDialog($scope, $routeParams, $location, RepresentationLoader: RLInterface, Context: ContextInterface) {
-        Context.getObject($routeParams.sid || $routeParams.dt, $routeParams.id).
-            then(function (object: DomainObjectRepresentation) {
-
-                var actions: { key: string; value: ActionMember }[] = _.map(object.actionMembers(), (value, key) => {
-                    return { key: key, value: value };
-                });
-                var action = _.find(actions, (kvp) => { return kvp.key === $routeParams.action; });
-                var actionTarget = action.value.getDetails();
-
-                return RepresentationLoader.populate(actionTarget);
-            }).
-            then(function (action: ActionRepresentation) {
-                if (action.extensions().hasParams) {
-                 
-                    $scope.dialogTemplate = "Content/partials/dialog.html";
-                    $scope.dialog = DialogViewModel.create(action, $routeParams, function (dvm: DialogViewModel, show : boolean) {
-                        dvm.clearErrors(); 
-
-                        var invoke = action.getInvoke();
-                        invoke.attributes = {}; // todo make automatic 
-
-                        var parameters = dvm.parameters;
-                        _.each(parameters, (parm) => invoke.setParameter(parm.id, new Value(parm.value || "")));
-
-                        RepresentationLoader.populate(invoke, true).
-                            then(function (result: ActionResultRepresentation) {
-                                handleResult(result, $routeParams, $location, Context, dvm, show); 
-                            }, function (error: HateoasModelBase) {
-
-                                if (error instanceof ErrorMap) {
-                                    var errorMap = <ErrorMap>error;
-
-                                    _.each(parameters, (parm) => {
-                                        var error = errorMap.values()[parm.id];
-
-                                        if (error) {
-                                            parm.value = error.value.toValueString();
-                                            parm.error = error.invalidReason;
-                                        }
-                                    });
-
-                                    dvm.error = errorMap.invalidReason();
-                                }
-                                else if (error instanceof ErrorRepresentation) {
-                                    var errorRep = <ErrorRepresentation>error;                      
-                                    var evm = ErrorViewModel.create(errorRep);
-                                    $scope.error = evm; 
-
-                                    $scope.dialogTemplate = "Content/partials/error.html";
-                                }
-                            });
-                    });
-                }
-            }, function (error) {
-                handleError(Context, error); 
-            });
-    }
-
-
-    function getActionResult($scope, $q, $routeParams, $location, RepresentationLoader: RLInterface, Context: ContextInterface) {
-        Context.getObject($routeParams.sid || $routeParams.dt, $routeParams.id).
-            then(function (object: DomainObjectRepresentation) {
-
-                var actions: { key: string; value: ActionMember }[] = _.map(object.actionMembers(), (value, key) => {
-                    return { key: key, value: value };
-                });
-                var action = _.find(actions, (kvp) => { return kvp.key === $routeParams.action; });
-
-                if (action.value.extensions().hasParams) {
-                    var delay = $q.defer();
-                    delay.reject(); 
-                    return delay.promise; 
-                }
-                var actionTarget = action.value.getDetails();
-                return RepresentationLoader.populate(actionTarget);     
-            }).
-            then(function (action: ActionRepresentation) {
-                var result = action.getInvoke();
-                return RepresentationLoader.populate(result, true);
-            }).
-            then(function (result: ActionResultRepresentation) {
-
-                handleResult(result, $routeParams, $location, Context); 
-
-            }, function (error) {
-                if (error) {
-                    handleError(Context, error);
-                }
-                // otherwise just action with parms 
-            });
-    }
-
-
-    function getProperty($scope, $routeParams, $location, RepresentationLoader: RLInterface, Context: ContextInterface) {
-        Context.getObject($routeParams.dt, $routeParams.id).
-            then(function (object: DomainObjectRepresentation) {
-                var properties: { key: string; value: PropertyMember }[] = _.map(object.propertyMembers(), (value, key) => {
-                    return { key: key, value: value };
-                });
-                var property = _.find(properties, (kvp) => { return kvp.key === $routeParams.property; });
-                var propertyDetails = property.value.getDetails();
-                return RepresentationLoader.populate(propertyDetails);
-            }).
-            then(function (details: PropertyRepresentation) {
-                var target = details.value().link().getTarget()
-                return RepresentationLoader.populate(target);
-            }).
-            then(function (object: DomainObjectRepresentation) {
-
-                $scope.result = DomainObjectViewModel.create(object, $routeParams); // todo rename result
-                $scope.nestedTemplate = "Content/partials/nestedObject.html";
-                Context.setNestedObject(object);
-            }, function (error) {
-                handleError(Context, error); 
-            }); 
-    }
-
-    function getCollectionItem($scope, $routeParams, $location, RepresentationLoader: RLInterface, Context: ContextInterface) {
-        var collectionIndex = $routeParams.collectionItem.split("/");
-        var collectionType = collectionIndex[0];
-        var collectionKey = collectionIndex[1];
-
-        Context.getNestedObject(collectionType,collectionKey).
-            then(function (object: DomainObjectRepresentation) {
-                $scope.result = DomainObjectViewModel.create(object, $routeParams); // todo rename result
-                $scope.nestedTemplate = "Content/partials/nestedObject.html";
-                Context.setNestedObject(object);
-            }, function (error) {
-                handleError(Context, error); 
-            });
-    
-    }
-
-    app.controller('DialogController', function ($scope, $routeParams, $location, RepresentationLoader: RLInterface, Context: ContextInterface) {
-
+    app.controller('DialogController', function ($routeParams, $scope, Handlers: HandlersInterface) {
         if ($routeParams.action) {
-            getActionDialog($scope, $routeParams, $location, RepresentationLoader, Context);
+            Handlers.handleActionDialog($scope);
         }
     });
 
-
-    app.controller('NestedObjectController', function ($scope, $q, $routeParams, $location, RepresentationLoader: RLInterface, Context: ContextInterface) {
+    app.controller('NestedObjectController', function ($scope, $q, $routeParams, $location, RepresentationLoader: RLInterface, Context: ContextInterface, Handlers: HandlersInterface) {
 
         // action takes priority 
-        // TODO can theses be services or something so that they  injected automatically ? 
         if ($routeParams.action) {
-            getActionResult($scope, $q, $routeParams, $location, RepresentationLoader, Context);
+            Handlers.handleActionResult($scope);
         }
         if ($routeParams.property) {
-            getProperty($scope, $routeParams, $location, RepresentationLoader, Context);
+            Handlers.handleProperty($scope);
         }
         else if ($routeParams.collectionItem) {
-            getCollectionItem($scope, $routeParams, $location, RepresentationLoader, Context);
+            Handlers.handleCollectionItem($scope);
         }
         else if ($routeParams.resultObject) {
             var result = $routeParams.resultObject.split("-");
@@ -248,49 +63,16 @@ module Spiro.Angular {
         }
     });
 
-   function getCollection ($scope, $routeParams, $location, RepresentationLoader: RLInterface, Context: ContextInterface) {
-
-        Context.getObject($routeParams.dt, $routeParams.id).
-            then(function (object: DomainObjectRepresentation) {
-
-                var collections: { key: string; value: CollectionMember }[] = _.map(object.collectionMembers(), (value, key) => {
-                    return { key: key, value: value };
-                });
-                var collection = _.find(collections, (kvp) => { return kvp.key === $routeParams.collection; });
-                var collectionDetails = collection.value.getDetails();
-                return RepresentationLoader.populate(collectionDetails)
-            }).
-            then(function (details: CollectionRepresentation) {
-                $scope.collection = CollectionViewModel.createFromDetails(details, $routeParams);
-                $scope.collectionTemplate = "Content/partials/nestedCollection.html";
-            }, function (error) {
-                handleError(Context, error);
-            });
-    }
-
-    function getCollectionResult($scope, $routeParams, $location, RepresentationLoader: RLInterface, Context: ContextInterface) {
-
-        Context.getCollection().
-            then(function (list: ListRepresentation) {
-                $scope.collection = CollectionViewModel.createFromList(list, $routeParams, $location);
-                $scope.collectionTemplate = "Content/partials/nestedCollection.html";
-            }, function (error) {
-                handleError(Context, error);
-            });
-    }
-
-    app.controller('CollectionController', function ($scope, $routeParams, $location, RepresentationLoader: RLInterface, Context: ContextInterface) {
-
+    app.controller('CollectionController', function ($routeParams, $scope, Handlers: HandlersInterface) {
         if ($routeParams.resultCollection) {
-            return getCollectionResult($scope, $routeParams, $location, RepresentationLoader, Context);
+             Handlers.handleCollectionResult($scope);
         }
         else if ($routeParams.collection) {
-            return getCollection($scope, $routeParams, $location, RepresentationLoader, Context);
+             Handlers.handleCollection($scope);
         }
     });
 
     app.controller('ObjectController', function ($scope, $routeParams, $location, RepresentationLoader: RLInterface, Context: ContextInterface) {
-
         Context.getObject($routeParams.dt, $routeParams.id).
             then(function (object: DomainObjectRepresentation) {
                 $scope.object = DomainObjectViewModel.create(object, $routeParams);
@@ -302,7 +84,6 @@ module Spiro.Angular {
 
     app.controller('ErrorController', function ($scope, Context: ContextInterface) {
         var error = Context.getError(); 
-
         if (error) {
             var evm = ErrorViewModel.create(error);
             $scope.error = evm; 
