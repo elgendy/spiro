@@ -433,6 +433,14 @@ module Spiro.Angular {
             Context.setNestedObject(object);
         }
 
+        // TODO make this generic and replace various finder code 
+        function findProperty(map: PropertyMemberMap, id: string) {
+            var properties: { key: string; value: PropertyMember }[] = _.map(map, (value, key) => {
+                return { key: key, value: value };
+            });
+            return _.find(properties, (kvp) => { return kvp.key === id; });          
+        }
+
         this.handleProperty = function ($scope) {
             Context.getObject($routeParams.dt, $routeParams.id).
                 then(function (object: DomainObjectRepresentation) {
@@ -455,11 +463,11 @@ module Spiro.Angular {
         }
 
         this.handleCollectionItem = function ($scope) {
-            var collectionIndex = $routeParams.collectionItem.split("/");
-            var collectionType = collectionIndex[0];
-            var collectionKey = collectionIndex[1];
+            var collectionItemTypeKey = $routeParams.collectionItem.split("/");
+            var collectionItemType = collectionItemTypeKey[0];
+            var collectionItemKey = collectionItemTypeKey[1];
 
-            Context.getNestedObject(collectionType, collectionKey).
+            Context.getNestedObject(collectionItemType, collectionItemKey).
                 then(function (object: DomainObjectRepresentation) {
                     handleNestedObject(object, $scope); 
                 }, function (error) {

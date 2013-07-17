@@ -360,6 +360,15 @@
                 Context.setNestedObject(object);
             }
 
+            function findProperty(map, id) {
+                var properties = _.map(map, function (value, key) {
+                    return { key: key, value: value };
+                });
+                return _.find(properties, function (kvp) {
+                    return kvp.key === id;
+                });
+            }
+
             this.handleProperty = function ($scope) {
                 Context.getObject($routeParams.dt, $routeParams.id).then(function (object) {
                     var properties = _.map(object.propertyMembers(), function (value, key) {
@@ -381,11 +390,11 @@
             };
 
             this.handleCollectionItem = function ($scope) {
-                var collectionIndex = $routeParams.collectionItem.split("/");
-                var collectionType = collectionIndex[0];
-                var collectionKey = collectionIndex[1];
+                var collectionItemTypeKey = $routeParams.collectionItem.split("/");
+                var collectionItemType = collectionItemTypeKey[0];
+                var collectionItemKey = collectionItemTypeKey[1];
 
-                Context.getNestedObject(collectionType, collectionKey).then(function (object) {
+                Context.getNestedObject(collectionItemType, collectionItemKey).then(function (object) {
                     handleNestedObject(object, $scope);
                 }, function (error) {
                     this.handleError(error);
