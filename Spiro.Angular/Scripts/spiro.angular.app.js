@@ -183,6 +183,18 @@
             this.setError = function (e) {
                 currentError = e;
             };
+
+            var currentCollection = null;
+
+            this.getCollection = function () {
+                var delay = $q.defer();
+                delay.resolve(currentCollection);
+                return delay.promise;
+            };
+
+            this.setCollection = function (c) {
+                currentCollection = c;
+            };
         });
     })(Spiro.Angular || (Spiro.Angular = {}));
     var Angular = Spiro.Angular;

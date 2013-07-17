@@ -39,7 +39,44 @@ module Spiro.Angular {
             });
     });
 
-  
+    function handleResult(result: ActionResultRepresentation, $routeParams, $location, Context: ContextInterface, dvm?: DialogViewModel, show? : boolean) {
+        if (result.result().isNull()) {
+            if (dvm) {
+                dvm.error = "no result found";
+            }
+            return;
+        }
+
+        if (result.resultType() === "object") {
+            var resultObject = result.result().object();
+
+            // set the nested object here and then update the url. That should reload the page but pick up this object 
+            // so we don't hit the server again. 
+            Context.setNestedObject(resultObject);
+            
+            var resultParm = "resultObject=" + resultObject.domainType() + "-" + resultObject.instanceId();  // todo add some parm handling code 
+            var actionParm = show ? "&action=" + $routeParams.action : "";
+
+            $location.search(resultParm + actionParm);
+        }
+
+        if (result.resultType() === "list") {
+            var resultList = result.result().list();
+
+            Context.setCollection(resultList);
+            
+            var pps = dvm ? _.reduce(dvm.parameters, (memo, parm) => { return memo + parm.value  + "-"; }, "") : "";
+
+            var resultParm = "resultCollection=" + $routeParams.action + pps;  // todo add some parm handling code 
+            var actionParm = show ? "&action=" + $routeParams.action : "";
+
+            $location.search(resultParm + actionParm);
+        }
+    
+    }
+
+
+
     function getActionDialog($scope, $routeParams, $location, RepresentationLoader: RLInterface, Context: ContextInterface) {
         Context.getObject($routeParams.sid || $routeParams.dt, $routeParams.id).
             then(function (object: DomainObjectRepresentation) {
@@ -67,36 +104,7 @@ module Spiro.Angular {
 
                         RepresentationLoader.populate(invoke, true).
                             then(function (result: ActionResultRepresentation) {
-
-                                if (result.resultType() === "object") {
-                                    var resultObject = result.result().object();
-
-                                    // set the nested object here and then update the url. That should reload the page but pick up this object 
-                                    // so we don't hit the server again. 
-                                    Context.setNestedObject(resultObject);
-
-                                    if (resultObject) {
-                                        var resultParm = "resultObject=" + resultObject.domainType() + "-" + resultObject.instanceId();  // todo add some parm handling code 
-                                        var actionParm = show ? "&action=" + $routeParams.action : "";
-
-                                        $location.search(resultParm + actionParm);
-                                    }
-                                    else {
-                                        dvm.error = "no result found";
-                                    }
-                                }
-
-                                if (result.resultType() === "list") {
-                                    var resultList = result.result().list();
-                                
-                                
-                                
-                                
-                                }
-
-
-                            
-
+                                handleResult(result, $routeParams, $location, Context, dvm, show); 
                             }, function (error: HateoasModelBase) {
 
                                 if (error instanceof ErrorMap) {
@@ -151,16 +159,8 @@ module Spiro.Angular {
                 return RepresentationLoader.populate(result, true);
             }).
             then(function (result: ActionResultRepresentation) {
-                var resultObject = result.result().object();
 
-                // set the nested object here and then update the url. That should reload the page but pick up this object 
-                // so we don't hit the server again. 
-                Context.setNestedObject(resultObject);
-
-                var resultParm = "resultObject=" + resultObject.domainType() + "-" + resultObject.instanceId();  // todo add some parm handling code 
-                var otherParms = getOtherParms($routeParams, ["property", "collectionItem", "resultObject", "action"]);
-
-                $location.search(resultParm + otherParms);
+                handleResult(result, $routeParams, $location, Context); 
 
             }, function (error) {
                 if (error) {
@@ -197,23 +197,10 @@ module Spiro.Angular {
 
     function getCollectionItem($scope, $routeParams, $location, RepresentationLoader: RLInterface, Context: ContextInterface) {
         var collectionIndex = $routeParams.collectionItem.split("/");
-        var collectionName = collectionIndex[0];
-        var itemIndex = parseInt(collectionIndex[1]);
+        var collectionType = collectionIndex[0];
+        var collectionKey = collectionIndex[1];
 
-        Context.getObject($routeParams.dt, $routeParams.id).
-            then(function (object: DomainObjectRepresentation) {
-
-                var collections: { key: string; value: CollectionMember }[] = _.map(object.collectionMembers(), (value, key) => {
-                    return { key: key, value: value };
-                });
-                var collection = _.find(collections, (kvp) => { return kvp.key === collectionName; });
-                var collectionDetails = collection.value.getDetails();
-                return RepresentationLoader.populate(collectionDetails);
-            }).
-            then(function (details: CollectionRepresentation) {
-                var target = details.value().models[itemIndex].getTarget();
-                return RepresentationLoader.populate(target);
-            }).
+        Context.getNestedObject(collectionType,collectionKey).
             then(function (object: DomainObjectRepresentation) {
                 $scope.result = DomainObjectViewModel.create(object, $routeParams); // todo rename result
                 $scope.nestedTemplate = "Content/partials/nestedObject.html";
@@ -261,8 +248,7 @@ module Spiro.Angular {
         }
     });
 
-   
-    app.controller('CollectionController', function ($scope, $routeParams, $location, RepresentationLoader: RLInterface, Context: ContextInterface) {
+   function getCollection ($scope, $routeParams, $location, RepresentationLoader: RLInterface, Context: ContextInterface) {
 
         Context.getObject($routeParams.dt, $routeParams.id).
             then(function (object: DomainObjectRepresentation) {
@@ -278,8 +264,29 @@ module Spiro.Angular {
                 $scope.collection = CollectionViewModel.createFromDetails(details, $routeParams);
                 $scope.collectionTemplate = "Content/partials/nestedCollection.html";
             }, function (error) {
-                handleError(Context, error); 
+                handleError(Context, error);
             });
+    }
+
+    function getCollectionResult($scope, $routeParams, $location, RepresentationLoader: RLInterface, Context: ContextInterface) {
+
+        Context.getCollection().
+            then(function (list: ListRepresentation) {
+                $scope.collection = CollectionViewModel.createFromList(list, $routeParams, $location);
+                $scope.collectionTemplate = "Content/partials/nestedCollection.html";
+            }, function (error) {
+                handleError(Context, error);
+            });
+    }
+
+    app.controller('CollectionController', function ($scope, $routeParams, $location, RepresentationLoader: RLInterface, Context: ContextInterface) {
+
+        if ($routeParams.resultCollection) {
+            return getCollectionResult($scope, $routeParams, $location, RepresentationLoader, Context);
+        }
+        else if ($routeParams.collection) {
+            return getCollection($scope, $routeParams, $location, RepresentationLoader, Context);
+        }
     });
 
     app.controller('ObjectController', function ($scope, $routeParams, $location, RepresentationLoader: RLInterface, Context: ContextInterface) {

@@ -32,6 +32,9 @@ module Spiro.Angular {
         getNestedObject: (type: string, id: string) => ng.IPromise;
         setNestedObject: (object: DomainObjectRepresentation) => void;
 
+        getCollection: () => ng.IPromise;
+        setCollection: (list: ListRepresentation) => void;
+
         getError: () => ErrorRepresentation;
         setError: (object: ErrorRepresentation) => void;
 
@@ -227,6 +230,17 @@ module Spiro.Angular {
         }
 
 
+        var currentCollection: ListRepresentation = null;
+
+        this.getCollection = function () {
+            var delay = $q.defer();
+            delay.resolve(currentCollection);
+            return delay.promise;
+        }
+
+        this.setCollection = function (c: ListRepresentation) {
+            currentCollection = c;
+        }
 
     });
 }

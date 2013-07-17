@@ -29,6 +29,41 @@
             });
         });
 
+        function handleResult(result, $routeParams, $location, Context, dvm, show) {
+            if (result.result().isNull()) {
+                if (dvm) {
+                    dvm.error = "no result found";
+                }
+                return;
+            }
+
+            if (result.resultType() === "object") {
+                var resultObject = result.result().object();
+
+                Context.setNestedObject(resultObject);
+
+                var resultParm = "resultObject=" + resultObject.domainType() + "-" + resultObject.instanceId();
+                var actionParm = show ? "&action=" + $routeParams.action : "";
+
+                $location.search(resultParm + actionParm);
+            }
+
+            if (result.resultType() === "list") {
+                var resultList = result.result().list();
+
+                Context.setCollection(resultList);
+
+                var pps = dvm ? _.reduce(dvm.parameters, function (memo, parm) {
+                    return memo + parm.value + "-";
+                }, "") : "";
+
+                var resultParm = "resultCollection=" + $routeParams.action + pps;
+                var actionParm = show ? "&action=" + $routeParams.action : "";
+
+                $location.search(resultParm + actionParm);
+            }
+        }
+
         function getActionDialog($scope, $routeParams, $location, RepresentationLoader, Context) {
             Context.getObject($routeParams.sid || $routeParams.dt, $routeParams.id).then(function (object) {
                 var actions = _.map(object.actionMembers(), function (value, key) {
@@ -55,24 +90,7 @@
                         });
 
                         RepresentationLoader.populate(invoke, true).then(function (result) {
-                            if (result.resultType() === "object") {
-                                var resultObject = result.result().object();
-
-                                Context.setNestedObject(resultObject);
-
-                                if (resultObject) {
-                                    var resultParm = "resultObject=" + resultObject.domainType() + "-" + resultObject.instanceId();
-                                    var actionParm = show ? "&action=" + $routeParams.action : "";
-
-                                    $location.search(resultParm + actionParm);
-                                } else {
-                                    dvm.error = "no result found";
-                                }
-                            }
-
-                            if (result.resultType() === "list") {
-                                var resultList = result.result().list();
-                            }
+                            handleResult(result, $routeParams, $location, Context, dvm, show);
                         }, function (error) {
                             if (error instanceof Spiro.ErrorMap) {
                                 var errorMap = error;
@@ -122,14 +140,7 @@
                 var result = action.getInvoke();
                 return RepresentationLoader.populate(result, true);
             }).then(function (result) {
-                var resultObject = result.result().object();
-
-                Context.setNestedObject(resultObject);
-
-                var resultParm = "resultObject=" + resultObject.domainType() + "-" + resultObject.instanceId();
-                var otherParms = Angular.getOtherParms($routeParams, ["property", "collectionItem", "resultObject", "action"]);
-
-                $location.search(resultParm + otherParms);
+                handleResult(result, $routeParams, $location, Context);
             }, function (error) {
                 if (error) {
                     handleError(Context, error);
@@ -161,22 +172,10 @@
 
         function getCollectionItem($scope, $routeParams, $location, RepresentationLoader, Context) {
             var collectionIndex = $routeParams.collectionItem.split("/");
-            var collectionName = collectionIndex[0];
-            var itemIndex = parseInt(collectionIndex[1]);
+            var collectionType = collectionIndex[0];
+            var collectionKey = collectionIndex[1];
 
-            Context.getObject($routeParams.dt, $routeParams.id).then(function (object) {
-                var collections = _.map(object.collectionMembers(), function (value, key) {
-                    return { key: key, value: value };
-                });
-                var collection = _.find(collections, function (kvp) {
-                    return kvp.key === collectionName;
-                });
-                var collectionDetails = collection.value.getDetails();
-                return RepresentationLoader.populate(collectionDetails);
-            }).then(function (details) {
-                var target = details.value().models[itemIndex].getTarget();
-                return RepresentationLoader.populate(target);
-            }).then(function (object) {
+            Context.getNestedObject(collectionType, collectionKey).then(function (object) {
                 $scope.result = Angular.DomainObjectViewModel.create(object, $routeParams);
                 $scope.nestedTemplate = "Content/partials/nestedObject.html";
                 Context.setNestedObject(object);
@@ -214,7 +213,7 @@
             }
         });
 
-        Angular.app.controller('CollectionController', function ($scope, $routeParams, $location, RepresentationLoader, Context) {
+        function getCollection($scope, $routeParams, $location, RepresentationLoader, Context) {
             Context.getObject($routeParams.dt, $routeParams.id).then(function (object) {
                 var collections = _.map(object.collectionMembers(), function (value, key) {
                     return { key: key, value: value };
@@ -230,6 +229,23 @@
             }, function (error) {
                 handleError(Context, error);
             });
+        }
+
+        function getCollectionResult($scope, $routeParams, $location, RepresentationLoader, Context) {
+            Context.getCollection().then(function (list) {
+                $scope.collection = Angular.CollectionViewModel.createFromList(list, $routeParams, $location);
+                $scope.collectionTemplate = "Content/partials/nestedCollection.html";
+            }, function (error) {
+                handleError(Context, error);
+            });
+        }
+
+        Angular.app.controller('CollectionController', function ($scope, $routeParams, $location, RepresentationLoader, Context) {
+            if ($routeParams.resultCollection) {
+                return getCollectionResult($scope, $routeParams, $location, RepresentationLoader, Context);
+            } else if ($routeParams.collection) {
+                return getCollection($scope, $routeParams, $location, RepresentationLoader, Context);
+            }
         });
 
         Angular.app.controller('ObjectController', function ($scope, $routeParams, $location, RepresentationLoader, Context) {
