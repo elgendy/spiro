@@ -18,6 +18,7 @@ var Spiro;
             return this.attributes[attributeName];
         };
         ModelShim.prototype.set = function (attributeName, value, options) {
+            this.attributes[attributeName] = value;
         };
         return ModelShim;
     })();

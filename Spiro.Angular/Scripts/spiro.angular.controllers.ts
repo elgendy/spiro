@@ -72,11 +72,64 @@ module Spiro.Angular {
         }
     });
 
-    app.controller('ObjectController', function ($scope, $routeParams, $location, RepresentationLoader: RLInterface, Context: ContextInterface) {
+    app.controller('ObjectController', function ($scope, $routeParams, $location, $cacheFactory,  RepresentationLoader: RLInterface, Context: ContextInterface) {
         Context.getObject($routeParams.dt, $routeParams.id).
             then(function (object: DomainObjectRepresentation) {
-                $scope.object = DomainObjectViewModel.create(object, $routeParams);
+               
                 Context.setNestedObject(null);
+                $scope.actionTemplate = $routeParams.editMode ? "" : "Content/partials/actions.html";
+                $scope.propertiesTemplate = $routeParams.editMode ? "Content/partials/editProperties.html" : "Content/partials/viewProperties.html";
+
+                $scope.object = DomainObjectViewModel.create(object, $routeParams, function (ovm: DomainObjectViewModel) {
+
+                    var update = object.getUpdateMap(); 
+
+                    var properties = _.filter(ovm.properties, (property) => property.isEditable);
+                    _.each(properties, (property) => update.setProperty(property.id, property.getValue()));
+
+                    RepresentationLoader.populate(update, true, new DomainObjectRepresentation()).
+                        then(function (updatedObject: DomainObjectRepresentation) {
+                           
+                             // This is a kludge because updated object has no self link.
+                            var rawLinks = (<any>object).get("links"); 
+                            (<any>updatedObject).set("links", rawLinks);  
+                   
+                            // remove pre-changed object from cache
+                            $cacheFactory.get('$http').remove(updatedObject.url());  
+
+                            Context.setObject(updatedObject);
+
+                            $location.search("");
+
+                        }, function (error : any) {
+
+                            if (error instanceof ErrorMap) {
+                                var errorMap = <ErrorMap>error;
+
+                                _.each(properties, (property) => {
+                                    var error = errorMap.values()[property.id];
+
+                                    if (error) {
+                                        property.value = error.value.toValueString();
+                                        property.error = error.invalidReason;
+                                    }
+                                });
+
+                                ovm.message = errorMap.invalidReason();
+                            }
+                            else if (error instanceof ErrorRepresentation) {
+                                var errorRep = <ErrorRepresentation>error;
+                                var evm = ErrorViewModel.create(errorRep);
+                                $scope.error = evm;
+
+                                $scope.propertiesTemplate = "Content/partials/error.html";
+                            }
+                            else {
+                                ovm.message = error; 
+                            }
+                        });
+                
+                });
             }, function (error) {
                 $scope.object = {};
             });
@@ -92,18 +145,32 @@ module Spiro.Angular {
     });
 
 
-    app.controller('AppBarController', function ($scope) {
+    app.controller('AppBarController', function ($scope, $routeParams, $location, Context : ContextInterface) {
 
-        $scope.goHome = "#/";
+        $scope.appBar = {}; 
 
-        $scope.goBack = function () {
+        $scope.appBar.goHome = "#/";
+
+        $scope.appBar.goBack = function () {
             parent.history.back();
         };
         
-        $scope.goForward = function () {
+        $scope.appBar.goForward = function () {
             parent.history.forward();
         };
 
-        $scope.hideEdit = !$scope.object;
+        $scope.appBar.hideEdit = true; 
+
+
+        // TODO create appbar viewmodel 
+        Context.getObject($routeParams.dt, $routeParams.id).
+            then(function (object: DomainObjectRepresentation) {
+                
+                $scope.appBar.hideEdit = !(object);
+
+                // rework to use viewmodel code
+                $scope.appBar.doEdit = "#" + $location.url() + "?editMode=true";
+                
+            });
     });
 }

@@ -200,6 +200,8 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Content\partials\appbar.html" />
+    <Content Include="Content\partials\actions.html" />
+    <Content Include="Content\partials\editProperties.html" />
     <Content Include="Content\partials\error.html" />
     <Content Include="Content\partials\nestedCollection.html" />
     <Content Include="Content\partials\dialog.html" />
@@ -208,6 +210,7 @@
     <Content Include="Content\partials\refproperty.html" />
     <Content Include="Content\partials\scalarproperty.html" />
     <Content Include="Content\partials\service.html" />
+    <Content Include="Content\partials\viewProperties.html" />
     <Content Include="fonts\iconFont.svg" />
     <Content Include="fonts\license.txt" />
     <Content Include="Scripts\spiro.angular.app.js.map">

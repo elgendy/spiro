@@ -22,7 +22,9 @@ module Spiro {
         get(attributeName: string): any {
             return this.attributes[attributeName];
         }
-        set(attributeName?: any, value?: any, options?: any) { }
+        set(attributeName?: any, value?: any, options?: any) {
+            this.attributes[attributeName] = value;
+        }
     }
 
     // base class for all representations that can be directly loaded from the server 

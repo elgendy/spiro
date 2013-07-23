@@ -1,0 +1,41 @@
+﻿<div class="object-properties" ng-class="object.color">
+    <a href='{{object.cancelEdit}}' class="cancel icon-cancel"></a>
+    <input class="save" type="submit" value="Save" ng-click="object.doSave()">
+    <div class="properties edit">
+        <div class="property" ng-repeat="property in object.properties" ng-switch="property.type">
+
+            <div class="property-name">{{property.title}}:</div>
+
+            <div ng-switch-when="ref" ng-switch="property.isEditable">
+               
+                 <div ng-switch-when="false" class="property-reference clickable-area" ng-class="property.color">
+                    <a href="{{property.href}}"><span></span>{{property.value}}</a>
+                </div>
+
+                <div ng-switch-when="true" class='property-value input-control text'>
+                    <input type='hidden' value='{{property.reference}}' ng-model="property.reference" />
+                    <input type='text' value='{{property.value}}' placeholder='{{property.value}}' ng-model="property.value" />
+                    <div class='error'>{{property.error}}</div>
+                </div>
+            </div>
+            <div ng-switch-when="scalar" ng-switch="property.isEditable">
+                
+                <div ng-switch-when="false" class='property-value'>{{property.value}}</div>
+
+                <div ng-switch-when="true" class='property-value input-control text'>
+                    <input type='text' placeholder='{{property.value}}' ng-model="property.value" />
+                    <div class='error'>{{property.error}}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="property" ng-repeat="collection in object.collections">
+
+            <div class='property-name'>{{collection.title}}:</div>
+            <div class='property-collection clickable-area'>
+                <a href='{{collection.href}}'><span></span><i class='icon-plus' />{{collection.size}}-{{collection.pluralName}}</a>
+            </div>
+        </div>
+
+    </div>
+</div>

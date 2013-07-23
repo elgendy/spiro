@@ -34,8 +34,19 @@
             return url;
         }
 
+        function getData(model) {
+            var data = {};
+
+            if (model.method === "POST" || model.method === "PUT") {
+                data = _.clone((model).attributes);
+            }
+
+            return data;
+        }
+
         Angular.app.service("RepresentationLoader", function ($http, $q) {
-            this.populate = function (model, ignoreCache) {
+            this.populate = function (model, ignoreCache, expected) {
+                var response = expected || model;
                 var useCache = !ignoreCache;
 
                 var delay = $q.defer();
@@ -43,19 +54,22 @@
                 var config = {
                     url: getUrl(model),
                     method: model.method,
-                    cache: useCache
+                    cache: useCache,
+                    data: getData(model)
                 };
 
                 $http(config).success(function (data, status, headers, config) {
-                    (model).attributes = data;
-                    delay.resolve(model);
+                    (response).attributes = data;
+                    delay.resolve(response);
                 }).error(function (data, status, headers, config) {
                     if (status === 500) {
                         var error = new Spiro.ErrorRepresentation(data);
                         delay.reject(error);
-                    } else {
+                    } else if (status === 400 || status === 422) {
                         var errorMap = new Spiro.ErrorMap(data, status, headers().warning);
                         delay.reject(errorMap);
+                    } else {
+                        delay.reject(headers().warning);
                     }
                 });
 
@@ -180,6 +194,7 @@
             this.getError = function () {
                 return currentError;
             };
+
             this.setError = function (e) {
                 currentError = e;
             };
@@ -243,15 +258,16 @@
                     return;
                 }
 
+                var resultParm = "";
+                var actionParm = "";
+
                 if (result.resultType() === "object") {
                     var resultObject = result.result().object();
 
                     Context.setNestedObject(resultObject);
 
-                    var resultParm = "resultObject=" + resultObject.domainType() + "-" + resultObject.instanceId();
-                    var actionParm = show ? "&action=" + $routeParams.action : "";
-
-                    $location.search(resultParm + actionParm);
+                    resultParm = "resultObject=" + resultObject.domainType() + "-" + resultObject.instanceId();
+                    actionParm = show ? "&action=" + $routeParams.action : "";
                 }
 
                 if (result.resultType() === "list") {
@@ -263,11 +279,10 @@
                         return memo + parm.value + "-";
                     }, "") : "";
 
-                    var resultParm = "resultCollection=" + $routeParams.action + pps;
-                    var actionParm = show ? "&action=" + $routeParams.action : "";
-
-                    $location.search(resultParm + actionParm);
+                    resultParm = "resultCollection=" + $routeParams.action + pps;
+                    actionParm = show ? "&action=" + $routeParams.action : "";
                 }
+                $location.search(resultParm + actionParm);
             }
 
             this.handleActionDialog = function ($scope) {
@@ -317,6 +332,8 @@
                                     $scope.error = evm;
 
                                     $scope.dialogTemplate = "Content/partials/error.html";
+                                } else {
+                                    dvm.error = error;
                                 }
                             });
                         });

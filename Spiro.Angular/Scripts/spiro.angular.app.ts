@@ -42,7 +42,7 @@ module Spiro.Angular {
     }
 
     export interface RLInterface {
-        populate: (m: HateoasModel, ignoreCache?: bool) => ng.IPromise;
+        populate: (m: HateoasModel, ignoreCache?: bool, r? : HateoasModel) => ng.IPromise;
     }
 
     function getUrl(model: HateoasModel): string {
@@ -62,10 +62,22 @@ module Spiro.Angular {
         return url;
     }
 
+    function getData(model: HateoasModel): Object {
+
+        var data = {}; 
+
+        if (model.method === "POST" || model.method === "PUT") {
+            data = _.clone((<any>model).attributes);
+        }
+
+        return data;
+    }
+
     // TODO investigate using transformations to transform results 
     app.service("RepresentationLoader", function ($http, $q) {
-        this.populate = function (model: HateoasModel, ignoreCache?: bool) {
+        this.populate = function (model: HateoasModel, ignoreCache?: bool, expected? : HateoasModel) {
 
+            var response = expected || model; 
             var useCache = !ignoreCache;
 
             var delay = $q.defer();
@@ -73,13 +85,14 @@ module Spiro.Angular {
             var config = {
                 url: getUrl(model),
                 method: model.method,
-                cache: useCache
-            }
+                cache: useCache,
+                data: getData(model)
+            };
 
             $http(config).
                 success(function (data, status, headers, config) {
-                    (<any>model).attributes = data; // TODO make typed 
-                    delay.resolve(model);
+                    (<any>response).attributes = data; // TODO make typed 
+                    delay.resolve(response);
                 }).
                 error(function (data, status, headers, config) {
 
@@ -87,9 +100,12 @@ module Spiro.Angular {
                         var error = new ErrorRepresentation(data);
                         delay.reject(error);
                     }
-                    else {
+                    else if (status === 400 || status === 422) {
                         var errorMap = new ErrorMap(data, status, headers().warning);
                         delay.reject(errorMap);
+                    }
+                    else {
+                        delay.reject(headers().warning);
                     }
                 });
 
@@ -107,11 +123,11 @@ module Spiro.Angular {
         }
 
         this.getDomainObject = function (type: string, id: string) {
-            
+
             var object = new DomainObjectRepresentation();
             object.hateoasUrl = appPath + "/objects/" + type + "/" + id;
             return RepresentationLoader.populate(object);
-        }
+        };
 
         this.getService = function (type: string) {
             var delay = $q.defer();
@@ -127,7 +143,7 @@ module Spiro.Angular {
                     delay.resolve(service);
                 });
             return delay.promise;
-        }
+        };
 
 
         this.getHome = function () {
@@ -145,7 +161,7 @@ module Spiro.Angular {
             }
 
             return delay.promise;
-        }
+        };
 
         var currentServices: DomainServicesRepresentation = null;
 
@@ -168,7 +184,7 @@ module Spiro.Angular {
             }
 
             return delay.promise;
-        }
+        };
 
         var currentObject: DomainObjectRepresentation = null;
 
@@ -188,11 +204,11 @@ module Spiro.Angular {
             }
 
             return delay.promise;
-        }
+        };
 
         this.setObject = function (co) {
             currentObject = co;
-        }
+        };
 
         var currentNestedObject: DomainObjectRepresentation = null;
 
@@ -214,21 +230,21 @@ module Spiro.Angular {
             }
 
             return delay.promise;
-        }
+        };
 
         this.setNestedObject = function (cno) {
             currentNestedObject = cno;
-        }
+        };
 
         var currentError: ErrorRepresentation = null;
 
         this.getError = function () {
             return currentError;
-        }
+        };
+
         this.setError = function (e: ErrorRepresentation) {
             currentError = e;
-        }
-
+        };
 
         var currentCollection: ListRepresentation = null;
 
@@ -236,11 +252,11 @@ module Spiro.Angular {
             var delay = $q.defer();
             delay.resolve(currentCollection);
             return delay.promise;
-        }
+        };
 
         this.setCollection = function (c: ListRepresentation) {
             currentCollection = c;
-        }
+        };
 
     });
 
@@ -266,7 +282,7 @@ module Spiro.Angular {
                 errorRep = new ErrorRepresentation({ message: "an unrecognised error has occurred" });
             }
             Context.setError(errorRep);
-        }
+        };
         
         this.handleCollectionResult = function ($scope) {
 
@@ -277,7 +293,7 @@ module Spiro.Angular {
                 }, function (error) {
                     this.handleError(error);
                 });
-        }
+        };
 
         this.handleCollection = function ($scope) {
 
@@ -289,7 +305,7 @@ module Spiro.Angular {
                     });
                     var collection = _.find(collections, (kvp) => { return kvp.key === $routeParams.collection; });
                     var collectionDetails = collection.value.getDetails();
-                return RepresentationLoader.populate(collectionDetails)
+                    return RepresentationLoader.populate(collectionDetails);
             }).
                 then(function (details: CollectionRepresentation) {
                     $scope.collection = CollectionViewModel.createFromDetails(details, $routeParams);
@@ -297,7 +313,7 @@ module Spiro.Angular {
                 }, function (error) {
                     this.handleError(error);
                 });
-        }
+        };
 
         function handleResult(result: ActionResultRepresentation, dvm?: DialogViewModel, show?: boolean) {
             if (result.result().isNull()) {
@@ -307,6 +323,9 @@ module Spiro.Angular {
                 return;
             }
 
+            var resultParm = "";
+            var actionParm = "";
+
             if (result.resultType() === "object") {
                 var resultObject = result.result().object();
 
@@ -314,10 +333,10 @@ module Spiro.Angular {
                 // so we don't hit the server again. 
                 Context.setNestedObject(resultObject);
 
-                var resultParm = "resultObject=" + resultObject.domainType() + "-" + resultObject.instanceId();  // todo add some parm handling code 
-                var actionParm = show ? "&action=" + $routeParams.action : "";
+                resultParm = "resultObject=" + resultObject.domainType() + "-" + resultObject.instanceId();  // todo add some parm handling code 
+                actionParm = show ? "&action=" + $routeParams.action : "";
 
-                $location.search(resultParm + actionParm);
+                
             }
 
             if (result.resultType() === "list") {
@@ -327,19 +346,19 @@ module Spiro.Angular {
 
                 var pps = dvm ? _.reduce(dvm.parameters, (memo, parm) => { return memo + parm.value + "-"; }, "") : "";
 
-                var resultParm = "resultCollection=" + $routeParams.action + pps;  // todo add some parm handling code 
-                var actionParm = show ? "&action=" + $routeParams.action : "";
+                resultParm = "resultCollection=" + $routeParams.action + pps;  // todo add some parm handling code 
+                actionParm = show ? "&action=" + $routeParams.action : "";
 
-                $location.search(resultParm + actionParm);
+                
             }
-
+            $location.search(resultParm + actionParm);
         }
 
         this.handleActionDialog = function ($scope) {
             Context.getObject($routeParams.sid || $routeParams.dt, $routeParams.id).
                 then(function (object: DomainObjectRepresentation) {
 
-                    var actions: { key: string; value: ActionMember }[] = _.map(object.actionMembers(), (value, key) => {
+                    var actions: { key: string; value: ActionMember; }[] = _.map(object.actionMembers(), (value, key) => {
                         return { key: key, value: value };
                     });
                     var action = _.find(actions, (kvp) => { return kvp.key === $routeParams.action; });
@@ -349,7 +368,7 @@ module Spiro.Angular {
                 }).
                 then(function (action: ActionRepresentation) {
                     if (action.extensions().hasParams) {
-                        
+
                         $scope.dialogTemplate = "Content/partials/dialog.html";
                         $scope.dialog = DialogViewModel.create(action, $routeParams, function (dvm: DialogViewModel, show: boolean) {
                             dvm.clearErrors();
@@ -363,7 +382,7 @@ module Spiro.Angular {
                             RepresentationLoader.populate(invoke, true).
                                 then(function (result: ActionResultRepresentation) {
                                     handleResult(result, dvm, show);
-                                }, function (error: HateoasModelBase) {
+                                }, function (error: any) {
 
                                     if (error instanceof ErrorMap) {
                                         var errorMap = <ErrorMap>error;
@@ -386,20 +405,23 @@ module Spiro.Angular {
 
                                         $scope.dialogTemplate = "Content/partials/error.html";
                                     }
+                                    else {
+                                        dvm.error = error;
+                                    }
                                 });
                         });
                     }
                 }, function (error) {
                     this.handleError(error);
                 });
-        }
+        };
 
 
         this.handleActionResult = function ($scope) {
             Context.getObject($routeParams.sid || $routeParams.dt, $routeParams.id).
                 then(function (object: DomainObjectRepresentation) {
 
-                    var actions: { key: string; value: ActionMember }[] = _.map(object.actionMembers(), (value, key) => {
+                    var actions: { key: string; value: ActionMember; }[] = _.map(object.actionMembers(), (value, key) => {
                         return { key: key, value: value };
                     });
                     var action = _.find(actions, (kvp) => { return kvp.key === $routeParams.action; });
@@ -424,7 +446,7 @@ module Spiro.Angular {
                     }
                     // otherwise just action with parms 
                 });
-        }
+        };
 
         function handleNestedObject(object: DomainObjectRepresentation, $scope) {
             
@@ -444,7 +466,7 @@ module Spiro.Angular {
         this.handleProperty = function ($scope) {
             Context.getObject($routeParams.dt, $routeParams.id).
                 then(function (object: DomainObjectRepresentation) {
-                    var properties: { key: string; value: PropertyMember }[] = _.map(object.propertyMembers(), (value, key) => {
+                    var properties: { key: string; value: PropertyMember; }[] = _.map(object.propertyMembers(), (value, key) => {
                         return { key: key, value: value };
                     });
                     var property = _.find(properties, (kvp) => { return kvp.key === $routeParams.property; });
@@ -452,15 +474,15 @@ module Spiro.Angular {
                     return RepresentationLoader.populate(propertyDetails);
                 }).
                 then(function (details: PropertyRepresentation) {
-                    var target = details.value().link().getTarget()
+                    var target = details.value().link().getTarget();
                     return RepresentationLoader.populate(target);
                 }).
                 then(function (object: DomainObjectRepresentation) {
-                    handleNestedObject(object, $scope); 
+                    handleNestedObject(object, $scope);
                 }, function (error) {
                     this.handleError(error);
                 });
-        }
+        };
 
         this.handleCollectionItem = function ($scope) {
             var collectionItemTypeKey = $routeParams.collectionItem.split("/");
@@ -469,10 +491,10 @@ module Spiro.Angular {
 
             Context.getNestedObject(collectionItemType, collectionItemKey).
                 then(function (object: DomainObjectRepresentation) {
-                    handleNestedObject(object, $scope); 
+                    handleNestedObject(object, $scope);
                 }, function (error) {
                     this.handleError(error);
-                });    
-        }
+                });
+        };
     });
 }

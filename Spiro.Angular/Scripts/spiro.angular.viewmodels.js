@@ -225,7 +225,15 @@ var Spiro;
         var PropertyViewModel = (function () {
             function PropertyViewModel() {
             }
-            PropertyViewModel.create = function (propertyRep, $routeParams) {
+            PropertyViewModel.prototype.getValue = function () {
+                if (this.type === "scalar") {
+                    return new Spiro.Value(this.value || "");
+                }
+
+                return new Spiro.Value({ href: this.reference });
+            };
+
+            PropertyViewModel.create = function (propertyRep, id, $routeParams) {
                 var propertyViewModel = new PropertyViewModel();
                 propertyViewModel.title = propertyRep.extensions().friendlyName;
                 propertyViewModel.value = propertyRep.value().toString();
@@ -233,8 +241,11 @@ var Spiro;
                 propertyViewModel.returnType = propertyRep.extensions().returnType;
                 propertyViewModel.href = propertyRep.isScalar() ? "" : toPropertyUrl(propertyRep.detailsLink().href(), $routeParams);
                 propertyViewModel.target = propertyRep.isScalar() || propertyRep.value().isNull() ? "" : toAppUrl(propertyRep.value().link().href());
+                propertyViewModel.reference = propertyRep.isScalar() || propertyRep.value().isNull() ? "" : propertyRep.value().link().href();
 
                 propertyViewModel.color = toColorFromType(propertyRep.extensions().returnType);
+                propertyViewModel.id = id;
+                propertyViewModel.isEditable = !propertyRep.disabledReason();
 
                 return propertyViewModel;
             };
@@ -339,31 +350,48 @@ var Spiro;
         var DomainObjectViewModel = (function () {
             function DomainObjectViewModel() {
             }
-            DomainObjectViewModel.create = function (objectRep, $routeParams) {
-                var objectViewModel = new DomainObjectViewModel();
+            DomainObjectViewModel.prototype.doSave = function () {
+            };
 
+            DomainObjectViewModel.prototype.update = function (objectRep, $routeParams) {
                 var properties = objectRep.propertyMembers();
                 var collections = objectRep.collectionMembers();
                 var actions = objectRep.actionMembers();
 
-                objectViewModel.domainType = objectRep.domainType();
-                objectViewModel.title = objectRep.title();
+                this.domainType = objectRep.domainType();
+                this.title = objectRep.title();
+
+                this.message = "";
+
+                this.properties = _.map(properties, function (property, id) {
+                    return PropertyViewModel.create(property, id, $routeParams);
+                });
+                this.collections = _.map(collections, function (collection) {
+                    return CollectionViewModel.create(collection, $routeParams);
+                });
+                this.actions = _.map(actions, function (action) {
+                    return ActionViewModel.create(action, $routeParams);
+                });
+            };
+
+            DomainObjectViewModel.create = function (objectRep, $routeParams, save) {
+                var objectViewModel = new DomainObjectViewModel();
+
                 objectViewModel.href = toAppUrl(objectRep.getUrl());
 
                 objectViewModel.closeNestedObject = toAppUrl(objectRep.getUrl(), $routeParams, ["property", "collectionItem", "resultObject"]);
                 objectViewModel.closeCollection = toAppUrl(objectRep.getUrl(), $routeParams, ["collection", "resultCollection"]);
 
+                objectViewModel.cancelEdit = toAppUrl(objectRep.getUrl());
+
                 objectViewModel.color = toColorFromType(objectRep.domainType());
 
-                objectViewModel.properties = _.map(properties, function (property) {
-                    return PropertyViewModel.create(property, $routeParams);
-                });
-                objectViewModel.collections = _.map(collections, function (collection) {
-                    return CollectionViewModel.create(collection, $routeParams);
-                });
-                objectViewModel.actions = _.map(actions, function (action) {
-                    return ActionViewModel.create(action, $routeParams);
-                });
+                objectViewModel.doSave = save ? function () {
+                    return save(objectViewModel);
+                } : function () {
+                };
+
+                objectViewModel.update(objectRep, $routeParams);
 
                 return objectViewModel;
             };

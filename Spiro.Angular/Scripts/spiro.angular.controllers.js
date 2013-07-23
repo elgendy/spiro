@@ -56,10 +56,56 @@
             }
         });
 
-        Angular.app.controller('ObjectController', function ($scope, $routeParams, $location, RepresentationLoader, Context) {
+        Angular.app.controller('ObjectController', function ($scope, $routeParams, $location, $cacheFactory, RepresentationLoader, Context) {
             Context.getObject($routeParams.dt, $routeParams.id).then(function (object) {
-                $scope.object = Angular.DomainObjectViewModel.create(object, $routeParams);
                 Context.setNestedObject(null);
+                $scope.actionTemplate = $routeParams.editMode ? "" : "Content/partials/actions.html";
+                $scope.propertiesTemplate = $routeParams.editMode ? "Content/partials/editProperties.html" : "Content/partials/viewProperties.html";
+
+                $scope.object = Angular.DomainObjectViewModel.create(object, $routeParams, function (ovm) {
+                    var update = object.getUpdateMap();
+
+                    var properties = _.filter(ovm.properties, function (property) {
+                        return property.isEditable;
+                    });
+                    _.each(properties, function (property) {
+                        return update.setProperty(property.id, property.getValue());
+                    });
+
+                    RepresentationLoader.populate(update, true, new Spiro.DomainObjectRepresentation()).then(function (updatedObject) {
+                        var rawLinks = (object).get("links");
+                        (updatedObject).set("links", rawLinks);
+
+                        $cacheFactory.get('$http').remove(updatedObject.url());
+
+                        Context.setObject(updatedObject);
+
+                        $location.search("");
+                    }, function (error) {
+                        if (error instanceof Spiro.ErrorMap) {
+                            var errorMap = error;
+
+                            _.each(properties, function (property) {
+                                var error = errorMap.values()[property.id];
+
+                                if (error) {
+                                    property.value = error.value.toValueString();
+                                    property.error = error.invalidReason;
+                                }
+                            });
+
+                            ovm.message = errorMap.invalidReason();
+                        } else if (error instanceof Spiro.ErrorRepresentation) {
+                            var errorRep = error;
+                            var evm = Angular.ErrorViewModel.create(errorRep);
+                            $scope.error = evm;
+
+                            $scope.propertiesTemplate = "Content/partials/error.html";
+                        } else {
+                            ovm.message = error;
+                        }
+                    });
+                });
             }, function (error) {
                 $scope.object = {};
             });
@@ -74,18 +120,26 @@
             }
         });
 
-        Angular.app.controller('AppBarController', function ($scope) {
-            $scope.goHome = "#/";
+        Angular.app.controller('AppBarController', function ($scope, $routeParams, $location, Context) {
+            $scope.appBar = {};
 
-            $scope.goBack = function () {
+            $scope.appBar.goHome = "#/";
+
+            $scope.appBar.goBack = function () {
                 parent.history.back();
             };
 
-            $scope.goForward = function () {
+            $scope.appBar.goForward = function () {
                 parent.history.forward();
             };
 
-            $scope.hideEdit = !$scope.object;
+            $scope.appBar.hideEdit = true;
+
+            Context.getObject($routeParams.dt, $routeParams.id).then(function (object) {
+                $scope.appBar.hideEdit = !(object);
+
+                $scope.appBar.doEdit = "#" + $location.url() + "?editMode=true";
+            });
         });
     })(Spiro.Angular || (Spiro.Angular = {}));
     var Angular = Spiro.Angular;

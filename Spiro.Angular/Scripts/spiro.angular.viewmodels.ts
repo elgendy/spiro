@@ -236,7 +236,6 @@ module Spiro.Angular {
         }
     } 
     
-
     export class PropertyViewModel {
 
         title: string;
@@ -245,18 +244,34 @@ module Spiro.Angular {
         returnType: string;
         href: string;
         target: string;
-        color : string; 
+        color: string; 
+        id: string; 
+        error: string; 
+        isEditable: boolean;
+        reference: string; 
 
-        static create(propertyRep: PropertyMember, $routeParams) {
+        getValue() : Value {
+            if (this.type === "scalar") {
+                return new Value(this.value || "");
+            }
+
+            return new Value({ href: this.reference });
+        }
+
+
+        static create(propertyRep: PropertyMember, id : string, $routeParams) {
             var propertyViewModel = new PropertyViewModel();
             propertyViewModel.title = propertyRep.extensions().friendlyName;
             propertyViewModel.value = propertyRep.value().toString();
             propertyViewModel.type = propertyRep.isScalar() ? "scalar" : "ref";
             propertyViewModel.returnType = propertyRep.extensions().returnType;
             propertyViewModel.href = propertyRep.isScalar() ? "" : toPropertyUrl(propertyRep.detailsLink().href(), $routeParams);
-            propertyViewModel.target = propertyRep.isScalar() || propertyRep.value().isNull()  ? "" : toAppUrl(propertyRep.value().link().href());
+            propertyViewModel.target = propertyRep.isScalar() || propertyRep.value().isNull() ? "" : toAppUrl(propertyRep.value().link().href());
+            propertyViewModel.reference = propertyRep.isScalar() || propertyRep.value().isNull() ? "" : propertyRep.value().link().href();
 
             propertyViewModel.color = toColorFromType(propertyRep.extensions().returnType); 
+            propertyViewModel.id = id;
+            propertyViewModel.isEditable = !propertyRep.disabledReason(); 
 
             return propertyViewModel;
         }
@@ -373,29 +388,47 @@ module Spiro.Angular {
         actions: ActionViewModel[];
         color: string; 
         href: string; 
-
+        message: string; 
+   
         closeNestedObject: string; 
         closeCollection: string; 
-     
-        static create(objectRep: DomainObjectRepresentation, $routeParams) {
-            var objectViewModel = new DomainObjectViewModel();
+        cancelEdit: string; 
+
+        doSave(): void {}
+        
+        update(objectRep: DomainObjectRepresentation, $routeParams) {
             
             var properties = objectRep.propertyMembers();
             var collections = objectRep.collectionMembers();
             var actions = objectRep.actionMembers();
-        
-            objectViewModel.domainType = objectRep.domainType();
-            objectViewModel.title = objectRep.title();
-            objectViewModel.href = toAppUrl(objectRep.getUrl()); 
+            
+            this.domainType = objectRep.domainType();
+            this.title = objectRep.title();
+          
+            this.message = ""; 
 
-            objectViewModel.closeNestedObject = toAppUrl(objectRep.getUrl(), $routeParams, ["property", "collectionItem", "resultObject"]); 
-            objectViewModel.closeCollection = toAppUrl(objectRep.getUrl(), $routeParams, ["collection", "resultCollection"]); 
+            this.properties = _.map(properties, (property, id) => { return PropertyViewModel.create(property, id, $routeParams); });
+            this.collections = _.map(collections, (collection) => { return CollectionViewModel.create(collection, $routeParams); });
+            this.actions = _.map(actions, (action) => { return ActionViewModel.create(action, $routeParams); });
 
-            objectViewModel.color = toColorFromType(objectRep.domainType()); 
+        }
 
-            objectViewModel.properties = _.map(properties, (property) => { return PropertyViewModel.create(property, $routeParams); });
-            objectViewModel.collections = _.map(collections, (collection) => { return CollectionViewModel.create(collection, $routeParams); });
-            objectViewModel.actions = _.map(actions, (action) => { return ActionViewModel.create(action, $routeParams); });
+
+        static create(objectRep: DomainObjectRepresentation, $routeParams, save? : (ovm : DomainObjectViewModel) => void) {
+            var objectViewModel = new DomainObjectViewModel();
+            
+            objectViewModel.href = toAppUrl(objectRep.getUrl());
+
+            objectViewModel.closeNestedObject = toAppUrl(objectRep.getUrl(), $routeParams, ["property", "collectionItem", "resultObject"]);
+            objectViewModel.closeCollection = toAppUrl(objectRep.getUrl(), $routeParams, ["collection", "resultCollection"]);
+
+            objectViewModel.cancelEdit = toAppUrl(objectRep.getUrl());
+
+            objectViewModel.color = toColorFromType(objectRep.domainType());
+
+            objectViewModel.doSave = save ? () => save(objectViewModel) : () => { };
+
+            objectViewModel.update(objectRep, $routeParams); 
 
             return objectViewModel;
         }

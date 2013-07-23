@@ -2,47 +2,10 @@
     <div class="header">
         <div class="title">{{object.title}}</div>
         <div class="type"></div>
-        <div class="messages"></div>
+        <div class="messages">{{object.message}}</div>
     </div>
-    <div class="properties-pane" ng-class="object.color">
-        <div class="object-properties">
-            <div class="properties bg-color-" >
-                <div class="property" ng-repeat="property in object.properties" ng-switch="property.type">
-                    
-                    <div class="property-name">{{property.title}}:</div>
-                    <div ng-switch-when="ref"   class="property-reference clickable-area" ng-class="property.color">
-                        <a href="{{property.href}}">
-                            <span></span>
-                            {{property.value}}
-                        </a>
-                    </div>
-                    <div ng-switch-when="scalar" class='property-value'>{{property.value}}</div>
-                    
-                </div>
-                
-                <div class="property" ng-repeat="collection in object.collections">
-                             
-                    <div class='property-name'>{{collection.title}}:</div>
-                    <div class='property-collection clickable-area'>
-                        <a href='{{collection.href}}'><span></span><i class='icon-plus' />{{collection.size}}-{{collection.pluralName}}</a>
-                    </div>        
-                </div>
-                
-            </div>
-        </div>
-    </div>
-    <div class="actions-pane" ng-class="object.color">
-        <div>
-            <div class="actions" ng-repeat="action in object.actions">
-                <div class="action-button clickable-area">
-                    <a class="action" href="{{action.href}}">
-                        <span></span>
-                        {{action.title}}
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
+    <div class="properties-pane" ng-include="propertiesTemplate"></div>
+    <div class="actions-pane" ng-include="actionTemplate"></div>
     <div class="dialog-pane" ng-controller="DialogController" ng-include="dialogTemplate"></div>
     <div class="collection-pane" ng-controller="CollectionController" ng-include="collectionTemplate"></div>
     <div class="object-pane"  ng-controller="NestedObjectController" ng-include="nestedTemplate"></div>
