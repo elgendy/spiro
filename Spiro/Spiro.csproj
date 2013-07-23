@@ -125,21 +125,8 @@
     <Exec Command="tsc$(TypeScriptSourceMap) @(TypeScriptCompile ->'&quot;%(fullpath)&quot;', ' ')" />
   </Target>
   <PropertyGroup>
-    <PostBuildEvent>copy "$(ProjectDir)Scripts\spiro.models.ts"  "$(SolutionDir)Spiro.Backbone\Scripts"
-copy "$(ProjectDir)Scripts\spiro.models.js"  "$(SolutionDir)Spiro.Backbone\Scripts"
-copy "$(ProjectDir)Scripts\spiro.models.js.map"  "$(SolutionDir)Spiro.Backbone\Scripts"
-
-copy "$(ProjectDir)Scripts\spiro.models.ts"  "$(SolutionDir)Spiro.Angular\Scripts"
-copy "$(ProjectDir)Scripts\spiro.models.js"  "$(SolutionDir)Spiro.Angular\Scripts"
-copy "$(ProjectDir)Scripts\spiro.models.js.map"  "$(SolutionDir)Spiro.Angular\Scripts"
-
-copy "$(ProjectDir)Scripts\spiro.models.helpers.ts"  "$(SolutionDir)Spiro.Backbone\Scripts"
-copy "$(ProjectDir)Scripts\spiro.models.helpers.js"  "$(SolutionDir)Spiro.Backbone\Scripts"
-copy "$(ProjectDir)Scripts\spiro.models.helpers.js.map"  "$(SolutionDir)Spiro.Backbone\Scripts"
-
-copy "$(ProjectDir)Scripts\spiro.models.helpers.ts"  "$(SolutionDir)Spiro.Angular\Scripts"
-copy "$(ProjectDir)Scripts\spiro.models.helpers.js"  "$(SolutionDir)Spiro.Angular\Scripts"
-copy "$(ProjectDir)Scripts\spiro.models.helpers.js.map"  "$(SolutionDir)Spiro.Angular\Scripts"</PostBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

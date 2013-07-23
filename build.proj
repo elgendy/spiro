@@ -1,0 +1,277 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+	<Import Project="$(MSBuildExtensionsPath)\MSBuildCommunityTasks\MSBuild.Community.Tasks.Targets"/>
+	<UsingTask TaskName="NUnit" AssemblyFile="$(MSBuildExtensionsPath)\MSBuildCommunityTasks\MSBuild.Community.Tasks.dll" />
+
+	<PropertyGroup Condition="'$(BUILD_NUMBER)'==''">
+		<BUILD_NUMBER>1</BUILD_NUMBER>
+	</PropertyGroup>
+
+	<PropertyGroup >
+		<BuildSuffix Condition="'$(nightly-build)'=='true'" >-pre$(BUILD_NUMBER)</BuildSuffix>
+
+		<SpiroMajor>0</SpiroMajor>
+		<SpiroMinor>12</SpiroMinor>
+		<SpiroPatch>0-beta</SpiroPatch>
+
+		<SpiroVersion>$(SpiroMajor).$(SpiroMinor).$(SpiroPatch)$(BuildSuffix)</SpiroVersion>
+	
+	</PropertyGroup>
+	
+	<PropertyGroup>
+		
+		<BuiltPackagesPath>build\packages</BuiltPackagesPath>
+		<InstalledPackagesPath>packages</InstalledPackagesPath>
+		<ReleasePath>build\release</ReleasePath>
+
+		<TestResultsPath>test-results</TestResultsPath>
+		<PackageSourcePath>C:\NakedObjectsNugetPackages</PackageSourcePath>
+
+		<Nuget>..\.nuget\nuget.exe</Nuget>
+
+	</PropertyGroup>
+
+	<Choose>
+		<When Condition="Exists('C:\Program Files (x86)')">
+			<PropertyGroup>
+				<ToolsPath>C:\Program Files (x86)</ToolsPath>
+				<NUnitPath>$(InstalledPackagesPath)\NUnit.Runners.2.6.0.12051\tools</NUnitPath>
+				<MSTestPath>C:\Program Files (x86)\Microsoft Visual Studio 10.0\Common7\IDE</MSTestPath>
+			</PropertyGroup>
+		</When>
+		<Otherwise>
+			<PropertyGroup>
+				<ToolsPath>C:\Program Files</ToolsPath>
+				<NUnitPath>$(InstalledPackagesPath)\NUnit.Runners.2.6.0.12051\tools</NUnitPath>
+				<MSTestPath>C:\Program Files\Microsoft Visual Studio 10.0\Common7\IDE</MSTestPath>
+			</PropertyGroup>
+		</Otherwise>
+	</Choose>
+
+	<PropertyGroup Condition="'$(Configuration)'==''">
+		<Configuration>Debug</Configuration>
+		<Platform>x86</Platform>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageFiles Include="**\packages.config"  Exclude="build\**\packages.config"/>
+	</ItemGroup>
+
+	<!--<PropertyGroup>
+		--><!-- Path to just built code as hint paths in proj files will not be pointing to it--><!--
+		<RefPath>..\..\$(InstalledPackagesPath)\$(NOPM).$(Version)\lib\net35;..\..\$(InstalledPackagesPath)\$(NOFW).$(Version)\lib\net40;..\..\$(InstalledPackagesPath)\$(NOX).$(Version)\lib\net40</RefPath>
+	</PropertyGroup>-->
+
+
+  <ItemGroup>
+    <ProjFiles Include="**\*.csproj"  Exclude="build\**\*.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <SpecFiles Include="**\*.nuspec" Exclude="build\**\*.nuspec" />
+  </ItemGroup>
+  
+  <Target Name="UpdateProj" Inputs="@(ProjFiles)" Outputs="%(Identity).Dummy">
+    
+	</Target>
+  
+	<Target Name="UpdateNuspec" Inputs="@(SpecFiles)" Outputs="%(Identity).Dummy">
+		
+		<XmlUpdate
+			 Prefix="n"
+			 Namespace="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd"
+			 XmlFileName="Spiro.Models.package\Spiro.Models.nuspec"
+			 XPath="//n:metadata/n:version"
+			 Value="$(SpiroVersion)"/>
+
+    <XmlUpdate
+     Prefix="n"
+     Namespace="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd"
+     XmlFileName="Spiro.Modern.Angular.package\Spiro.Modern.Angular.nuspec"
+     XPath="//n:metadata/n:version"
+     Value="$(SpiroVersion)"/>
+
+    <!--<XmlUpdate
+			 Prefix="n"
+			 Namespace="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd"
+			 XmlFileName="RestfulObjects.SpiroClassic.package\RestfulObjects.SpiroClassic.nuspec"
+			 XPath='//n:dependencies/n:dependency[@id="RestfulObjects.Spiro"]/@version'
+			 Value="$(SpiroVersion)"/>-->
+    
+	</Target>
+
+	<Target Name="UpdatePackage" Inputs="@(PackageFiles)" Outputs="%(Identity).Dummy">
+
+    <XmlUpdate
+			 XmlFileName="@(PackageFiles)"
+			 XPath='//packages/package[@id="Spiro.Models"]/@version'
+			 Value="$(SpiroVersion)"/>
+		
+	</Target>
+
+	<Target Name="Clean">
+		<CreateItem Include="$(Configuration)">
+			<Output TaskParameter="Include" ItemName="Configuration" />
+		</CreateItem>
+
+		<MSBuild Projects="$(MSBuildProjectFile)" Targets="Build" Properties="Targets=Clean;Configuration=%(Configuration.Identity)" />
+
+		<RemoveDir Directories="$(TestResultsPath)"/>
+
+		<ItemGroup>
+			<OldPackages Include="**\*.package\*.nupkg"/>
+			<OldPackages Include="$(InstalledPackagesPath)\**\*.nupkg"/>
+			<OldPackages Include="$(InstalledPackagesPath)\**\content\**\*.*"/>
+			<OldPackages Include="$(InstalledPackagesPath)\**\lib\**\*.*"/>
+		</ItemGroup>
+
+		<Delete Files="@(OldPackages)"/>
+
+		<RemoveDir Directories="Spiro.Models.package\lib"/>
+		<RemoveDir Directories="Spiro.Models.package\content"/>
+		<RemoveDir Directories="Spiro.Models.package\src"/>
+		
+		<RemoveDir Directories="$(BuiltPackagesPath)"/>
+		<RemoveDir Directories="$(ReleasePath)"/>
+	</Target>
+	
+	<Target Name="InitFiles" >
+		<MakeDir Directories="$(TestResultsPath)"/>
+
+		<CallTarget Targets="UpdateProj" Condition="'$(Build)'!='0'"/>
+		<CallTarget Targets="UpdateNuspec" Condition="'$(Build)'!='0'"/>
+		<CallTarget Targets="UpdatePackage" Condition="'$(Build)'!='0'"/>
+	</Target>
+
+	<Target Name="Init" >
+		<CreateItem Include="$(Configuration)">
+			<Output TaskParameter="Include" ItemName="Configuration" />
+		</CreateItem>
+
+		<CallTarget Targets="InitFiles" Condition=" '$(Targets)'!='Clean' "/>
+	</Target>
+
+	<Target Name="Build" DependsOnTargets="Init">
+		<ItemGroup>			
+			<Files Include="Spiro\Spiro.csproj"/>
+      <Files Include="Spiro.Backbone\Spiro.Backbone.csproj"/>
+      <Files Include="Spiro.Angular\Spiro.Angular.csproj"/>
+		</ItemGroup>
+
+		<MSBuild Projects="@(Files)" Targets="$(Targets)" Properties="Configuration=%(Configuration.Identity)">
+			<Output TaskParameter="TargetOutputs" ItemName="Artifacts"/>
+		</MSBuild>
+	</Target>
+
+	<Target Name="PackageSpiro" DependsOnTargets="Build">
+
+    <ItemGroup>
+      <SpiroSrcFiles Include="Spiro\Scripts*\spiro.models.helpers.ts"/>
+      <SpiroSrcFiles Include="Spiro\Scripts*\spiro.models.helpers.js"/>
+      <SpiroSrcFiles Include="Spiro\Scripts*\spiro.models.shims.ts"/>
+      <SpiroSrcFiles Include="Spiro\Scripts*\spiro.models.shims.js"/>
+      <SpiroSrcFiles Include="Spiro\Scripts*\spiro.models.ts"/>
+      <SpiroSrcFiles Include="Spiro\Scripts*\spiro.models.js"/>
+    </ItemGroup>
+      
+		<ItemGroup>
+			<SpiroNgSrcFiles Include="Spiro.Angular\Content*\partials\*.*"/>
+      <SpiroNgSrcFiles Include="Spiro.Angular\Controllers*\SpiroController.cs"/>
+      <SpiroNgSrcFiles Include="Spiro.Angular\Views*\Spiro\Modern.aspx"/>
+      <SpiroNgSrcFiles Include="Spiro.Angular\Scripts*\spiro.angular.app.ts"/>
+      <SpiroNgSrcFiles Include="Spiro.Angular\Scripts*\spiro.angular.app.js"/>
+      <SpiroNgSrcFiles Include="Spiro.Angular\Scripts*\spiro.angular.controllers.ts"/>
+      <SpiroNgSrcFiles Include="Spiro.Angular\Scripts*\spiro.angular.controllers.js"/>
+      <SpiroNgSrcFiles Include="Spiro.Angular\Scripts*\spiro.angular.viewmodels.ts"/>
+      <SpiroNgSrcFiles Include="Spiro.Angular\Scripts*\spiro.angular.viewmodels.js"/>
+    
+    </ItemGroup>
+
+		<Copy SourceFiles="@(SpiroSrcFiles)" DestinationFolder="Spiro.Models.package\content\%(RecursiveDir)" />
+    <Copy SourceFiles="@(SpiroNgSrcFiles)" DestinationFolder="Spiro.Modern.Angular.package\content\%(RecursiveDir)" />
+		
+		<Exec WorkingDirectory="Spiro.Models.package" Command="$(Nuget) pack Spiro.Models.nuspec" />
+    <Exec WorkingDirectory="Spiro.Modern.Angular.package" Command="$(Nuget) pack Spiro.Modern.Angular.nuspec" />
+    
+		<ItemGroup>
+			<SpiroPackage Include="Spiro.Models.package\*.nupkg; Spiro.Modern.Angular.package\*.nupkg"/>
+		</ItemGroup>
+
+		<Copy SourceFiles="@(SpiroPackage)" DestinationFolder="$(BuiltPackagesPath)" Condition=" '$(Targets)'!='Clean' "/>
+	</Target>
+	
+
+	<Target Name="Package" DependsOnTargets="PackageSpiro">
+			
+	</Target>
+	
+	<Target Name="Test" DependsOnTargets="Build;DeploySpiroApp">
+
+    <MSBuild Projects="Spiro.Test.Runner\Spiro.Test.Runner.csproj" Targets="Build" Properties="Targets=Clean;Configuration=%(Configuration.Identity)" />
+
+    <!--<Exec Command='"$(MSTestPath)\MSTest.exe" /testcontainer:"Spiro.Test.Runner\bin\%(Configuration.Identity)\Spiro.Test.Runner.dll" /resultsfile:$(TestResultsPath)\RestfulObjects.Spiro.Test.Runner.trx' />-->
+  
+  </Target>
+
+	<Target Name="Release" DependsOnTargets="Package;Test">
+
+		<ItemGroup>
+			
+			<Source Include="Spiro*\**\*.*" Exclude="Spiro*\bin\**\*.*;Spiro*\obj\**\*.*;Spiro*\**\*.dll;Spiro*\**\*.pdb"/>
+		
+		</ItemGroup>
+
+		<Copy SourceFiles="@(Source)" DestinationFolder="$(ReleasePath)\src\%(RecursiveDir)" Condition=" '$(Targets)'!='Clean' "/>
+
+		<ItemGroup>
+			<ReleaseZipFiles Include="$(ReleasePath)\**\*.*" />
+		</ItemGroup>
+		<Zip Files="@(ReleaseZipFiles)"
+				WorkingDirectory="$(ReleasePath)"
+				ZipFileName="$(ReleasePath)\SpiroRelease$(SpiroVersion).zip" />  
+		
+	</Target>
+
+  <Target Name="NightlyBuild" DependsOnTargets="Release">
+    <ItemGroup>
+      <Packages Include="$(BuiltPackagesPath)\*.nupkg" Exclude="$(BuiltPackagesPath)\*.symbols.nupkg" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackagesToDelete Include="\\Saturn\Packages\Spiro.*.nupkg" />
+    </ItemGroup>
+
+    <Delete Files="@(PackagesToDelete)" Condition=" '$(Targets)'!='Clean' "/>
+
+    <Copy SourceFiles="@(Packages)" DestinationFolder="\\Saturn\Packages" Condition=" '$(Targets)'!='Clean' "/>
+
+  </Target>
+	
+ <Target Name="DeploySpiroApp" DependsOnTargets="Package">
+		<PropertyGroup>
+			<SpiroOutputDir>build\working\bin\%(Configuration.Identity)\UnitTest</SpiroOutputDir>
+			
+		</PropertyGroup>
+
+		<RemoveDir Directories="build\working" ContinueOnError="true" />
+		<MakeDir Directories="build\working" />
+
+		<MSBuild Projects="Spiro.Angular\Spiro.Angular.csproj"
+						 Targets="ResolveReferences;_CopyWebApplication"
+						 Properties="WebProjectOutputDir=..\$(SpiroOutputDir)\;OutDir=..\$(SpiroOutputDir)\;Configuration=%(Configuration.Identity)" />
+
+			
+		<ItemGroup>
+			<SpiroApp Include="$(SpiroOutputDir)\**\*.*"/>
+			
+		</ItemGroup>
+
+		<!--<ItemGroup>
+			<SpiroAppLib Include="RestfulObjects.Mvc.App\bin\*.dll"/>			
+		</ItemGroup>-->
+
+		<Copy SourceFiles="@(SpiroApp)" DestinationFolder="\\Saturn\UnitTestSpiro\%(RecursiveDir)"/>
+		<!--<Copy SourceFiles="@(SpiroAppLib)" DestinationFolder="\\Saturn\UnitTestSpiro\bin" SkipUnchangedFiles="true" />-->
+
+	</Target>  
+	
+</Project>

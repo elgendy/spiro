@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Spiro.Angular", "Spiro.Angu
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Spiro.Backbone", "Spiro.Backbone\Spiro.Backbone.csproj", "{D41566D6-0910-42C5-A8B5-545971938163}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Spiro.Test.Runner", "Spiro.Test.Runner\Spiro.Test.Runner.csproj", "{27053CE0-4518-46EF-9EDE-87D67AAEEB2D}"
+EndProject
 Global
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = Server.vsmdi
@@ -30,6 +32,10 @@ Global
 		{D41566D6-0910-42C5-A8B5-545971938163}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D41566D6-0910-42C5-A8B5-545971938163}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D41566D6-0910-42C5-A8B5-545971938163}.Release|Any CPU.Build.0 = Release|Any CPU
+		{27053CE0-4518-46EF-9EDE-87D67AAEEB2D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{27053CE0-4518-46EF-9EDE-87D67AAEEB2D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{27053CE0-4518-46EF-9EDE-87D67AAEEB2D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{27053CE0-4518-46EF-9EDE-87D67AAEEB2D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

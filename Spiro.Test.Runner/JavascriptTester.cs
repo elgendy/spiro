@@ -78,14 +78,14 @@ namespace NakedObjects.Mvc.Test.Javascript {
         [TestMethod]
         public void RunViewTestsFirefox() {
             using (var ff = new FirefoxDriver()) {
-                RunQUnitTests(ff, "http://mvc.nakedobjects.net:1081/UnitTestSpiro/Spiro/spiroclassicqunit",  "Firefox", "View");
+              //  RunQUnitTests(ff, "http://mvc.nakedobjects.net:1081/UnitTestSpiro/Spiro/spiroclassicqunit",  "Firefox", "View");
             }
         }
 
         [TestMethod]
         public void RunModelTestsFirefox() {
             using (var ff = new FirefoxDriver()) {
-                RunQUnitTests(ff,  "http://mvc.nakedobjects.net:1081/UnitTestSpiro/Spiro/spiroqunit", "Firefox", "Model");
+             //   RunQUnitTests(ff,  "http://mvc.nakedobjects.net:1081/UnitTestSpiro/Spiro/spiroqunit", "Firefox", "Model");
             }
         }
 

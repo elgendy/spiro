@@ -1,7 +1,0 @@
-C:\Users\Stef Cascarini\Documents\GitHub\spiro\Spiro.Test.Runner\bin\Debug\Spiro.Test.Runner.dll
-C:\Users\Stef Cascarini\Documents\GitHub\spiro\Spiro.Test.Runner\bin\Debug\Spiro.Test.Runner.pdb
-C:\Users\Stef Cascarini\Documents\GitHub\spiro\Spiro.Test.Runner\bin\Debug\WebDriver.dll
-C:\Users\Stef Cascarini\Documents\GitHub\spiro\Spiro.Test.Runner\bin\Debug\WebDriver.xml
-C:\Users\Stef Cascarini\Documents\GitHub\spiro\Spiro.Test.Runner\obj\Debug\Spiro.Test.Runner.csprojResolveAssemblyReference.cache
-C:\Users\Stef Cascarini\Documents\GitHub\spiro\Spiro.Test.Runner\obj\Debug\Spiro.Test.Runner.dll
-C:\Users\Stef Cascarini\Documents\GitHub\spiro\Spiro.Test.Runner\obj\Debug\Spiro.Test.Runner.pdb
