@@ -13,5 +13,11 @@
     <summary>Includes both TypeScript source and compiled JavaScript</summary>
     <description>A library for building Single Page Apps that connect with a Restful Objects server</description>
     <tags>restful objects javascript backbone</tags>
+    <dependencies>
+      <dependency id="jQuery" version="2.0.3" />
+      <dependency id="underscore.js" version="1.5.1" />
+      <dependency id="jquery.TypeScript.DefinitelyTyped" version="0.2.0" />
+      <dependency id="underscore.TypeScript.DefinitelyTyped" version="0.1.5" />
+    </dependencies>
   </metadata>
 </package>
