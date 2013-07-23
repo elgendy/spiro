@@ -54,7 +54,7 @@ declare module ng {
             name: string,
             /** name of modules yours depends on */
             requires?: string[],
-            configFunction?: Function): IModule;
+            configFunction?: any): IModule;
         noop(...args: any[]): void;
         toJson(obj: any, pretty?: bool): string;
         uppercase(str: string): string;
@@ -119,6 +119,7 @@ declare module ng {
     ///////////////////////////////////////////////////////////////////////////
     interface IAttributes {
         $set(name: string, value: any): void;
+        $observe(name: string, fn:(value?:any)=>any):void;
         $attr: any;
     }
 
@@ -199,6 +200,8 @@ declare module ng {
         $watch(watchExpression: string, listener?: (newValue: any, oldValue: any, scope: IScope) => any, objectEquality?: bool): Function;
         $watch(watchExpression: (scope: IScope) => any, listener?: string, objectEquality?: bool): Function;
         $watch(watchExpression: (scope: IScope) => any, listener?: (newValue: any, oldValue: any, scope: IScope) => any, objectEquality?: bool): Function;
+        
+        $parent: IScope;
 
         $id: number;
     }

@@ -213,6 +213,9 @@
     <Content Include="Content\partials\viewProperties.html" />
     <Content Include="fonts\iconFont.svg" />
     <Content Include="fonts\license.txt" />
+    <None Include="Scripts\jquery-2.0.3.intellisense.js" />
+    <Content Include="Scripts\jquery-2.0.3.js" />
+    <Content Include="Scripts\jquery-2.0.3.min.js" />
     <Content Include="Scripts\spiro.angular.app.js.map">
       <DependentUpon>spiro.angular.app.ts</DependentUpon>
     </Content>
@@ -222,6 +225,9 @@
     <Content Include="Scripts\spiro.angular.viewmodels.js.map">
       <DependentUpon>spiro.angular.viewmodels.ts</DependentUpon>
     </Content>
+    <Content Include="Scripts\underscore.js" />
+    <Content Include="Scripts\underscore.min.js" />
+    <Content Include="Scripts\underscore.min.map" />
     <TypeScriptCompile Include="Scripts\spiro.angular.app.ts" />
     <TypeScriptCompile Include="Scripts\spiro.angular.controllers.ts" />
     <Content Include="Content\partials\services.html" />
@@ -293,7 +299,6 @@
     <Content Include="fonts\iconFont.eot" />
     <Content Include="fonts\iconFont.ttf" />
     <Content Include="fonts\iconFont.woff" />
-    <None Include="Scripts\jquery-2.0.2.intellisense.js" />
     <Content Include="Scripts\angular-bootstrap-prettify.js" />
     <Content Include="Scripts\angular-bootstrap-prettify.min.js" />
     <Content Include="Scripts\angular-bootstrap.js" />
@@ -597,9 +602,7 @@
     <Content Include="Scripts\i18n\angular-locale_zh.js" />
     <Content Include="Scripts\i18n\angular-locale_zu-za.js" />
     <Content Include="Scripts\i18n\angular-locale_zu.js" />
-    <Content Include="Scripts\jquery-2.0.2.js" />
-    <Content Include="Scripts\jquery-2.0.2.min.js" />
-    <Content Include="Scripts\jquery-2.0.2.min.map" />
+    <Content Include="Scripts\jquery-2.0.3.min.map" />
     <None Include="Scripts\jquery.validate-vsdoc.js" />
     <Content Include="Scripts\jquery-ui-1.10.3.js" />
     <Content Include="Scripts\jquery-ui-1.10.3.min.js" />
@@ -649,8 +652,6 @@
     <Content Include="Scripts\typings\jquery\jquery.d.ts" />
     <Content Include="Scripts\typings\underscore\underscore-typed.d.ts" />
     <Content Include="Scripts\typings\underscore\underscore.d.ts" />
-    <Content Include="Scripts\underscore.js" />
-    <Content Include="Scripts\underscore.min.js" />
     <Content Include="Views\Spiro\Modern.aspx" />
     <Content Include="Web.config" />
     <Content Include="Web.Debug.config">

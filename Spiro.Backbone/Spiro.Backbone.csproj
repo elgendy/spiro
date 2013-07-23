@@ -250,10 +250,21 @@
     <Content Include="fonts\iconFont.ttf" />
     <Content Include="fonts\iconFont.woff" />
     <Content Include="Scripts\jquery-1.8.3.js" />
+    <Content Include="App_Readme\Handlebarsjs_README.md" />
+    <Content Include="App_Readme\Handlebarsjs_LICENSE" />
+    <None Include="Scripts\jquery-2.0.3.intellisense.js" />
+    <Content Include="Scripts\jquery-2.0.3.js" />
+    <Content Include="Scripts\jquery-2.0.3.min.js" />
     <Content Include="Scripts\jquery-ui-1.10.2.js" />
+    <Content Include="Scripts\jquery.unobtrusive-ajax.js" />
+    <Content Include="Scripts\jquery.unobtrusive-ajax.min.js" />
     <Content Include="Scripts\modernizr-2.6.2.js" />
+    <Content Include="Scripts\jquery-2.0.3.min.map" />
+    <Content Include="Scripts\typings\handlebars\handlebars.d.ts" />
+    <Content Include="Scripts\underscore.min.js" />
+    <Content Include="Scripts\underscore.min.map" />
     <TypeScriptCompile Include="Scripts\spiro.models.shims.ts" />
-    <Content Include="Scripts\spiro.backbone.helpers.js" >
+    <Content Include="Scripts\spiro.backbone.helpers.js">
       <DependentUpon>spiro.backbone.helpers.ts</DependentUpon>
     </Content>
     <TypeScriptCompile Include="Scripts\spiro.models.helpers.ts" />
@@ -296,14 +307,12 @@
     </Content>
     <TypeScriptCompile Include="Scripts\spiro.modern.presentations.ts" />
     <TypeScriptCompile Include="Scripts\spiro.modern.ts" />
-    <Content Include="Scripts\typings\handlebars\handlebars.d.ts" />
     <Content Include="Scripts\typings\modernizr\modernizr.d.ts" />
     <Content Include="Scripts\typings\underscore\underscore-typed-1.4.2.d.ts" />
     <Content Include="Scripts\typings\underscore\underscore-typed-1.4.3.d.ts" />
     <Content Include="Scripts\typings\underscore\underscore-typed.d.ts" />
     <Content Include="Scripts\typings\underscore\underscore.d.ts" />
     <Content Include="Scripts\underscore.js" />
-    <Content Include="Scripts\underscore.min.js" />
     <Content Include="Views\Spiro\Modern.aspx" />
     <Content Include="Web.config" />
     <Content Include="Web.Debug.config">
@@ -352,7 +361,7 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Scripts\spiro.backbone.helpers.js.map" >
+    <Content Include="Scripts\spiro.backbone.helpers.js.map">
       <DependentUpon>spiro.backbone.helpers.ts</DependentUpon>
     </Content>
   </ItemGroup>

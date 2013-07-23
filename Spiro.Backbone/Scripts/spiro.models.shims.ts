@@ -26,7 +26,7 @@ module Spiro {
     }
 
     export class ModelShim extends Backbone.Model {
-
+       
     }
 
     // base class for all representations that can be directly loaded from the server 
@@ -65,7 +65,7 @@ module Spiro {
 
         preFetch() { }
 
-        fetch(options?) {
+        fetch(options?) : any {
             this.preFetch();
             if (this.method === "GET") {
                 this.appendUrlSuffix();
