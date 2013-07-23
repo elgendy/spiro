@@ -161,16 +161,18 @@ module Spiro.Angular {
 
         $scope.appBar.hideEdit = true; 
 
-
         // TODO create appbar viewmodel 
-        Context.getObject($routeParams.dt, $routeParams.id).
-            then(function (object: DomainObjectRepresentation) {
-                
-                $scope.appBar.hideEdit = !(object);
 
-                // rework to use viewmodel code
-                $scope.appBar.doEdit = "#" + $location.url() + "?editMode=true";
+        if ($routeParams.dt && $routeParams.id) {
+            Context.getObject($routeParams.dt, $routeParams.id).
+                then(function (object: DomainObjectRepresentation) {
+                    
+                    $scope.appBar.hideEdit = !(object) || $routeParams.editMode;
+
+                    // rework to use viewmodel code
+                    $scope.appBar.doEdit = "#" + $location.path() + "?editMode=true";
                 
-            });
+                });
+        }
     });
 }

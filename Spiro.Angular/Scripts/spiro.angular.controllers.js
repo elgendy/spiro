@@ -135,11 +135,13 @@
 
             $scope.appBar.hideEdit = true;
 
-            Context.getObject($routeParams.dt, $routeParams.id).then(function (object) {
-                $scope.appBar.hideEdit = !(object);
+            if ($routeParams.dt && $routeParams.id) {
+                Context.getObject($routeParams.dt, $routeParams.id).then(function (object) {
+                    $scope.appBar.hideEdit = !(object) || $routeParams.editMode;
 
-                $scope.appBar.doEdit = "#" + $location.url() + "?editMode=true";
-            });
+                    $scope.appBar.doEdit = "#" + $location.path() + "?editMode=true";
+                });
+            }
         });
     })(Spiro.Angular || (Spiro.Angular = {}));
     var Angular = Spiro.Angular;
