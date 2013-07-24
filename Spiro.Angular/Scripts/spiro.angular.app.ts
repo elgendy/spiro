@@ -8,15 +8,15 @@ module Spiro.Angular {
     app.config(function ($routeProvider) {
         $routeProvider.
             when('/services', {
-                templateUrl: 'Content/partials/services.html',
+                templateUrl: './Content/partials/services.html',
                 controller: 'ServicesController'
             }).
             when('/services/:sid', {
-                templateUrl: 'Content/partials/service.html',
+                templateUrl: './Content/partials/service.html',
                 controller: 'ServiceController'
             }).
             when('/objects/:dt/:id', {
-                templateUrl: 'Content/partials/object.html',
+                templateUrl: './Content/partials/object.html',
                 controller: 'ObjectController'
             }).
             otherwise({
@@ -289,7 +289,7 @@ module Spiro.Angular {
             Context.getCollection().
                 then(function (list: ListRepresentation) {
                     $scope.collection = CollectionViewModel.createFromList(list, $routeParams, $location);
-                    $scope.collectionTemplate = "Content/partials/nestedCollection.html";
+                    $scope.collectionTemplate = "./Content/partials/nestedCollection.html";
                 }, function (error) {
                     this.handleError(error);
                 });
@@ -309,7 +309,7 @@ module Spiro.Angular {
             }).
                 then(function (details: CollectionRepresentation) {
                     $scope.collection = CollectionViewModel.createFromDetails(details, $routeParams);
-                    $scope.collectionTemplate = "Content/partials/nestedCollection.html";
+                    $scope.collectionTemplate = "./Content/partials/nestedCollection.html";
                 }, function (error) {
                     this.handleError(error);
                 });
@@ -369,7 +369,7 @@ module Spiro.Angular {
                 then(function (action: ActionRepresentation) {
                     if (action.extensions().hasParams) {
 
-                        $scope.dialogTemplate = "Content/partials/dialog.html";
+                        $scope.dialogTemplate = "./Content/partials/dialog.html";
                         $scope.dialog = DialogViewModel.create(action, $routeParams, function (dvm: DialogViewModel, show: boolean) {
                             dvm.clearErrors();
 
@@ -403,7 +403,7 @@ module Spiro.Angular {
                                         var evm = ErrorViewModel.create(errorRep);
                                         $scope.error = evm;
 
-                                        $scope.dialogTemplate = "Content/partials/error.html";
+                                        $scope.dialogTemplate = "./Content/partials/error.html";
                                     }
                                     else {
                                         dvm.error = error;
@@ -451,7 +451,7 @@ module Spiro.Angular {
         function handleNestedObject(object: DomainObjectRepresentation, $scope) {
             
             $scope.result = DomainObjectViewModel.create(object, $routeParams); // todo rename result
-            $scope.nestedTemplate = "Content/partials/nestedObject.html";
+            $scope.nestedTemplate = "./Content/partials/nestedObject.html";
             Context.setNestedObject(object);
         }
 

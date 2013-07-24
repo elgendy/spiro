@@ -55,7 +55,7 @@ module Spiro.Angular {
             Context.getNestedObject(dt, id).
                 then(function (object: DomainObjectRepresentation) {
                     $scope.result = DomainObjectViewModel.create(object, $routeParams); // todo rename result
-                    $scope.nestedTemplate = "Content/partials/nestedObject.html";
+                    $scope.nestedTemplate = "./Content/partials/nestedObject.html";
                     Context.setNestedObject(object);
                 }, function (error) {
                     $scope.object = {};
@@ -77,8 +77,8 @@ module Spiro.Angular {
             then(function (object: DomainObjectRepresentation) {
                
                 Context.setNestedObject(null);
-                $scope.actionTemplate = $routeParams.editMode ? "" : "Content/partials/actions.html";
-                $scope.propertiesTemplate = $routeParams.editMode ? "Content/partials/editProperties.html" : "Content/partials/viewProperties.html";
+                $scope.actionTemplate = $routeParams.editMode ? "" : "./Content/partials/actions.html";
+                $scope.propertiesTemplate = $routeParams.editMode ? "./Content/partials/editProperties.html" : "./Content/partials/viewProperties.html";
 
                 $scope.object = DomainObjectViewModel.create(object, $routeParams, function (ovm: DomainObjectViewModel) {
 
@@ -122,7 +122,7 @@ module Spiro.Angular {
                                 var evm = ErrorViewModel.create(errorRep);
                                 $scope.error = evm;
 
-                                $scope.propertiesTemplate = "Content/partials/error.html";
+                                $scope.propertiesTemplate = "./Content/partials/error.html";
                             }
                             else {
                                 ovm.message = error; 
@@ -140,7 +140,7 @@ module Spiro.Angular {
         if (error) {
             var evm = ErrorViewModel.create(error);
             $scope.error = evm; 
-            $scope.errorTemplate = "Content/partials/error.html";
+            $scope.errorTemplate = "./Content/partials/error.html";
         }
     });
 
