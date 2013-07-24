@@ -4,9 +4,9 @@ using System.Data.Entity.Infrastructure;
 using System.Threading;
 using System.Web.Mvc;
 using WebMatrix.WebData;
-using Spiro.Modern.Models;
+using Spiro.Backbone.Models;
 
-namespace Spiro.Modern.Filters {
+namespace Spiro.Backbone.Filters {
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
     public sealed class InitializeSimpleMembershipAttribute : ActionFilterAttribute {
         private static SimpleMembershipInitializer _initializer;

@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Spiro.Modern")]
+[assembly: AssemblyTitle("Spiro.Backbone")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Microsoft")]
-[assembly: AssemblyProduct("Spiro.Modern")]
+[assembly: AssemblyProduct("Spiro.Backbone")]
 [assembly: AssemblyCopyright("Copyright © Microsoft 2013")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("b11d0ac5-bca1-4e04-b794-75c5772852c7")]
+[assembly: Guid("4591077b-5685-4d12-9211-02ed9e339ccb")]
 
 // Version information for an assembly consists of the following four values:
 //
