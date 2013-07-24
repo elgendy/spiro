@@ -248,28 +248,33 @@
 	
  <Target Name="DeploySpiroApp" DependsOnTargets="Package">
 		<PropertyGroup>
-			<SpiroOutputDir>build\working\bin\%(Configuration.Identity)\UnitTest</SpiroOutputDir>
-			
+			<SpiroBBOutputDir>build\working\bin\%(Configuration.Identity)\UnitTestBB</SpiroBBOutputDir>
+			<SpiroNgOutputDir>build\working\bin\%(Configuration.Identity)\UnitTestNg</SpiroNgOutputDir>
 		</PropertyGroup>
 
 		<RemoveDir Directories="build\working" ContinueOnError="true" />
 		<MakeDir Directories="build\working" />
 
-		<MSBuild Projects="Spiro.Angular\Spiro.Angular.csproj"
+    <MSBuild Projects="Spiro.Angular\Spiro.Angular.csproj"
 						 Targets="ResolveReferences;_CopyWebApplication"
-						 Properties="WebProjectOutputDir=..\$(SpiroOutputDir)\;OutDir=..\$(SpiroOutputDir)\;Configuration=%(Configuration.Identity)" />
+						 Properties="WebProjectOutputDir=..\$(SpiroNgOutputDir)\;OutDir=..\$(SpiroNgOutputDir)\;Configuration=%(Configuration.Identity)" />   
+
+		<MSBuild Projects="Spiro.Backbone\Spiro.Backbone.csproj"
+						 Targets="ResolveReferences;_CopyWebApplication"
+						 Properties="WebProjectOutputDir=..\$(SpiroBBOutputDir)\;OutDir=..\$(SpiroBBOutputDir)\;Configuration=%(Configuration.Identity)" />
 
 			
 		<ItemGroup>
-			<SpiroApp Include="$(SpiroOutputDir)\**\*.*"/>
-			
+			<SpiroBBApp Include="$(SpiroBBOutputDir)\**\*.*"/>
+      <SpiroNgApp Include="$(SpiroNgOutputDir)\**\*.*"/>	
 		</ItemGroup>
 
 		<!--<ItemGroup>
 			<SpiroAppLib Include="RestfulObjects.Mvc.App\bin\*.dll"/>			
 		</ItemGroup>-->
 
-		<Copy SourceFiles="@(SpiroApp)" DestinationFolder="\\Saturn\UnitTestSpiro\%(RecursiveDir)"/>
+		<Copy SourceFiles="@(SpiroBBApp)" DestinationFolder="\\Saturn\UnitTestSpiroBB\%(RecursiveDir)"/>
+    <Copy SourceFiles="@(SpiroNgApp)" DestinationFolder="\\Saturn\UnitTestSpiroNg\%(RecursiveDir)"/>
 		<!--<Copy SourceFiles="@(SpiroAppLib)" DestinationFolder="\\Saturn\UnitTestSpiro\bin" SkipUnchangedFiles="true" />-->
 
 	</Target>  
