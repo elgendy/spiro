@@ -1051,7 +1051,7 @@ module Spiro.Modern.HandlebarsTemplating {
 
         draw(errorMap?: ErrorMap): void {
             errorMap = errorMap || new ErrorMap({}, "", "");
-            var errors = errorMap.values();
+            var errors = errorMap.valuesMap();
             this.drawActions();
             this.drawProperties(errors);
         }

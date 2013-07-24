@@ -273,7 +273,7 @@ module Spiro {
             super(map);
         }
 
-        values(): ErrorValueMap {
+        valuesMap(): ErrorValueMap {
             var vs: ErrorValueMap = {};
 
             for (var v in this.attributes) {
@@ -400,14 +400,15 @@ module Spiro {
         // cannot use constructor to initialise as model property is not yet set and so will 
         // not create members of correct type 
         constructor() {
-            super();        
+            super(); 
+            
+            this.url = () => {
+                return this.hateoasUrl;
+            };
         }
       
         hateoasUrl: string;
         method: string;
-        url(): string {
-            return this.hateoasUrl || super.url();
-        }
 
         model = Link;
 
@@ -863,7 +864,7 @@ module Spiro {
         }
 
         getUrl(): string {
-            return this.hateoasUrl || this.selfLink().href() || super.url();
+            return this.hateoasUrl || this.selfLink().href();
         }
 
         title(): string {

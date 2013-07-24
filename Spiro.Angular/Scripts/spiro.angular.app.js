@@ -317,7 +317,7 @@
                                     var errorMap = error;
 
                                     _.each(parameters, function (parm) {
-                                        var error = errorMap.values()[parm.id];
+                                        var error = errorMap.valuesMap()[parm.id];
 
                                         if (error) {
                                             parm.value = error.value.toValueString();

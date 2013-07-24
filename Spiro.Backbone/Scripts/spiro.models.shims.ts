@@ -16,14 +16,14 @@
 module Spiro {
 
     // option helpers 
-    export interface Options {
-        success?: (originalModel, resp, iOptions) => void;
-        error?: (originalModel, resp, iOptions) => void;
-    }
+    //export interface Options {
+    //    success?: (originalModel, resp, iOptions) => void;
+    //    error?: (originalModel, resp, iOptions) => void;
+    //}
 
     export var sync = function (method: string, model: Backbone.Model, options?: any) {
         Backbone.sync(method, model, options);
-    }
+    };
 
     export class ModelShim extends Backbone.Model {
        
@@ -34,15 +34,14 @@ module Spiro {
         constructor(object?) {
             super(object);
             this.once('error', this.error);
+            this.url = () => {
+                return this.hateoasUrl + this.suffix;
+            };
         }
 
         hateoasUrl: string;
         method: string = "GET"; // default to GET 
         private suffix: string = "";
-
-        url(): string {
-            return (this.hateoasUrl || super.url()) + this.suffix;
-        }
 
         error(originalModel, resp, iOptions) {
             var rs = resp.responseText ? $.parseJSON(resp.responseText) : {};
@@ -65,23 +64,25 @@ module Spiro {
 
         preFetch() { }
 
-        fetch(options?) : any {
+        fetch(options? : Backbone.ModelFetchOptions) : JQueryXHR {
             this.preFetch();
             if (this.method === "GET") {
                 this.appendUrlSuffix();
-                super.fetch(options);
+                return super.fetch(options);
             }
             else if (this.method === "POST") {
-                super.save(null, options);
+                return super.save(null, options);
             }
             else if (this.method === "PUT") {
                 // set id so not new ? 
-                super.save(null, options);
+                return super.save(null, options);
             }
             else if (this.method === "DELETE") {
                 this.appendUrlSuffix();
-                super.destroy(options);
+                return super.destroy(options);
             }
+
+            return null;
         }
 
         save(options?) {
@@ -93,10 +94,10 @@ module Spiro {
             super.destroy(options);
         }
 
-        sync(method, model, options) {
-            model.id = model.url();
-            sync(method, model, options);
-        }
+        //sync(method, model, options) {
+        //    model.id = model.url();
+        //    sync(method, model, options);
+        //}
     }
 
     export class ArgumentMap extends HateoasModelBaseShim {

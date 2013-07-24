@@ -22,15 +22,15 @@ var Spiro;
     var HateoasModelBaseShim = (function (_super) {
         __extends(HateoasModelBaseShim, _super);
         function HateoasModelBaseShim(object) {
+            var _this = this;
             _super.call(this, object);
             this.method = "GET";
             this.suffix = "";
             this.once('error', this.error);
+            this.url = function () {
+                return _this.hateoasUrl + _this.suffix;
+            };
         }
-        HateoasModelBaseShim.prototype.url = function () {
-            return (this.hateoasUrl || _super.prototype.url.call(this)) + this.suffix;
-        };
-
         HateoasModelBaseShim.prototype.error = function (originalModel, resp, iOptions) {
             var rs = resp.responseText ? $.parseJSON(resp.responseText) : {};
             var warnings = resp.getResponseHeader("Warning");
@@ -58,15 +58,17 @@ var Spiro;
             this.preFetch();
             if (this.method === "GET") {
                 this.appendUrlSuffix();
-                _super.prototype.fetch.call(this, options);
+                return _super.prototype.fetch.call(this, options);
             } else if (this.method === "POST") {
-                _super.prototype.save.call(this, null, options);
+                return _super.prototype.save.call(this, null, options);
             } else if (this.method === "PUT") {
-                _super.prototype.save.call(this, null, options);
+                return _super.prototype.save.call(this, null, options);
             } else if (this.method === "DELETE") {
                 this.appendUrlSuffix();
-                _super.prototype.destroy.call(this, options);
+                return _super.prototype.destroy.call(this, options);
             }
+
+            return null;
         };
 
         HateoasModelBaseShim.prototype.save = function (options) {
@@ -76,11 +78,6 @@ var Spiro;
         HateoasModelBaseShim.prototype.destroy = function (options) {
             this.appendUrlSuffix();
             _super.prototype.destroy.call(this, options);
-        };
-
-        HateoasModelBaseShim.prototype.sync = function (method, model, options) {
-            model.id = model.url();
-            Spiro.sync(method, model, options);
         };
         return HateoasModelBaseShim;
     })(ModelShim);

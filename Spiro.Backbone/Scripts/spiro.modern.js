@@ -328,7 +328,7 @@ var Spiro;
                 this.presentation.clear();
                 var helper = new FragmentHelper(Backbone.history.getFragment());
                 helper.clearDialog();
-                app.navigate(helper.currentValue(), { replace: true });
+                app.navigate(helper.currentValue(), { trigger: true });
             };
 
             ActionController.prototype.show = function (values) {
@@ -464,7 +464,7 @@ var Spiro;
                 this.presentation.clear();
                 var helper = new FragmentHelper(Backbone.history.getFragment());
                 helper.clearNested();
-                app.navigate(helper.currentValue(), { replace: true });
+                app.navigate(helper.currentValue(), { trigger: true });
             };
 
             NestedDomainObjectController.prototype.objectUrlFragment = function () {
@@ -491,20 +491,20 @@ var Spiro;
                 this.options = options;
                 this.viewPresentation = Modern.presentationFactory.CreatePresentation(this.model, options);
 
-                _.bindAll(this, 'render', 'renderWithError', 'editSuccess', 'action', 'edit', 'link', 'collection', 'save', 'cancel', 'autocomplete');
+                _.bindAll(this, 'render', 'renderWithError', 'editSuccess', 'action', 'edit', 'link', 'collectionEvt', 'save', 'cancel', 'autocomplete');
                 _.each(['change', 'reset', 'draw'], function (evt) {
                     return _this.model.on(evt, _this.render);
                 });
 
                 this.viewPresentation.on("action", this.action);
                 this.viewPresentation.on("link", this.link);
-                this.viewPresentation.on("collection", this.collection);
+                this.viewPresentation.on("collection", this.collectionEvt);
                 this.viewPresentation.on("edit", this.edit);
 
                 this.editPresentation = Modern.presentationFactory.CreatePresentation(this.model, { edit: true });
 
                 this.editPresentation.on("link", this.link);
-                this.editPresentation.on("collection", this.collection);
+                this.editPresentation.on("collection", this.collectionEvt);
                 this.editPresentation.on("save", this.save);
                 this.editPresentation.on("cancel", this.cancel);
                 this.editPresentation.on("autocomplete", this.autocomplete);
@@ -562,7 +562,7 @@ var Spiro;
                 ControllerFactory.CreateControllerAndFetch(target, { nest: true });
             };
 
-            DomainObjectController.prototype.collection = function (aId) {
+            DomainObjectController.prototype.collectionEvt = function (aId) {
                 var target = this.model.collectionMember(aId).getDetails();
                 ControllerFactory.CreateControllerAndFetch(target, { nest: true });
             };

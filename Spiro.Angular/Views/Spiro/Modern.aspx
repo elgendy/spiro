@@ -93,7 +93,7 @@
     
     <script type="text/javascript" src="<%= Url.Content("~/Scripts/underscore.js") %>"></script>
     <script type="text/javascript" src="<%= Url.Content("~/Scripts/modernizr-2.6.2.js") %>"></script>
-    <script type="text/javascript" src="<%= Url.Content("~/Scripts/jquery-2.0.2.js") %>"></script>
+    <script type="text/javascript" src="<%= Url.Content("~/Scripts/jquery-2.0.3.js") %>"></script>
     <script type="text/javascript" src="<%= Url.Content("~/Scripts/jquery-ui-1.10.3.js") %>"></script>
     <script type="text/javascript" src="<%= Url.Content("~/Scripts/angular.js") %>"></script>
     <script type="text/javascript" src="<%= Url.Content("~/Scripts/angular-resource.js") %>"></script>

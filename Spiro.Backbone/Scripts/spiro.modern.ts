@@ -339,7 +339,7 @@ module Spiro.Modern {
             this.presentation.clear();
             var helper = new FragmentHelper(Backbone.history.getFragment());
             helper.clearDialog();
-            app.navigate(helper.currentValue(), { replace: true });
+            app.navigate(helper.currentValue(), { trigger: true });
         }
 
         show(values: ValueMap) {
@@ -482,7 +482,7 @@ module Spiro.Modern {
             this.presentation.clear();
             var helper = new FragmentHelper(Backbone.history.getFragment());
             helper.clearNested();
-            app.navigate(helper.currentValue(), { replace: true });
+            app.navigate(helper.currentValue(), { trigger: true });
         }
 
         objectUrlFragment() {
@@ -519,18 +519,18 @@ module Spiro.Modern {
             super(options);
             this.viewPresentation = presentationFactory.CreatePresentation(this.model, options);
 
-            _.bindAll(this, 'render', 'renderWithError', 'editSuccess', 'action', 'edit', 'link', 'collection', 'save', 'cancel', 'autocomplete');
+            _.bindAll(this, 'render', 'renderWithError', 'editSuccess', 'action', 'edit', 'link', 'collectionEvt', 'save', 'cancel', 'autocomplete');
             _.each(['change', 'reset', 'draw'], (evt: string) => this.model.on(evt, this.render));
 
             this.viewPresentation.on("action", this.action);
             this.viewPresentation.on("link", this.link);
-            this.viewPresentation.on("collection", this.collection);
+            this.viewPresentation.on("collection", this.collectionEvt);
             this.viewPresentation.on("edit", this.edit);
 
             this.editPresentation = presentationFactory.CreatePresentation(this.model, { edit: true });
 
             this.editPresentation.on("link", this.link);
-            this.editPresentation.on("collection", this.collection);
+            this.editPresentation.on("collection", this.collectionEvt);
             this.editPresentation.on("save", this.save);
             this.editPresentation.on("cancel", this.cancel);
             this.editPresentation.on("autocomplete", this.autocomplete);
@@ -589,7 +589,7 @@ module Spiro.Modern {
             ControllerFactory.CreateControllerAndFetch(target, { nest: true });
         }
 
-        collection(aId: string) {
+        collectionEvt(aId: string) {
             var target = <CollectionRepresentation>this.model.collectionMember(aId).getDetails();
             ControllerFactory.CreateControllerAndFetch(target, { nest: true });
         }

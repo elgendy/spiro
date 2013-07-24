@@ -9,9 +9,6 @@ var Spiro;
     var ModelShim = (function () {
         function ModelShim(object) {
         }
-        ModelShim.prototype.url = function () {
-        };
-
         ModelShim.prototype.get = function (attributeName) {
         };
         ModelShim.prototype.set = function (attributeName, value, options) {
@@ -23,11 +20,12 @@ var Spiro;
     var HateoasModelBaseShim = (function (_super) {
         __extends(HateoasModelBaseShim, _super);
         function HateoasModelBaseShim(object) {
+            var _this = this;
             _super.call(this, object);
+            this.url = function () {
+                return _this.hateoasUrl;
+            };
         }
-        HateoasModelBaseShim.prototype.url = function () {
-            return this.hateoasUrl;
-        };
         HateoasModelBaseShim.prototype.onError = function (map, statusCode, warnings) {
         };
         HateoasModelBaseShim.prototype.preFetch = function () {
@@ -53,8 +51,6 @@ var Spiro;
     var CollectionShim = (function () {
         function CollectionShim(object) {
         }
-        CollectionShim.prototype.url = function () {
-        };
         CollectionShim.prototype.add = function (models, options) {
         };
         return CollectionShim;

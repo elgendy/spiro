@@ -388,7 +388,7 @@ module Spiro.Angular {
                                         var errorMap = <ErrorMap>error;
 
                                         _.each(parameters, (parm) => {
-                                            var error = errorMap.values()[parm.id];
+                                            var error = errorMap.valuesMap()[parm.id];
 
                                             if (error) {
                                                 parm.value = error.value.toValueString();

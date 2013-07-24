@@ -12,8 +12,9 @@
 module Spiro {
 
     export class ModelShim {
-        constructor(object?) { }
-        url(): any { }
+        constructor(object?) {
+        }
+        url: any;
         attributes: any;
         get(attributeName: string): any { }
         set(attributeName?: any, value?: any, options?: any) { }
@@ -23,11 +24,12 @@ module Spiro {
     export class HateoasModelBaseShim extends ModelShim {
         constructor(object?) {
             super(object);
+            this.url = () => { return this.hateoasUrl; };
         }
         hateoasUrl: string;
         method: string;
         private suffix: string;
-        url(): string { return this.hateoasUrl; }
+  
         onError(map: Object, statusCode: string, warnings: string) { }
         preFetch() { }
     }
@@ -42,8 +44,9 @@ module Spiro {
 
 
     export class CollectionShim {
-        constructor(object?) { }
-        url(): any { }
+        constructor(object?) {
+        }
+        url: any;
         add(models: any, options?: any) { }
     }
 }

@@ -200,7 +200,7 @@ var Spiro;
             this.statusCode = statusCode;
             this.warningMessage = warningMessage;
         }
-        ErrorMap.prototype.values = function () {
+        ErrorMap.prototype.valuesMap = function () {
             var vs = {};
 
             for (var v in this.attributes) {
@@ -328,13 +328,14 @@ var Spiro;
     var Links = (function (_super) {
         __extends(Links, _super);
         function Links() {
+            var _this = this;
             _super.call(this);
             this.model = Link;
-        }
-        Links.prototype.url = function () {
-            return this.hateoasUrl || _super.prototype.url.call(this);
-        };
 
+            this.url = function () {
+                return _this.hateoasUrl;
+            };
+        }
         Links.prototype.parse = function (response) {
             return response.value;
         };
@@ -750,7 +751,7 @@ var Spiro;
             this.url = this.getUrl;
         }
         DomainObjectRepresentation.prototype.getUrl = function () {
-            return this.hateoasUrl || this.selfLink().href() || _super.prototype.url.call(this);
+            return this.hateoasUrl || this.selfLink().href();
         };
 
         DomainObjectRepresentation.prototype.title = function () {

@@ -38,12 +38,12 @@ module Spiro.Helpers {
         map.save(options);
     }
 
-    export function invokeAction(domainObject: DomainObjectRepresentation, actionName: string, parameters?: Object, options?: Options): void {
+    export function invokeAction(domainObject: DomainObjectRepresentation, actionName: string, parameters?: Object, options?: Backbone.ModelFetchOptions): void {
         var actionInvoke = createActionInvoke(domainObject, actionName);
         invoke(actionInvoke, parameters, options);
     }
 
-    export function invoke(invoke: ActionResultRepresentation, parameters?: Object, options?: Options): void {
+    export function invoke(invoke: ActionResultRepresentation, parameters?: Object, options?: Backbone.ModelFetchOptions): void {
 
         invoke.attributes = {};
 

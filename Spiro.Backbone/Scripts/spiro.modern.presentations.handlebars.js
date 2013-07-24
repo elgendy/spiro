@@ -1037,7 +1037,7 @@ var Spiro;
 
                 DomainObjectEditPresentation.prototype.draw = function (errorMap) {
                     errorMap = errorMap || new Spiro.ErrorMap({}, "", "");
-                    var errors = errorMap.values();
+                    var errors = errorMap.valuesMap();
                     this.drawActions();
                     this.drawProperties(errors);
                 };

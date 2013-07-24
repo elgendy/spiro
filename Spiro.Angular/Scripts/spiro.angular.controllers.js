@@ -86,7 +86,7 @@
                             var errorMap = error;
 
                             _.each(properties, function (property) {
-                                var error = errorMap.values()[property.id];
+                                var error = errorMap.valuesMap()[property.id];
 
                                 if (error) {
                                     property.value = error.value.toValueString();
