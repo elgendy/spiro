@@ -123,6 +123,8 @@
         Angular.app.controller('AppBarController', function ($scope, $routeParams, $location, Context) {
             $scope.appBar = {};
 
+            $scope.appBar.template = svrPath + "Content/partials/appbar.html";
+
             $scope.appBar.goHome = "#/";
 
             $scope.appBar.goBack = function () {

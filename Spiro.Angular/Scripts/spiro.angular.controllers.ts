@@ -149,6 +149,8 @@ module Spiro.Angular {
 
         $scope.appBar = {}; 
 
+        $scope.appBar.template = svrPath + "Content/partials/appbar.html";
+
         $scope.appBar.goHome = "#/";
 
         $scope.appBar.goBack = function () {
