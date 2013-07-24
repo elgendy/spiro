@@ -14,13 +14,13 @@
     <description>A library for building Single Page Apps that connect with a Restful Objects server</description>
     <tags>restful objects javascript angularjs</tags>
     <dependencies>
-     	<dependency id="angularjs" version="1.0.7" />
-	<dependency id="angularjs.TypeScript.DefinitelyTyped" version="0.2.2" />
-      	<dependency id="jQuery" version="2.0.3" />
-      	<dependency id="underscore.js" version="1.5.1" />
-      	<dependency id="jquery.TypeScript.DefinitelyTyped" version="0.2.0" />
-      	<dependency id="underscore.TypeScript.DefinitelyTyped" version="0.1.5" />
-      	<dependency id="Spiro.Models" version="0.12.0-beta" />
+      <dependency id="angularjs" version="1.0.7" />
+      <dependency id="angularjs.TypeScript.DefinitelyTyped" version="0.2.2" />
+      <dependency id="jQuery" version="2.0.3" />
+      <dependency id="underscore.js" version="1.5.1" />
+      <dependency id="jquery.TypeScript.DefinitelyTyped" version="0.2.0" />
+      <dependency id="underscore.TypeScript.DefinitelyTyped" version="0.1.5" />
+      <dependency id="Spiro.Models" version="0.12.0-beta" />
     </dependencies>
   </metadata>
 </package>
