@@ -23,6 +23,7 @@
 
     <script type="text/javascript">
         var appPath = "http://mvc.nakedobjects.net:1081/RestDemo";
+        var svrPath = "<%=Url.Content("~")%>";
     </script>
 
 <%--    Colour definitions & Mappings.  Here you may specifiy the colour(s) for any object type in your model.  Where a

@@ -40,7 +40,7 @@
 
                 Context.getNestedObject(dt, id).then(function (object) {
                     $scope.result = Angular.DomainObjectViewModel.create(object, $routeParams);
-                    $scope.nestedTemplate = "./Content/partials/nestedObject.html";
+                    $scope.nestedTemplate = svrPath + "Content/partials/nestedObject.html";
                     Context.setNestedObject(object);
                 }, function (error) {
                     $scope.object = {};
@@ -59,8 +59,8 @@
         Angular.app.controller('ObjectController', function ($scope, $routeParams, $location, $cacheFactory, RepresentationLoader, Context) {
             Context.getObject($routeParams.dt, $routeParams.id).then(function (object) {
                 Context.setNestedObject(null);
-                $scope.actionTemplate = $routeParams.editMode ? "" : "./Content/partials/actions.html";
-                $scope.propertiesTemplate = $routeParams.editMode ? "./Content/partials/editProperties.html" : "./Content/partials/viewProperties.html";
+                $scope.actionTemplate = $routeParams.editMode ? "" : svrPath + "Content/partials/actions.html";
+                $scope.propertiesTemplate = svrPath + ($routeParams.editMode ? "Content/partials/editProperties.html" : "Content/partials/viewProperties.html");
 
                 $scope.object = Angular.DomainObjectViewModel.create(object, $routeParams, function (ovm) {
                     var update = object.getUpdateMap();
@@ -100,7 +100,7 @@
                             var evm = Angular.ErrorViewModel.create(errorRep);
                             $scope.error = evm;
 
-                            $scope.propertiesTemplate = "./Content/partials/error.html";
+                            $scope.propertiesTemplate = svrPath + "Content/partials/error.html";
                         } else {
                             ovm.message = error;
                         }
@@ -116,7 +116,7 @@
             if (error) {
                 var evm = Angular.ErrorViewModel.create(error);
                 $scope.error = evm;
-                $scope.errorTemplate = "./Content/partials/error.html";
+                $scope.errorTemplate = svrPath + "Content/partials/error.html";
             }
         });
 

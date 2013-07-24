@@ -5,13 +5,13 @@
 
         Angular.app.config(function ($routeProvider) {
             $routeProvider.when('/services', {
-                templateUrl: './Content/partials/services.html',
+                templateUrl: svrPath + 'Content/partials/services.html',
                 controller: 'ServicesController'
             }).when('/services/:sid', {
-                templateUrl: './Content/partials/service.html',
+                templateUrl: svrPath + 'Content/partials/service.html',
                 controller: 'ServiceController'
             }).when('/objects/:dt/:id', {
-                templateUrl: './Content/partials/object.html',
+                templateUrl: svrPath + 'Content/partials/object.html',
                 controller: 'ObjectController'
             }).otherwise({
                 redirectTo: '/services'
@@ -226,7 +226,7 @@
             this.handleCollectionResult = function ($scope) {
                 Context.getCollection().then(function (list) {
                     $scope.collection = Angular.CollectionViewModel.createFromList(list, $routeParams, $location);
-                    $scope.collectionTemplate = "./Content/partials/nestedCollection.html";
+                    $scope.collectionTemplate = svrPath + "Content/partials/nestedCollection.html";
                 }, function (error) {
                     this.handleError(error);
                 });
@@ -244,7 +244,7 @@
                     return RepresentationLoader.populate(collectionDetails);
                 }).then(function (details) {
                     $scope.collection = Angular.CollectionViewModel.createFromDetails(details, $routeParams);
-                    $scope.collectionTemplate = "./Content/partials/nestedCollection.html";
+                    $scope.collectionTemplate = svrPath + "Content/partials/nestedCollection.html";
                 }, function (error) {
                     this.handleError(error);
                 });
@@ -298,7 +298,7 @@
                     return RepresentationLoader.populate(actionTarget);
                 }).then(function (action) {
                     if (action.extensions().hasParams) {
-                        $scope.dialogTemplate = "./Content/partials/dialog.html";
+                        $scope.dialogTemplate = svrPath + "Content/partials/dialog.html";
                         $scope.dialog = Angular.DialogViewModel.create(action, $routeParams, function (dvm, show) {
                             dvm.clearErrors();
 
@@ -331,7 +331,7 @@
                                     var evm = Angular.ErrorViewModel.create(errorRep);
                                     $scope.error = evm;
 
-                                    $scope.dialogTemplate = "./Content/partials/error.html";
+                                    $scope.dialogTemplate = svrPath + "Content/partials/error.html";
                                 } else {
                                     dvm.error = error;
                                 }
@@ -373,7 +373,7 @@
 
             function handleNestedObject(object, $scope) {
                 $scope.result = Angular.DomainObjectViewModel.create(object, $routeParams);
-                $scope.nestedTemplate = "./Content/partials/nestedObject.html";
+                $scope.nestedTemplate = svrPath + "Content/partials/nestedObject.html";
                 Context.setNestedObject(object);
             }
 
