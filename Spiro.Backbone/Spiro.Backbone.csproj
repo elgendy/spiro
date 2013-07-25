@@ -40,6 +40,9 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <TypeScriptSourceMap> --sourcemap</TypeScriptSourceMap>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System" />
@@ -196,6 +199,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Content\qunit.css" />
     <Content Include="Content\spiro-modern.css" />
     <Content Include="Content\themes\base\images\animated-overlay.gif" />
     <Content Include="Content\themes\base\images\ui-bg_flat_0_aaaaaa_40x100.png" />
@@ -285,20 +289,41 @@
     <Content Include="Scripts\jquery.unobtrusive-ajax.min.js" />
     <Content Include="Scripts\modernizr-2.5.3.js" />
     <Content Include="Scripts\modernizr-2.6.2.js" />
-    <Content Include="Scripts\spiro.backbone.helpers.js" />
+    <Content Include="Scripts\qunit.js" />
+    <Content Include="Scripts\spiro.backbone.helpers.js" >
+      <DependentUpon>spiro.backbone.helpers.ts</DependentUpon>
+    </Content>
     <TypeScriptCompile Include="Scripts\spiro.backbone.helpers.ts" />
-    <Content Include="Scripts\spiro.models.helpers.js" />
+    <Content Include="Scripts\spiro.models.helpers.js" >
+       <DependentUpon>spiro.models.helpers.ts</DependentUpon>
+    </Content>
     <TypeScriptCompile Include="Scripts\spiro.models.helpers.ts" />
-    <Content Include="Scripts\spiro.models.js" />
-    <Content Include="Scripts\spiro.models.shims.js" />
+    <Content Include="Scripts\spiro.models.js" >
+      <DependentUpon>spiro.models.ts</DependentUpon>
+    </Content>
+    <Content Include="Scripts\spiro.models.shims.js" >
+      <DependentUpon>spiro.models.shims.ts</DependentUpon>
+    </Content>
     <TypeScriptCompile Include="Scripts\spiro.models.shims.ts" />
     <TypeScriptCompile Include="Scripts\spiro.models.ts" />
-    <Content Include="Scripts\spiro.modern.js" />
-    <Content Include="Scripts\spiro.modern.presentations.handlebars.js" />
-    <Content Include="Scripts\spiro.modern.presentations.handlebars.templates.js" />
+    <TypeScriptCompile Include="Scripts\spiro.models.test.ts" />
+    <Content Include="Scripts\spiro.models.test.js">
+      <DependentUpon>spiro.models.test.ts</DependentUpon>
+    </Content>
+    <Content Include="Scripts\spiro.modern.js" >
+      <DependentUpon>spiro.modern.ts</DependentUpon>
+    </Content>
+    <Content Include="Scripts\spiro.modern.presentations.handlebars.js" >
+      <DependentUpon>spiro.modern.presentations.handlebars.ts</DependentUpon>
+    </Content>
+    <Content Include="Scripts\spiro.modern.presentations.handlebars.templates.js" >
+      <DependentUpon>spiro.modern.presentations.handlebars.templates.ts</DependentUpon>
+    </Content>
     <TypeScriptCompile Include="Scripts\spiro.modern.presentations.handlebars.templates.ts" />
     <TypeScriptCompile Include="Scripts\spiro.modern.presentations.handlebars.ts" />
-    <Content Include="Scripts\spiro.modern.presentations.js" />
+    <Content Include="Scripts\spiro.modern.presentations.js" >
+      <DependentUpon>spiro.modern.presentations.ts</DependentUpon>
+    </Content>
     <TypeScriptCompile Include="Scripts\spiro.modern.presentations.ts" />
     <TypeScriptCompile Include="Scripts\spiro.modern.ts" />
     <Content Include="Scripts\typings\backbone\backbone.d.ts" />
@@ -306,12 +331,14 @@
     <Content Include="Scripts\typings\handlebars\handlebars.d.ts" />
     <Content Include="Scripts\typings\jquery\jquery.d.ts" />
     <Content Include="Scripts\typings\modernizr\modernizr.d.ts" />
+    <Content Include="Scripts\typings\qunit\qunit.d.ts" />
     <Content Include="Scripts\typings\underscore\underscore-typed-1.4.2.d.ts" />
     <Content Include="Scripts\typings\underscore\underscore-typed-1.4.3.d.ts" />
     <Content Include="Scripts\typings\underscore\underscore-typed.d.ts" />
     <Content Include="Scripts\typings\underscore\underscore.d.ts" />
     <Content Include="Scripts\underscore.js" />
     <Content Include="Scripts\underscore.min.js" />
+    <Content Include="Views\Spiro\ModelTest.aspx" />
     <Content Include="Views\Spiro\Modern.aspx" />
     <Content Include="Web.config" />
     <Content Include="Web.Debug.config">
@@ -322,14 +349,30 @@
     </Content>
     <Content Include="Scripts\_references.js" />
     <Content Include="Views\Web.config" />
-    <Content Include="Scripts\spiro.backbone.helpers.js.map" />
-    <Content Include="Scripts\spiro.models.helpers.js.map" />
-    <Content Include="Scripts\spiro.models.js.map" />
-    <Content Include="Scripts\spiro.models.shims.js.map" />
-    <Content Include="Scripts\spiro.modern.js.map" />
-    <Content Include="Scripts\spiro.modern.presentations.handlebars.js.map" />
-    <Content Include="Scripts\spiro.modern.presentations.handlebars.templates.js.map" />
-    <Content Include="Scripts\spiro.modern.presentations.js.map" />
+    <Content Include="Scripts\spiro.backbone.helpers.js.map" >
+      <DependentUpon>spiro.backbone.helpers.ts</DependentUpon>
+    </Content>
+    <Content Include="Scripts\spiro.models.helpers.js.map" >
+      <DependentUpon>spiro.models.helpers.ts</DependentUpon>
+    </Content>
+    <Content Include="Scripts\spiro.models.js.map" >
+      <DependentUpon>spiro.models.ts</DependentUpon>
+    </Content>
+    <Content Include="Scripts\spiro.models.shims.js.map" >
+      <DependentUpon>spiro.models.shims.ts</DependentUpon>
+    </Content>
+    <Content Include="Scripts\spiro.modern.js.map" >
+      <DependentUpon>spiro.modern.ts</DependentUpon>
+    </Content>
+    <Content Include="Scripts\spiro.modern.presentations.handlebars.js.map" >
+      <DependentUpon>spiro.modern.presentations.handlebars.ts</DependentUpon>
+    </Content>
+    <Content Include="Scripts\spiro.modern.presentations.handlebars.templates.js.map" >
+      <DependentUpon>spiro.modern.presentations.handlebars.templates.ts</DependentUpon>
+    </Content>
+    <Content Include="Scripts\spiro.modern.presentations.js.map" >
+     <DependentUpon>spiro.modern.presentations.ts</DependentUpon>
+    </Content>
     <Content Include="Scripts\underscore.min.map" />
   </ItemGroup>
   <ItemGroup>
@@ -367,11 +410,15 @@
       </FlavorProperties>
     </VisualStudio>
   </ProjectExtensions>
-  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
+  <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
+  <Target Name="BeforeBuild">
+    <Message Text="Compiling TypeScript files" />
+    <Message Text="Executing tsc$(TypeScriptSourceMap) @(TypeScriptCompile ->'&quot;%(fullpath)&quot;', ' ')" />
+    <Exec Command="tsc$(TypeScriptSourceMap) @(TypeScriptCompile ->'&quot;%(fullpath)&quot;', ' ')" />
+  </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
+ 
   <Target Name="AfterBuild">
   </Target> -->
 </Project>

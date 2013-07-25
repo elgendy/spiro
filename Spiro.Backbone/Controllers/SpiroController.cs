@@ -9,5 +9,9 @@ namespace Spiro.Modern.Backbone.Controllers {
         public ActionResult Index() {
             return View("Modern");
         }
+
+        public ActionResult ModelTest() {
+            return View();
+        }
     }
 }

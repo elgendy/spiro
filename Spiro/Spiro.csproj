@@ -64,8 +64,6 @@
     <TypeScriptCompile Include="Scripts\spiro.models.shims.ts" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Scripts\spiro-model-tests.js" />
-    <Content Include="Scripts\spiro-model-tests.ts" />
     <TypeScriptCompile Include="Scripts\spiro.models.helpers.ts" />
     <Content Include="Scripts\spiro.models.helpers.js">
       <DependentUpon>spiro.models.helpers.ts</DependentUpon>
