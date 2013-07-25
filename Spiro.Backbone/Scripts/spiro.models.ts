@@ -1084,7 +1084,7 @@ module Spiro {
         }
 
         onError(map: Object, statusCode: string, warnings: string) {
-            return new ErrorMap(map, statusCode, warnings);
+            return new ErrorMap((<any>map).members, statusCode, warnings);
         }
 
         setMember(name: string, value: Value) {

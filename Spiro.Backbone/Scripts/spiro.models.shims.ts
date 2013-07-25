@@ -46,7 +46,7 @@ module Spiro {
         error(originalModel, resp, iOptions) {
             var rs = resp.responseText ? $.parseJSON(resp.responseText) : {};
             var warnings = resp.getResponseHeader("Warning");
-            this.trigger("error", this.onError(rs, resp.status, warnings));
+            this.trigger("requestFailed", this.onError(rs, resp.status, warnings));
         }
 
         onError(map: Object, statusCode: string, warnings: string) { }

@@ -34,7 +34,7 @@ var Spiro;
         HateoasModelBaseShim.prototype.error = function (originalModel, resp, iOptions) {
             var rs = resp.responseText ? $.parseJSON(resp.responseText) : {};
             var warnings = resp.getResponseHeader("Warning");
-            this.trigger("error", this.onError(rs, resp.status, warnings));
+            this.trigger("requestFailed", this.onError(rs, resp.status, warnings));
         };
 
         HateoasModelBaseShim.prototype.onError = function (map, statusCode, warnings) {

@@ -960,7 +960,7 @@ var Spiro;
         };
 
         PersistMap.prototype.onError = function (map, statusCode, warnings) {
-            return new ErrorMap(map, statusCode, warnings);
+            return new ErrorMap((map).members, statusCode, warnings);
         };
 
         PersistMap.prototype.setMember = function (name, value) {

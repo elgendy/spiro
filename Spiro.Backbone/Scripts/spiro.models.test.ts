@@ -56,7 +56,7 @@ module SpiroModelTests {
             this.doTest(this.model);
         }
         testError(o) {
-            this.doTestError(o.statusCode, o.model);
+            this.doTestError(o.statusCode, o);
         }
     }
 
@@ -356,62 +356,62 @@ module SpiroModelTests {
                 equal(_.toArray(pMembers).length, 11, "property member count");
 
                 start();
-            }
+            };
 
             persistMap.setMember("OrderDate", new Spiro.Value(getTodayDate()));
             persistMap.setMember("OrderPlacedBy", new Spiro.Value({ "href": "http://mvc.nakedobjects.net:1081/RestDemo/objects/AdventureWorksModel.Employee/165" }));
             persistMap.setMember("ShipMethod", new Spiro.Value({ "href": "http://mvc.nakedobjects.net:1081/RestDemo/objects/AdventureWorksModel.ShipMethod/4" }));
 
             persistMap.save();
-        }
+        };
 
         invoke.hateoasUrl = "http://mvc.nakedobjects.net:1081/RestDemo/services/AdventureWorksModel.PurchaseOrderRepository/actions/CreateNewPurchaseOrder/invoke";
         invoke.method = "POST";
         invoke.setParameter("vendor", new Spiro.Value({ "href": "http://mvc.nakedobjects.net:1081/RestDemo/objects/AdventureWorksModel.Vendor/32" }));
 
-        invoke.fetch()
+        invoke.fetch();
     });
 
-    //asyncTest("Proto Persistent DomainObject Resource save fail", function () {
+    asyncTest("Proto Persistent DomainObject Resource save fail", function () {
 
-    //    var invoke = new Spiro.ActionResultRepresentation();
-    //    var test = new TestView(invoke);
+        var invoke = new Spiro.ActionResultRepresentation();
+        var test = new TestView(invoke);
 
-    //    expect(3);
+        expect(3);
 
-    //    test.doTest = function () {
-    //        var obj = invoke.result().object();
+        test.doTest = function () {
+            var obj = invoke.result().object();
 
-    //        var test2 = new TestView(obj);
+            var test2 = new TestView(obj);
 
-    //        var persistMap = obj.getPersistMap();
+            var persistMap = obj.getPersistMap();
 
-    //        test2.doTest = function () {
-    //            ok(false, "should never hit this point");
-    //            start();
-    //        }
+            test2.doTest = function () {
+                ok(false, "should never hit this point");
+                start();
+            };
 
-    //        test2.doTestError = function (rc, m: Spiro.ArgumentMap) {
-    //            var name = m.get("members").OrderPlacedBy
-    //            equal(rc, 422, "ret code value");
-    //            equal(name.value, null, "orderplacedby value");
-    //            equal(name.invalidReason, "Mandatory", "orderplacedby reason");
-    //            start();
-    //        }
+            test2.doTestError = function (rc, m: Spiro.ErrorMap) {
+                var name = m.get("OrderPlacedBy");
+                equal(rc, 422, "ret code value");
+                equal(name.value, null, "orderplacedby value");
+                equal(name.invalidReason, "Mandatory", "orderplacedby reason");
+                start();
+            };
 
-    //        persistMap.setMember("OrderDate", new Spiro.Value(getTodayDate()));
-    //        //persistMap.setMember("OrderPlacedBy", new Spiro.Link({ "href": "http://mvc.nakedobjects.net:1081/RestDemo/objects/AdventureWorksModel.Employee/165" }));
-    //        persistMap.setMember("ShipMethod", new Spiro.Value({ "href": "http://mvc.nakedobjects.net:1081/RestDemo/objects/AdventureWorksModel.ShipMethod/4" }));
+            persistMap.setMember("OrderDate", new Spiro.Value(getTodayDate()));
+            //persistMap.setMember("OrderPlacedBy", new Spiro.Link({ "href": "http://mvc.nakedobjects.net:1081/RestDemo/objects/AdventureWorksModel.Employee/165" }));
+            persistMap.setMember("ShipMethod", new Spiro.Value({ "href": "http://mvc.nakedobjects.net:1081/RestDemo/objects/AdventureWorksModel.ShipMethod/4" }));
 
-    //        persistMap.save();
-    //    }
+            persistMap.save();
+        };
 
-    //    invoke.hateoasUrl = "http://mvc.nakedobjects.net:1081/RestDemo/services/AdventureWorksModel.PurchaseOrderRepository/actions/CreateNewPurchaseOrder/invoke";
-    //    invoke.method = "POST";
-    //    invoke.setParameter("vendor", new Spiro.Value({ "href": "http://mvc.nakedobjects.net:1081/RestDemo/objects/AdventureWorksModel.Vendor/32" }));
+        invoke.hateoasUrl = "http://mvc.nakedobjects.net:1081/RestDemo/services/AdventureWorksModel.PurchaseOrderRepository/actions/CreateNewPurchaseOrder/invoke";
+        invoke.method = "POST";
+        invoke.setParameter("vendor", new Spiro.Value({ "href": "http://mvc.nakedobjects.net:1081/RestDemo/objects/AdventureWorksModel.Vendor/32" }));
 
-    //    invoke.fetch()
-    //});
+        invoke.fetch();
+    });
 
     // 14.4.1 
     asyncTest("DomainObject Properties Resource", function () {
@@ -463,7 +463,7 @@ module SpiroModelTests {
             }
 
             start();
-        }
+        };
 
         obj.hateoasUrl = "http://mvc.nakedobjects.net:1081/RestDemo/objects/AdventureWorksModel.WorkOrder/2287";
         obj.fetch();
@@ -502,7 +502,7 @@ module SpiroModelTests {
             equal(collectionMember.extensions().returnType, "list", "returnType");
 
             start();
-        }
+        };
 
         obj.hateoasUrl = "http://mvc.nakedobjects.net:1081/RestDemo/objects/AdventureWorksModel.WorkOrder/2287";
         obj.fetch();
@@ -539,7 +539,7 @@ module SpiroModelTests {
             equal(actionMember.extensions().returnType, "AdventureWorksModel.WorkOrderRouting", "returnType");
 
             start();
-        }
+        };
 
         obj.hateoasUrl = "http://mvc.nakedobjects.net:1081/RestDemo/objects/AdventureWorksModel.WorkOrder/2287";
         obj.fetch();
@@ -560,15 +560,15 @@ module SpiroModelTests {
                 equal(obj.url(), "http://mvc.nakedobjects.net:1081/RestDemo/objects/AdventureWorksModel.SalesOrderHeader/51131", "object url");
                 equal(obj.propertyMember("Comment").value(), newComment, "comment value");
                 start();
-            }
+            };
             var map = obj.getUpdateMap();
 
             map.setProperty("Comment", new Spiro.Value(newComment));
             map.save();
-        }
+        };
 
         obj.hateoasUrl = "http://mvc.nakedobjects.net:1081/RestDemo/objects/AdventureWorksModel.SalesOrderHeader/51131";
-        obj.fetch()
+        obj.fetch();
     });
 
     asyncTest("Update Domain Object reference ok", function () {
@@ -596,50 +596,50 @@ module SpiroModelTests {
                 equal(obj.url(), "http://mvc.nakedobjects.net:1081/RestDemo/objects/AdventureWorksModel.SalesOrderHeader/51131", "object url");
                 equal(obj.propertyMember("ShipMethod").value().toString(), newTitle, "ship method value");
                 start();
-            }
+            };
             var map = obj.getUpdateMap();
 
             map.setProperty("ShipMethod", newShipMethod);
             map.save();
-        }
+        };
 
         obj.hateoasUrl = "http://mvc.nakedobjects.net:1081/RestDemo/objects/AdventureWorksModel.SalesOrderHeader/51131";
-        obj.fetch()
+        obj.fetch();
     });
 
 
-    //asyncTest("Update Domain Object fail", function () {
+    asyncTest("Update Domain Object fail", function () {
 
-    //    var obj = new Spiro.DomainObjectRepresentation();
-    //    var test = new TestView(obj);
+        var obj = new Spiro.DomainObjectRepresentation();
+        var test = new TestView(obj);
 
-    //    expect(3);
+        expect(3);
 
-    //    test.doTest = function () {
+        test.doTest = function () {
 
-    //        var map = obj.getUpdateMap();
+            var map = obj.getUpdateMap();
 
-    //        test.doTest = function () {
-    //            ok(false, "should never hit this point");
-    //            start();
-    //        }
+            test.doTest = function () {
+                ok(false, "should never hit this point");
+                start();
+            };
 
-    //        test.doTestError = function (rc, m) {
-    //            var status = m.get("Status");
-    //            equal(rc, 422, "ret code value");
-    //            equal(status.value, "", "status value");
-    //            equal(status.invalidReason, "Mandatory", "status reason");
-    //            start();
-    //        }
+            test.doTestError = function (rc, m) {
+                var status = m.get("Status");
+                equal(rc, 422, "ret code value");
+                equal(status.value, "", "status value");
+                equal(status.invalidReason, "Mandatory", "status reason");
+                start();
+            };
 
-    //        map.setProperty("Status", new Spiro.Value(""));
-    //        map.save();
-    //    }
+            map.setProperty("Status", new Spiro.Value(""));
+            map.save();
+        };
 
-    //    obj.hateoasUrl = "http://mvc.nakedobjects.net:1081/RestDemo/objects/AdventureWorksModel.SalesOrderHeader/51131";
-    //    obj.fetch()
+        obj.hateoasUrl = "http://mvc.nakedobjects.net:1081/RestDemo/objects/AdventureWorksModel.SalesOrderHeader/51131";
+        obj.fetch();
 
-    //});
+    });
 
     // 16
     asyncTest("Property Resources", function () {
@@ -733,13 +733,13 @@ module SpiroModelTests {
                     //if (--k == 0) { 
                     //    start(); 
                     //}
-                }
+                };
 
                 details.fetch();
             }
 
             setTimeout(() => start(), 20000);
-        }
+        };
 
         obj.hateoasUrl = "http://mvc.nakedobjects.net:1081/RestDemo/objects/AdventureWorksModel.WorkOrder/2287";
         obj.fetch();
@@ -800,12 +800,12 @@ module SpiroModelTests {
 
 
                     start();
-                }
+                };
 
                 details.fetch();
             }
 
-        }
+        };
 
         obj.hateoasUrl = "http://mvc.nakedobjects.net:1081/RestDemo/objects/AdventureWorksModel.WorkOrder/2287";
         obj.fetch();
@@ -888,13 +888,13 @@ module SpiroModelTests {
                     //    start(); 
                     //}
                     start();
-                }
+                };
 
                 details.fetch();
-            }
+            };
 
             //setTimeout(() => start(), 20000); 
-        }
+        };
 
         obj.hateoasUrl = "http://mvc.nakedobjects.net:1081/RestDemo/objects/AdventureWorksModel.WorkOrder/2287";
         obj.fetch();
@@ -920,13 +920,13 @@ module SpiroModelTests {
                 equal(newValue, property.value().scalar(), "new property value");
 
                 start();
-            }
+            };
 
             modify.fetch();
-        }
+        };
 
-        property.hateoasUrl = "http://mvc.nakedobjects.net:1081/RestDemo/objects/AdventureWorksModel.Product/421/properties/SafetyStockLevel"
-        property.fetch()
+        property.hateoasUrl = "http://mvc.nakedobjects.net:1081/RestDemo/objects/AdventureWorksModel.Product/421/properties/SafetyStockLevel";
+        property.fetch();
     });
 
     asyncTest("Property Resource - Modify - reference", function () {
@@ -960,13 +960,13 @@ module SpiroModelTests {
                 equal(newTitle, property.value().toString(), "new property value");
 
                 start();
-            }
+            };
 
             modify.fetch();
-        }
+        };
 
-        property.hateoasUrl = "http://mvc.nakedobjects.net:1081/RestDemo/objects/AdventureWorksModel.SalesOrderHeader/51131/properties/ShipMethod"
-        property.fetch()
+        property.hateoasUrl = "http://mvc.nakedobjects.net:1081/RestDemo/objects/AdventureWorksModel.SalesOrderHeader/51131/properties/ShipMethod";
+        property.fetch();
     });
 
     asyncTest("Collection Resource - AddTo/RemoveFrom - no links", function () {
@@ -985,10 +985,10 @@ module SpiroModelTests {
             equal(removeFrom, null, "no remove from");
 
             start();
-        }
+        };
 
-        collection.hateoasUrl = "http://mvc.nakedobjects.net:1081/RestDemo/objects/AdventureWorksModel.SalesOrderHeader/51131/collections/SalesOrderHeaderSalesReason"
-        collection.fetch()
+        collection.hateoasUrl = "http://mvc.nakedobjects.net:1081/RestDemo/objects/AdventureWorksModel.SalesOrderHeader/51131/collections/SalesOrderHeaderSalesReason";
+        collection.fetch();
     });
 
     asyncTest("Action Resources - No parms", function () {
@@ -1017,10 +1017,10 @@ module SpiroModelTests {
 
 
             start();
-        }
+        };
 
-        action.hateoasUrl = "http://mvc.nakedobjects.net:1081/RestDemo/objects/AdventureWorksModel.SalesOrderHeader/51131/actions/Recalculate"
-        action.fetch()
+        action.hateoasUrl = "http://mvc.nakedobjects.net:1081/RestDemo/objects/AdventureWorksModel.SalesOrderHeader/51131/actions/Recalculate";
+        action.fetch();
     });
 
     asyncTest("ActionResources - With parms", function () {
@@ -1067,9 +1067,9 @@ module SpiroModelTests {
             equal(action.extensions().returnType, "AdventureWorksModel.SalesOrderDetail", "returnType");
 
             start();
-        }
+        };
 
-        action.hateoasUrl = "http://mvc.nakedobjects.net:1081/RestDemo/objects/AdventureWorksModel.SalesOrderHeader/51131/actions/AddNewDetail"
+        action.hateoasUrl = "http://mvc.nakedobjects.net:1081/RestDemo/objects/AdventureWorksModel.SalesOrderHeader/51131/actions/AddNewDetail";
         action.fetch();
     });
 
@@ -1085,7 +1085,7 @@ module SpiroModelTests {
             var self = invoke.getSelf();
             equal(self.url(), "http://mvc.nakedobjects.net:1081/RestDemo/services/AdventureWorksModel.OrderRepository/actions/HighestValueOrders/invoke", "self resource link");
 
-            var result = invoke.result()
+            var result = invoke.result();
 
             equal(result.isNull(), false, "null");
             equal(result.isVoid(), false, "void");
@@ -1108,9 +1108,9 @@ module SpiroModelTests {
 
             }
             start();
-        }
+        };
 
-        invoke.method = "GET"
+        invoke.method = "GET";
         invoke.hateoasUrl = "http://mvc.nakedobjects.net:1081/RestDemo/services/AdventureWorksModel.OrderRepository/actions/HighestValueOrders/invoke";
         invoke.fetch();
     });
@@ -1127,7 +1127,7 @@ module SpiroModelTests {
             var self = invoke.getSelf();
             equal(self.url(), "http://mvc.nakedobjects.net:1081/RestDemo/services/AdventureWorksModel.ProductRepository/actions/FindProductByName/invoke", "self resource link");
 
-            var result = invoke.result()
+            var result = invoke.result();
 
             equal(result.isNull(), false, "null");
             equal(result.isVoid(), false, "void");
@@ -1144,9 +1144,9 @@ module SpiroModelTests {
                 equal(model.title(), "HL Mountain Frame - Black, 38", "type");
             }
             start();
-        }
+        };
 
-        invoke.method = "GET"
+        invoke.method = "GET";
         invoke.hateoasUrl = "http://mvc.nakedobjects.net:1081/RestDemo/services/AdventureWorksModel.ProductRepository/actions/FindProductByName/invoke";
         invoke.setParameter("searchString", new Spiro.Value("HL Mountain Frame - Black, 38"));
         invoke.fetch();
@@ -1164,7 +1164,7 @@ module SpiroModelTests {
             var self = invoke.getSelf();
             equal(self.url(), "http://mvc.nakedobjects.net:1081/RestDemo/services/AdventureWorksModel.ProductRepository/actions/FindProductByName/invoke", "self resource link");
 
-            var result = invoke.result()
+            var result = invoke.result();
 
             equal(result.isNull(), false, "null");
             equal(result.isVoid(), false, "void");
@@ -1175,9 +1175,9 @@ module SpiroModelTests {
             equal(resultList.models.length, 0, "count");
 
             start();
-        }
+        };
 
-        invoke.method = "GET"
+        invoke.method = "GET";
         invoke.hateoasUrl = "http://mvc.nakedobjects.net:1081/RestDemo/services/AdventureWorksModel.ProductRepository/actions/FindProductByName/invoke";
         invoke.setParameter("searchString", new Spiro.Value("xxxx"));
         invoke.fetch();
@@ -1189,12 +1189,12 @@ module SpiroModelTests {
         var invoke = new Spiro.ActionResultRepresentation();
         var test = new TestView(invoke);
 
-        expect(5)
+        expect(5);
 
         test.doTest = function () {
 
 
-            var result = invoke.result()
+            var result = invoke.result();
             var resultObj = result.object();
             equal(resultObj.domainType(), "AdventureWorksModel.SalesOrderHeader", "type");
             equal(result.isNull(), false, "null");
@@ -1202,11 +1202,11 @@ module SpiroModelTests {
             equal(result.list(), null, "list");
             equal(result.scalar(), null, "scalar");
             start();
-        }
+        };
 
-        invoke.method = "POST"
-        invoke.hateoasUrl = "http://mvc.nakedobjects.net:1081/RestDemo/services/AdventureWorksModel.OrderRepository/actions/RandomOrder/invoke"
-        invoke.fetch()
+        invoke.method = "POST";
+        invoke.hateoasUrl = "http://mvc.nakedobjects.net:1081/RestDemo/services/AdventureWorksModel.OrderRepository/actions/RandomOrder/invoke";
+        invoke.fetch();
     });
 
     asyncTest("ActionInvoke Resource - POST - no parms - void", function () {
@@ -1214,11 +1214,11 @@ module SpiroModelTests {
         var invoke = new Spiro.ActionResultRepresentation();
         var test = new TestView(invoke);
 
-        expect(5)
+        expect(5);
 
         test.doTest = function () {
 
-            var result = invoke.result()
+            var result = invoke.result();
 
             equal(result.isNull(), true, "null");
             equal(result.isVoid(), true, "void");
@@ -1226,11 +1226,11 @@ module SpiroModelTests {
             equal(result.object(), null, "object");
             equal(result.scalar(), null, "scalar");
             start();
-        }
+        };
 
-        invoke.method = "POST"
-        invoke.hateoasUrl = "http://mvc.nakedobjects.net:1081/RestDemo/objects/AdventureWorksModel.SalesOrderHeader/51131/actions/Recalculate/invoke"
-        invoke.fetch()
+        invoke.method = "POST";
+        invoke.hateoasUrl = "http://mvc.nakedobjects.net:1081/RestDemo/objects/AdventureWorksModel.SalesOrderHeader/51131/actions/Recalculate/invoke";
+        invoke.fetch();
     });
 
     asyncTest("ActionInvoke Resource - POST - with parms - object", function () {
@@ -1238,11 +1238,11 @@ module SpiroModelTests {
         var invoke = new Spiro.ActionResultRepresentation();
         var test = new TestView(invoke);
 
-        expect(5)
+        expect(5);
 
         test.doTest = function () {
 
-            var result = invoke.result()
+            var result = invoke.result();
             var resultObj = result.object();
             equal(resultObj.domainType(), "AdventureWorksModel.Store", "type");
             equal(result.isNull(), false, "null");
@@ -1250,7 +1250,7 @@ module SpiroModelTests {
             equal(result.list(), null, "list");
             equal(result.scalar(), null, "scalar");
             start();
-        }
+        };
 
         invoke.method = "POST";
         invoke.hateoasUrl = "http://mvc.nakedobjects.net:1081/RestDemo/services/AdventureWorksModel.CustomerRepository/actions/FindCustomerByAccountNumber/invoke";
@@ -1259,30 +1259,36 @@ module SpiroModelTests {
         invoke.fetch();
     });
 
-    //asyncTest("ActionInvoke Resource - POST - with parms - null", function () {
+    asyncTest("ActionInvoke Resource - POST - with parms - null", function () {
 
-    //    var invoke = new Spiro.ActionResultRepresentation();
-    //    var test = new TestView(invoke);
+        var invoke = new Spiro.ActionResultRepresentation();
+        var test = new TestView(invoke);
 
-    //    expect(5)
+        expect(5);
 
-    //    test.doTest = function () {
+        test.doTest = function () {
 
-    //        var result = invoke.result()
-    //        equal(result.isNull(), true, "null");
-    //        equal(result.isVoid(), false, "void");
-    //        equal(result.list(), null, "list");
-    //        equal(result.object(), null, "object");
-    //        equal(result.scalar(), null, "scalar");
-    //        start();
-    //    }
+            var result = invoke.result();
+            equal(result.isNull(), true, "null");
+            equal(result.isVoid(), false, "void");
+            equal(result.list(), null, "list");
+            equal(result.object(), null, "object");
+            equal(result.scalar(), null, "scalar");
+            start();
+        };
 
-    //    invoke.method = "POST";
-    //    invoke.hateoasUrl = "http://mvc.nakedobjects.net:1081/RestDemo/services/AdventureWorksModel.CustomerRepository/actions/FindCustomerByAccountNumber/invoke";
-    //    invoke.setParameter("accountNumber", new Spiro.Value("1234"));
+        test.doTestError = function (rc, m) {
+            ok(false, "should never hit this point");
+            start();
+        };
 
-    //    invoke.fetch();
-    //});
+
+        invoke.method = "POST";
+        invoke.hateoasUrl = "http://mvc.nakedobjects.net:1081/RestDemo/services/AdventureWorksModel.CustomerRepository/actions/FindCustomerByAccountNumber/invoke";
+        invoke.setParameter("accountNumber", new Spiro.Value("AW00000000"));
+
+        invoke.fetch();
+    });
 
 
     asyncTest("ActionInvoke Resource - POST - with parms - list", function () {
@@ -1294,7 +1300,7 @@ module SpiroModelTests {
 
         test.doTest = function () {
 
-            var result = invoke.result()
+            var result = invoke.result();
 
             equal(result.isNull(), false, "null");
             equal(result.isVoid(), false, "void");
@@ -1309,7 +1315,7 @@ module SpiroModelTests {
                 equal(model.type().asString, "application/json; profile=\"urn:org.restfulobjects:repr-types/object\"; charset=utf-8; x-ro-domain-type=\"AdventureWorksModel.Store\"", "type");
             }
             start();
-        }
+        };
 
         invoke.method = "POST";
         invoke.hateoasUrl = "http://mvc.nakedobjects.net:1081/RestDemo/services/AdventureWorksModel.CustomerRepository/actions/FindStoreByName/invoke";
@@ -1318,31 +1324,31 @@ module SpiroModelTests {
         invoke.fetch();
     });
 
-    //asyncTest("ActionInvoke Resource - POST - with parms - fail", function () {
+    asyncTest("ActionInvoke Resource - POST - with parms - fail", function () {
 
-    //    var invoke = new Spiro.ActionResultRepresentation();
-    //    var test = new TestView(invoke);
+        var invoke = new Spiro.ActionResultRepresentation();
+        var test = new TestView(invoke);
 
-    //    expect(3);
+        expect(3);
 
-    //    test.doTest = function () {
-    //        ok(false, "should never hit this point");
-    //        start();
-    //    }
+        test.doTest = function () {
+            ok(false, "should never hit this point");
+            start();
+        };
 
-    //    test.doTestError = function (rc, m) {
-    //        var name = m.get("name");
-    //        equal(rc, 422, "ret code value");
-    //        equal(name.value, "", "name value");
-    //        equal(name.invalidReason, "Mandatory", "name reason");
-    //        start();
-    //    }
+        test.doTestError = function (rc, m) {
+            var name = m.get("name");
+            equal(rc, 422, "ret code value");
+            equal(name.value, "", "name value");
+            equal(name.invalidReason, "Mandatory", "name reason");
+            start();
+        };
 
-    //    invoke.method = "POST";
-    //    invoke.hateoasUrl = "http://mvc.nakedobjects.net:1081/RestDemo/services/AdventureWorksModel.CustomerRepository/actions/FindStoreByName/invoke";
-    //    invoke.setParameter("name", new Spiro.Value(""));
-    //    invoke.fetch();
-    //});
+        invoke.method = "POST";
+        invoke.hateoasUrl = "http://mvc.nakedobjects.net:1081/RestDemo/services/AdventureWorksModel.CustomerRepository/actions/FindStoreByName/invoke";
+        invoke.setParameter("name", new Spiro.Value(""));
+        invoke.fetch();
+    });
 
     // run last - causes problems ? 
     //asyncTest("Property Resource - Clear - reference", function () {

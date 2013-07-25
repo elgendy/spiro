@@ -6,8 +6,7 @@
 <head id="Head1" runat="server">
 	<meta name="viewport" content="width=device-width" />
 	<title>Spiro</title>
-	   
-	<link href="~/Content/NakedObjects.css" rel="stylesheet" type="text/css" />
+	  
 	<link href="~/Content/qunit.css" rel="stylesheet" type="text/css" />
 
 </head>
