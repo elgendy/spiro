@@ -76,13 +76,6 @@ namespace NakedObjects.Mvc.Test.Javascript {
 
 
         [TestMethod]
-        public void RunViewTestsFirefox() {
-            using (var ff = new FirefoxDriver()) {
-                RunQUnitTests(ff, "http://mvc.nakedobjects.net:1081/UnitTestSpiro/Spiro/ViewTest",  "Firefox", "View");
-            }
-        }
-
-        [TestMethod]
         public void RunModelTestsFirefox() {
             using (var ff = new FirefoxDriver()) {
                RunQUnitTests(ff,  "http://mvc.nakedobjects.net:1081/UnitTestSpiroBB/Spiro/ModelTest", "Firefox", "Model");
