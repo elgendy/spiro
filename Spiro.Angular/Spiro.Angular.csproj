@@ -239,9 +239,13 @@
     <Content Include="Scripts\underscore.js" />
     <Content Include="Scripts\underscore.min.js" />
     <Content Include="Scripts\underscore.min.map" />
-    <TypeScriptCompile Include="Tests\specs\demotest.ts" />
-    <Content Include="Tests\specs\demotest.js">
-      <DependentUpon>demotest.ts</DependentUpon>
+    <TypeScriptCompile Include="Tests\specs\controllers.ts" />
+    <Content Include="Tests\specs\controllers.js">
+      <DependentUpon>controllers.ts</DependentUpon>
+    </Content>
+    <TypeScriptCompile Include="Tests\specs\testData.ts" />
+    <Content Include="Tests\specs\testData.js">
+      <DependentUpon>testData.ts</DependentUpon>
     </Content>
     <Content Include="Views\Jasmine\SpecRunner.cshtml" />
     <TypeScriptCompile Include="Scripts\spiro.angular.app.ts" />

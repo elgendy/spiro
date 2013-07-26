@@ -1,0 +1,2 @@
+var appPath = "";
+var svrPath = "";

@@ -10,6 +10,18 @@ basePath = '';
 files = [
   JASMINE,
   JASMINE_ADAPTER,
+    
+  'Spiro.Angular/Scripts/angular.min.js',
+  'Spiro.Angular/Scripts/angular-resource.min.js',
+  'Spiro.Angular/Scripts/angular-mocks.js',  
+  //'Spiro.Angular/Scripts/spiro.models.helpers.js',
+  //'Spiro.Angular/Scripts/spiro.models.js',
+  //'Spiro.Angular/Scripts/spiro.models.shims.js',
+ 
+  'Spiro.Angular/Scripts/spiro.angular.app.js',
+  'Spiro.Angular/Scripts/spiro.angular.viewmodels.js',
+  'Spiro.Angular/Scripts/spiro.angular.controllers.js',
+  
   'Spiro.Angular/Tests/specs/*.js'
 ];
 

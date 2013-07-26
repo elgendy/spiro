@@ -17,9 +17,11 @@
 /// <reference path="typings/underscore/underscore.d.ts" />
 /// <reference path="spiro.models.shims.ts" />
 
-declare var appPath: any;
+
 
 module Spiro {
+
+    declare var appPath: any;
 
     function isScalarType(typeName: string) {
         return typeName === "string" || typeName === "number" || typeName === "boolean" || typeName === "integer";
