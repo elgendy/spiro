@@ -190,6 +190,7 @@
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
+    <Compile Include="Controllers\JasmineController.cs" />
     <Compile Include="Controllers\SpiroController.cs" />
     <Compile Include="Filters\InitializeSimpleMembershipAttribute.cs" />
     <Compile Include="Global.asax.cs">
@@ -199,6 +200,8 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Content\jasmine\jasmine.css" />
+    <Content Include="Content\jasmine\jasmine_favicon.png" />
     <Content Include="Content\partials\appbar.html" />
     <Content Include="Content\partials\actions.html" />
     <Content Include="Content\partials\editProperties.html" />
@@ -213,7 +216,14 @@
     <Content Include="Content\partials\viewProperties.html" />
     <Content Include="fonts\iconFont.svg" />
     <Content Include="fonts\license.txt" />
+    <Content Include="Scripts\jasmine\jasmine-html.js" />
+    <Content Include="Scripts\jasmine\jasmine.js" />
+    <Content Include="Scripts\jasmine\MIT.LICENSE" />
     <None Include="Scripts\jquery-2.0.3.intellisense.js" />
+    <Content Include="Scripts\jasmine-samples\Player.js" />
+    <Content Include="Scripts\jasmine-samples\PlayerSpec.js" />
+    <Content Include="Scripts\jasmine-samples\Song.js" />
+    <Content Include="Scripts\jasmine-samples\SpecHelper.js" />
     <Content Include="Scripts\jquery-2.0.3.js" />
     <Content Include="Scripts\jquery-2.0.3.min.js" />
     <Content Include="Scripts\spiro.angular.app.js.map">
@@ -225,9 +235,15 @@
     <Content Include="Scripts\spiro.angular.viewmodels.js.map">
       <DependentUpon>spiro.angular.viewmodels.ts</DependentUpon>
     </Content>
+    <Content Include="Scripts\typings\jasmine\jasmine.d.ts" />
     <Content Include="Scripts\underscore.js" />
     <Content Include="Scripts\underscore.min.js" />
     <Content Include="Scripts\underscore.min.map" />
+    <TypeScriptCompile Include="Tests\specs\demotest.ts" />
+    <Content Include="Tests\specs\demotest.js">
+      <DependentUpon>demotest.ts</DependentUpon>
+    </Content>
+    <Content Include="Views\Jasmine\SpecRunner.cshtml" />
     <TypeScriptCompile Include="Scripts\spiro.angular.app.ts" />
     <TypeScriptCompile Include="Scripts\spiro.angular.controllers.ts" />
     <Content Include="Content\partials\services.html" />
@@ -682,6 +698,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
+    <Folder Include="Tests\e2e\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />
