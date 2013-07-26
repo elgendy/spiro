@@ -1,4 +1,6 @@
 ﻿/// <reference path="typings/angularjs/angular.d.ts" />
+/// <reference path="spiro.models.ts" />
+
 
 module Spiro.Angular {
 
