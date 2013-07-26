@@ -208,7 +208,7 @@
 
     <MSBuild Projects="Spiro.Test.Runner\Spiro.Test.Runner.csproj" Targets="Build" Properties="Targets=Clean;Configuration=%(Configuration.Identity)" />
 
-    <!--<Exec Command='"$(MSTestPath)\MSTest.exe" /testcontainer:"Spiro.Test.Runner\bin\%(Configuration.Identity)\Spiro.Test.Runner.dll" /resultsfile:$(TestResultsPath)\RestfulObjects.Spiro.Test.Runner.trx' />-->
+    <Exec Command='"$(MSTestPath)\MSTest.exe" /testcontainer:"Spiro.Test.Runner\bin\%(Configuration.Identity)\Spiro.Test.Runner.dll" /resultsfile:$(TestResultsPath)\RestfulObjects.Spiro.Test.Runner.trx' />
   
     <Exec Command='karma start' />
   
