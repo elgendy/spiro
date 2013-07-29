@@ -40,6 +40,23 @@ describe('Controllers', function () {
 
     });
 
+    describe('ObjectController', function () {
+
+        var handleObject;
+
+        beforeEach(inject(function ($rootScope, $controller, Handlers: Spiro.Angular.HandlersInterface) {
+            $scope = $rootScope.$new();
+            handleObject = spyOn(Handlers, 'handleObject');
+            ctrl = $controller('ObjectController', { $scope: $scope, Handlers: Handlers });
+        }));
+
+        it('should call the handler', function () {
+            expect(handleObject).toHaveBeenCalledWith($scope);
+        });
+
+    });
+
+
     describe('DialogController', function () {
 
         var handleActionDialog;
@@ -50,7 +67,7 @@ describe('Controllers', function () {
         }));
 
 
-        describe('DialogController if action parm set', function () {
+        describe('if action parm set', function () {
             
             beforeEach(inject(function ($routeParams, $controller, Handlers: Spiro.Angular.HandlersInterface) {
                 $routeParams.action = "test";            
@@ -62,9 +79,9 @@ describe('Controllers', function () {
             });
         });
 
-        describe('DialogController if action parm not set', function () {
+        describe('if action parm not set', function () {
           
-            beforeEach(inject(function ($rootScope, $controller, Handlers: Spiro.Angular.HandlersInterface) {                
+            beforeEach(inject(function ($controller, Handlers: Spiro.Angular.HandlersInterface) {                
                 ctrl = $controller('DialogController', { $scope: $scope, Handlers: Handlers });
             }));
 
@@ -75,7 +92,171 @@ describe('Controllers', function () {
         });
     });
 
+    describe('NestedObjectController', function () {
 
+        var handleActionResult;
+        var handleProperty;
+        var handleCollectionItem;
+        var handleResult;
+
+        beforeEach(inject(function ($rootScope, Handlers: Spiro.Angular.HandlersInterface) {
+            $scope = $rootScope.$new();
+            handleActionResult = spyOn(Handlers, 'handleActionResult');
+            handleProperty = spyOn(Handlers, 'handleProperty');
+            handleCollectionItem = spyOn(Handlers, 'handleCollectionItem');
+            handleResult = spyOn(Handlers, 'handleResult');
+        }));
+
+
+        describe('if action parm set', function () {
+
+            beforeEach(inject(function ($routeParams, $controller, Handlers: Spiro.Angular.HandlersInterface) {
+                $routeParams.action = "test";
+                ctrl = $controller('NestedObjectController', { $scope: $scope, Handlers: Handlers });
+            }));
+
+            it('should call the action handler only', function () {
+                expect(handleActionResult).toHaveBeenCalledWith($scope);
+                expect(handleProperty).wasNotCalled();
+                expect(handleCollectionItem).wasNotCalled();
+                expect(handleResult).wasNotCalled();
+            });
+        });
+
+        describe('if property parm set', function () {
+            
+            beforeEach(inject(function ($routeParams, $controller, Handlers: Spiro.Angular.HandlersInterface) {
+                $routeParams.property = "test";
+                ctrl = $controller('NestedObjectController', { $scope: $scope, Handlers: Handlers });
+            }));
+
+            it('should call the property handler only', function () {
+                expect(handleActionResult).wasNotCalled();
+                expect(handleProperty).toHaveBeenCalledWith($scope);
+                expect(handleCollectionItem).wasNotCalled();
+                expect(handleResult).wasNotCalled();
+            });
+
+        });
+
+        describe('if collection Item parm set', function () {
+
+            beforeEach(inject(function ($routeParams, $controller, Handlers: Spiro.Angular.HandlersInterface) {
+                $routeParams.collectionItem = "test";
+                ctrl = $controller('NestedObjectController', { $scope: $scope, Handlers: Handlers });
+            }));
+
+            it('should call the collection item handler only', function () {
+                expect(handleActionResult).wasNotCalled();
+                expect(handleProperty).wasNotCalled();
+                expect(handleCollectionItem).toHaveBeenCalledWith($scope);
+                expect(handleResult).wasNotCalled();
+            });
+
+        });
+
+        describe('if result object parm set', function () {
+
+            beforeEach(inject(function ($routeParams, $controller, Handlers: Spiro.Angular.HandlersInterface) {
+                $routeParams.resultObject = "test";
+                ctrl = $controller('NestedObjectController', { $scope: $scope, Handlers: Handlers });
+            }));
+
+            it('should call the result object handler only', function () {
+                expect(handleActionResult).wasNotCalled();
+                expect(handleProperty).wasNotCalled();
+                expect(handleCollectionItem).wasNotCalled();
+                expect(handleResult).toHaveBeenCalledWith($scope);
+            });
+        });
+
+        describe('if all parms set', function () {
+
+            beforeEach(inject(function ($routeParams, $controller, Handlers: Spiro.Angular.HandlersInterface) {
+                $routeParams.action = "test";
+                $routeParams.property = "test";
+                $routeParams.collectionItem = "test";
+                $routeParams.resultObject = "test";
+                ctrl = $controller('NestedObjectController', { $scope: $scope, Handlers: Handlers });
+            }));
+
+            it('should call the action and property handler only', function () {
+                expect(handleActionResult).toHaveBeenCalledWith($scope);
+                expect(handleProperty).toHaveBeenCalledWith($scope);
+                expect(handleCollectionItem).wasNotCalled();
+                expect(handleResult).wasNotCalled();
+            });
+        });
+
+        describe('if no parms set', function () {
+
+            beforeEach(inject(function ($routeParams, $controller, Handlers: Spiro.Angular.HandlersInterface) {
+                ctrl = $controller('NestedObjectController', { $scope: $scope, Handlers: Handlers });
+            }));
+
+            it('should call no handlers', function () {
+                expect(handleActionResult).wasNotCalled();
+                expect(handleProperty).wasNotCalled();
+                expect(handleCollectionItem).wasNotCalled();
+                expect(handleResult).wasNotCalled();
+            });
+        });
+
+    });
+
+    describe('CollectionController', function () {
+
+        var handleCollectionResult;
+        var handleCollection;
+
+        beforeEach(inject(function ($rootScope, Handlers: Spiro.Angular.HandlersInterface) {
+            $scope = $rootScope.$new();
+            handleCollectionResult = spyOn(Handlers, 'handleCollectionResult');
+            handleCollection = spyOn(Handlers, 'handleCollection');
+        }));
+
+
+        describe('if result collection parm set', function () {
+
+            beforeEach(inject(function ($routeParams, $controller, Handlers: Spiro.Angular.HandlersInterface) {
+                $routeParams.resultCollection = "test";
+                ctrl = $controller('CollectionController', { $scope: $scope, Handlers: Handlers });
+            }));
+
+            it('should call the result collection handler', function () {
+                expect(handleCollectionResult).toHaveBeenCalledWith($scope);
+                expect(handleCollection).wasNotCalled();
+            });
+        });
+
+        describe('if collection parm set', function () {
+            
+            beforeEach(inject(function ($routeParams, $controller, Handlers: Spiro.Angular.HandlersInterface) {
+                $routeParams.collection = "test";
+                ctrl = $controller('CollectionController', { $scope: $scope, Handlers: Handlers });
+            }));
+
+            it('should  call the collection handler', function () {
+                expect(handleCollectionResult).wasNotCalled();
+                expect(handleCollection).toHaveBeenCalledWith($scope);
+            });
+
+        });
+
+        describe('if no parms set', function () {
+
+            beforeEach(inject(function ($controller, Handlers: Spiro.Angular.HandlersInterface) {
+                ctrl = $controller('CollectionController', { $scope: $scope, Handlers: Handlers });
+            }));
+
+            it('should not call the handler', function () {
+                expect(handleCollectionResult).wasNotCalled();
+                expect(handleCollection).wasNotCalled();
+            });
+
+        });
+
+    });
 
     describe('ErrorController', function () {
 
