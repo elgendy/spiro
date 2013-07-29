@@ -3,6 +3,64 @@ describe('Controllers', function () {
 
     beforeEach(module('app'));
 
+    describe('ServicesController', function () {
+        var handleServices;
+
+        beforeEach(inject(function ($rootScope, $controller, Handlers) {
+            $scope = $rootScope.$new();
+            handleServices = spyOn(Handlers, 'handleServices');
+            ctrl = $controller('ServicesController', { $scope: $scope, Handlers: Handlers });
+        }));
+
+        it('should call the handler', function () {
+            expect(handleServices).toHaveBeenCalledWith($scope);
+        });
+    });
+
+    describe('ServiceController', function () {
+        var handleService;
+
+        beforeEach(inject(function ($rootScope, $controller, Handlers) {
+            $scope = $rootScope.$new();
+            handleService = spyOn(Handlers, 'handleService');
+            ctrl = $controller('ServiceController', { $scope: $scope, Handlers: Handlers });
+        }));
+
+        it('should call the handler', function () {
+            expect(handleService).toHaveBeenCalledWith($scope);
+        });
+    });
+
+    describe('DialogController', function () {
+        var handleActionDialog;
+
+        beforeEach(inject(function ($rootScope, Handlers) {
+            $scope = $rootScope.$new();
+            handleActionDialog = spyOn(Handlers, 'handleActionDialog');
+        }));
+
+        describe('DialogController if action parm set', function () {
+            beforeEach(inject(function ($routeParams, $controller, Handlers) {
+                $routeParams.action = "test";
+                ctrl = $controller('DialogController', { $scope: $scope, Handlers: Handlers });
+            }));
+
+            it('should call the handler', function () {
+                expect(handleActionDialog).toHaveBeenCalledWith($scope);
+            });
+        });
+
+        describe('DialogController if action parm not set', function () {
+            beforeEach(inject(function ($rootScope, $controller, Handlers) {
+                ctrl = $controller('DialogController', { $scope: $scope, Handlers: Handlers });
+            }));
+
+            it('should not call the handler', function () {
+                expect(handleActionDialog).wasNotCalled();
+            });
+        });
+    });
+
     describe('ErrorController', function () {
         var handleError;
 
