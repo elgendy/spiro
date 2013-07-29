@@ -169,7 +169,7 @@ module Spiro.Angular {
             Context.getObject($routeParams.dt, $routeParams.id).
                 then(function (object: DomainObjectRepresentation) {
                     
-                    $scope.appBar.hideEdit = !(object) || $routeParams.editMode;
+                    $scope.appBar.hideEdit = !(object) || $routeParams.editMode || false;
 
                     // rework to use viewmodel code
                     $scope.appBar.doEdit = "#" + $location.path() + "?editMode=true";

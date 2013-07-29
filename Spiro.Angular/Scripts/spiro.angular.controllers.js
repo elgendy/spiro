@@ -139,7 +139,7 @@
 
             if ($routeParams.dt && $routeParams.id) {
                 Context.getObject($routeParams.dt, $routeParams.id).then(function (object) {
-                    $scope.appBar.hideEdit = !(object) || $routeParams.editMode;
+                    $scope.appBar.hideEdit = !(object) || $routeParams.editMode || false;
 
                     $scope.appBar.doEdit = "#" + $location.path() + "?editMode=true";
                 });

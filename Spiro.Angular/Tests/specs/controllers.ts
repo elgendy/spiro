@@ -49,21 +49,15 @@ describe('Controllers', function () {
                 $routeParams.dt = "test";
                 $routeParams.id = "1"; 
 
-                var mockObject: any = {}; 
+                var mockObject  = new Spiro.DomainObjectRepresentation(); 
+                var mockPromise: any = {}; 
 
-                mockObject.serviceId = () => {
-                    return "";
+                mockPromise.then = (f) => {
+                    return f(mockObject); 
                 };
 
-                mockObject.domainType = () => {
-                    return "test";
-                };
-
-                mockObject.instanceId = () => {
-                    return "1";
-                };
-
-                Context.setObject(mockObject); 
+                spyOn(Context, 'getObject').andReturn(mockPromise); 
+                spyOn($location, 'path').andReturn("aPath"); 
 
                 ctrl = $controller('AppBarController', { $scope: $scope, $routeParams: $routeParams, $location: $location, Context: Context });
             }));
@@ -72,10 +66,9 @@ describe('Controllers', function () {
                 expectAppBarData();
             });
 
-            it('should enable edit button', function () {
-               
-                //expect($scope.appBar.hideEdit).toEqual(false);
-                //expect($scope.appBar.doEdit).toEqual("something");
+            it('should enable edit button', function () {   
+                expect($scope.appBar.hideEdit).toBe(false);
+                expect($scope.appBar.doEdit).toEqual("#aPath?editMode=true");
             });
             
         });
