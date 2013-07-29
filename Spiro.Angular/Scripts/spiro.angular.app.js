@@ -44,6 +44,61 @@
             return data;
         }
 
+        Angular.app.service('ViewModelFactory', function ($routeParams, $location) {
+            this.errorViewModel = function (errorRep) {
+                return Angular.ErrorViewModel.create(errorRep);
+            };
+
+            this.linkViewModel = function (linkRep) {
+                return Angular.LinkViewModel.create(linkRep);
+            };
+
+            this.itemViewModel = function (linkRep, parentHref, index) {
+                return Angular.ItemViewModel.create(linkRep, parentHref, index, $routeParams);
+            };
+
+            this.parameterViewModel = function (parmRep, id) {
+                return Angular.ParameterViewModel.create(parmRep, id);
+            };
+
+            this.actionViewModel = function (actionRep) {
+                return Angular.ActionViewModel.create(actionRep, $routeParams);
+            };
+
+            this.dialogViewModel = function (actionRep, invoke) {
+                return Angular.DialogViewModel.create(actionRep, $routeParams, invoke);
+            };
+
+            this.propertyViewModel = function (propertyRep, id) {
+                return Angular.PropertyViewModel.create(propertyRep, id, $routeParams);
+            };
+
+            this.collectionViewModel = function (collection) {
+                if (collection instanceof Spiro.CollectionMember) {
+                    return Angular.CollectionViewModel.create(collection, $routeParams);
+                }
+                if (collection instanceof Spiro.CollectionRepresentation) {
+                    return Angular.CollectionViewModel.createFromDetails(collection, $routeParams);
+                }
+                if (collection instanceof Spiro.ListRepresentation) {
+                    return Angular.CollectionViewModel.createFromList(collection, $routeParams, $location);
+                }
+                return null;
+            };
+
+            this.servicesViewModel = function (servicesRep) {
+                return Angular.ServicesViewModel.create(servicesRep);
+            };
+
+            this.serviceViewModel = function (serviceRep) {
+                return Angular.ServiceViewModel.create(serviceRep, $routeParams);
+            };
+
+            this.domainObjectViewModel = function (objectRep, save) {
+                return Angular.DomainObjectViewModel.create(objectRep, $routeParams, save);
+            };
+        });
+
         Angular.app.service("RepresentationLoader", function ($http, $q) {
             this.populate = function (model, ignoreCache, expected) {
                 var response = expected || model;
@@ -212,7 +267,7 @@
             };
         });
 
-        Angular.app.service("Handlers", function ($routeParams, $location, $q, $cacheFactory, RepresentationLoader, Context) {
+        Angular.app.service("Handlers", function ($routeParams, $location, $q, $cacheFactory, RepresentationLoader, Context, ViewModelFactory) {
             function setError(error) {
                 var errorRep;
                 if (error instanceof Spiro.ErrorRepresentation) {
@@ -226,7 +281,7 @@
 
             this.handleCollectionResult = function ($scope) {
                 Context.getCollection().then(function (list) {
-                    $scope.collection = Angular.CollectionViewModel.createFromList(list, $routeParams, $location);
+                    $scope.collection = ViewModelFactory.collectionViewModel(list);
                     $scope.collectionTemplate = svrPath + "Content/partials/nestedCollection.html";
                 }, function (error) {
                     setError(error);
@@ -244,7 +299,7 @@
                     var collectionDetails = collection.value.getDetails();
                     return RepresentationLoader.populate(collectionDetails);
                 }).then(function (details) {
-                    $scope.collection = Angular.CollectionViewModel.createFromDetails(details, $routeParams);
+                    $scope.collection = ViewModelFactory.collectionViewModel(details);
                     $scope.collectionTemplate = svrPath + "Content/partials/nestedCollection.html";
                 }, function (error) {
                     setError(error);
@@ -300,7 +355,7 @@
                 }).then(function (action) {
                     if (action.extensions().hasParams) {
                         $scope.dialogTemplate = svrPath + "Content/partials/dialog.html";
-                        $scope.dialog = Angular.DialogViewModel.create(action, $routeParams, function (dvm, show) {
+                        $scope.dialog = ViewModelFactory.dialogViewModel(action, function (dvm, show) {
                             dvm.clearErrors();
 
                             var invoke = action.getInvoke();
@@ -329,7 +384,7 @@
                                     dvm.error = errorMap.invalidReason();
                                 } else if (error instanceof Spiro.ErrorRepresentation) {
                                     var errorRep = error;
-                                    var evm = Angular.ErrorViewModel.create(errorRep);
+                                    var evm = ViewModelFactory.errorViewModel(errorRep);
                                     $scope.error = evm;
 
                                     $scope.dialogTemplate = svrPath + "Content/partials/error.html";
@@ -373,7 +428,7 @@
             };
 
             function handleNestedObject(object, $scope) {
-                $scope.result = Angular.DomainObjectViewModel.create(object, $routeParams);
+                $scope.result = ViewModelFactory.domainObjectViewModel(object);
                 $scope.nestedTemplate = svrPath + "Content/partials/nestedObject.html";
                 Context.setNestedObject(object);
             }
@@ -421,7 +476,7 @@
 
             this.handleServices = function ($scope) {
                 Context.getServices().then(function (services) {
-                    $scope.services = Angular.ServicesViewModel.create(services);
+                    $scope.services = ViewModelFactory.servicesViewModel(services);
                     Context.setObject(null);
                     Context.setNestedObject(null);
                 }, function (error) {
@@ -431,7 +486,7 @@
 
             this.handleService = function ($scope) {
                 Context.getObject($routeParams.sid).then(function (service) {
-                    $scope.object = Angular.ServiceViewModel.create(service, $routeParams);
+                    $scope.object = ViewModelFactory.serviceViewModel(service);
                 }, function (error) {
                     setError(error);
                 });
@@ -443,7 +498,7 @@
                 var id = result[1];
 
                 Context.getNestedObject(dt, id).then(function (object) {
-                    $scope.result = Angular.DomainObjectViewModel.create(object, $routeParams);
+                    $scope.result = ViewModelFactory.domainObjectViewModel(object);
                     $scope.nestedTemplate = svrPath + "Content/partials/nestedObject.html";
                     Context.setNestedObject(object);
                 }, function (error) {
@@ -454,7 +509,7 @@
             this.handleError = function ($scope) {
                 var error = Context.getError();
                 if (error) {
-                    var evm = Angular.ErrorViewModel.create(error);
+                    var evm = ViewModelFactory.errorViewModel(error);
                     $scope.error = evm;
                     $scope.errorTemplate = svrPath + "Content/partials/error.html";
                 }
@@ -492,7 +547,7 @@
                     $scope.actionTemplate = $routeParams.editMode ? "" : svrPath + "Content/partials/actions.html";
                     $scope.propertiesTemplate = svrPath + ($routeParams.editMode ? "Content/partials/editProperties.html" : "Content/partials/viewProperties.html");
 
-                    $scope.object = Angular.DomainObjectViewModel.create(object, $routeParams, function (ovm) {
+                    $scope.object = ViewModelFactory.domainObjectViewModel(object, function (ovm) {
                         var update = object.getUpdateMap();
 
                         var properties = _.filter(ovm.properties, function (property) {
@@ -527,7 +582,7 @@
                                 ovm.message = errorMap.invalidReason();
                             } else if (error instanceof Spiro.ErrorRepresentation) {
                                 var errorRep = error;
-                                var evm = Angular.ErrorViewModel.create(errorRep);
+                                var evm = ViewModelFactory.errorViewModel(errorRep);
                                 $scope.error = evm;
 
                                 $scope.propertiesTemplate = svrPath + "Content/partials/error.html";
