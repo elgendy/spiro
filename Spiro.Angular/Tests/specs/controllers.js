@@ -3,6 +3,40 @@ describe('Controllers', function () {
 
     beforeEach(module('app'));
 
+    describe('ErrorController', function () {
+        var handleError;
+
+        beforeEach(inject(function ($rootScope, $controller, Handlers) {
+            $scope = $rootScope.$new();
+            handleError = spyOn(Handlers, 'handleError');
+            ctrl = $controller('ErrorController', { $scope: $scope, Handlers: Handlers });
+        }));
+
+        it('should call the handler', function () {
+            expect(handleError).toHaveBeenCalledWith($scope);
+        });
+    });
+
+    describe('AppBarController', function () {
+        var handleAppBar;
+
+        beforeEach(inject(function ($rootScope, $controller, Handlers) {
+            $scope = $rootScope.$new();
+            handleAppBar = spyOn(Handlers, 'handleAppBar');
+            ctrl = $controller('AppBarController', { $scope: $scope, Handlers: Handlers });
+        }));
+
+        it('should call the handler', function () {
+            expect(handleAppBar).toHaveBeenCalledWith($scope);
+        });
+    });
+});
+
+describe('Handlers Service', function () {
+    var $scope;
+
+    beforeEach(module('app'));
+
     function mockPromise(tgt, func, mock) {
         var mp = {};
 
@@ -13,13 +47,13 @@ describe('Controllers', function () {
         spyOn(tgt, func).andReturn(mp);
     }
 
-    describe('ErrorController', function () {
-        beforeEach(inject(function ($rootScope, $controller, $routeParams, $location, Context) {
+    describe('handleError', function () {
+        beforeEach(inject(function ($rootScope, Handlers, Context) {
             $scope = $rootScope.$new();
 
             spyOn(Context, 'getError').andReturn(new Spiro.ErrorRepresentation({ message: "", stacktrace: [] }));
 
-            ctrl = $controller('ErrorController', { $scope: $scope, Context: Context });
+            Handlers.handleError($scope);
         }));
 
         it('should set a error data', function () {
@@ -28,7 +62,7 @@ describe('Controllers', function () {
         });
     });
 
-    describe('AppBarController', function () {
+    describe('handleAppBar', function () {
         function expectAppBarData() {
             expect($scope.appBar).toBeDefined();
             expect($scope.appBar.goHome).toEqual("#/");
@@ -37,11 +71,11 @@ describe('Controllers', function () {
             expect($scope.appBar.goForward).toBeDefined();
         }
 
-        describe('AppBarController when not viewing an  object', function () {
-            beforeEach(inject(function ($rootScope, $controller, $routeParams, $location, Context) {
+        describe('handleAppBar when not viewing an  object', function () {
+            beforeEach(inject(function ($rootScope, Handlers) {
                 $scope = $rootScope.$new();
 
-                ctrl = $controller('AppBarController', { $scope: $scope, $routeParams: $routeParams, $location: $location, Context: Context });
+                Handlers.handleAppBar($scope);
             }));
 
             it('should set appBar data', function () {
@@ -54,8 +88,8 @@ describe('Controllers', function () {
             });
         });
 
-        describe('AppBarController when viewing an object', function () {
-            beforeEach(inject(function ($rootScope, $controller, $routeParams, $location, Context) {
+        describe('handleAppBar when viewing an object', function () {
+            beforeEach(inject(function ($rootScope, $location, $routeParams, Handlers, Context) {
                 $scope = $rootScope.$new();
 
                 $routeParams.dt = "test";
@@ -65,7 +99,7 @@ describe('Controllers', function () {
 
                 spyOn($location, 'path').andReturn("aPath");
 
-                ctrl = $controller('AppBarController', { $scope: $scope, $routeParams: $routeParams, $location: $location, Context: Context });
+                Handlers.handleAppBar($scope);
             }));
 
             it('should set appBar data', function () {
