@@ -3,9 +3,32 @@ describe('Controllers', function () {
 
     beforeEach(module('app'));
 
-    describe('AppBarController', function () {
-        var context;
+    function mockPromise(tgt, func, mock) {
+        var mp = {};
 
+        mp.then = function (f) {
+            return f(mock);
+        };
+
+        spyOn(tgt, func).andReturn(mp);
+    }
+
+    describe('ErrorController', function () {
+        beforeEach(inject(function ($rootScope, $controller, $routeParams, $location, Context) {
+            $scope = $rootScope.$new();
+
+            spyOn(Context, 'getError').andReturn(new Spiro.ErrorRepresentation({ message: "", stacktrace: [] }));
+
+            ctrl = $controller('ErrorController', { $scope: $scope, Context: Context });
+        }));
+
+        it('should set a error data', function () {
+            expect($scope.error).toBeDefined();
+            expect($scope.errorTemplate).toEqual("Content/partials/error.html");
+        });
+    });
+
+    describe('AppBarController', function () {
         function expectAppBarData() {
             expect($scope.appBar).toBeDefined();
             expect($scope.appBar.goHome).toEqual("#/");
@@ -15,10 +38,10 @@ describe('Controllers', function () {
         }
 
         describe('AppBarController when not viewing an  object', function () {
-            beforeEach(inject(function ($rootScope, $controller, $routeParams, $location) {
+            beforeEach(inject(function ($rootScope, $controller, $routeParams, $location, Context) {
                 $scope = $rootScope.$new();
-                context = null;
-                ctrl = $controller('AppBarController', { $scope: $scope, $routeParams: $routeParams, $location: $location, Context: context });
+
+                ctrl = $controller('AppBarController', { $scope: $scope, $routeParams: $routeParams, $location: $location, Context: Context });
             }));
 
             it('should set appBar data', function () {
@@ -38,14 +61,8 @@ describe('Controllers', function () {
                 $routeParams.dt = "test";
                 $routeParams.id = "1";
 
-                var mockObject = new Spiro.DomainObjectRepresentation();
-                var mockPromise = {};
+                mockPromise(Context, 'getObject', new Spiro.DomainObjectRepresentation());
 
-                mockPromise.then = function (f) {
-                    return f(mockObject);
-                };
-
-                spyOn(Context, 'getObject').andReturn(mockPromise);
                 spyOn($location, 'path').andReturn("aPath");
 
                 ctrl = $controller('AppBarController', { $scope: $scope, $routeParams: $routeParams, $location: $location, Context: Context });
@@ -56,8 +73,6 @@ describe('Controllers', function () {
             });
 
             it('should enable edit button', function () {
-                debugger;
-
                 expect($scope.appBar.hideEdit).toBe(false);
                 expect($scope.appBar.doEdit).toEqual("#aPath?editMode=true");
             });

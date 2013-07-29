@@ -212,8 +212,8 @@
             };
         });
 
-        Angular.app.service("Handlers", function ($routeParams, $location, $q, RepresentationLoader, Context) {
-            this.handleError = function (error) {
+        Angular.app.service("Handlers", function ($routeParams, $location, $q, $cacheFactory, RepresentationLoader, Context) {
+            function setError(error) {
                 var errorRep;
                 if (error instanceof Spiro.ErrorRepresentation) {
                     errorRep = error;
@@ -221,14 +221,15 @@
                     errorRep = new Spiro.ErrorRepresentation({ message: "an unrecognised error has occurred" });
                 }
                 Context.setError(errorRep);
-            };
+            }
+            ;
 
             this.handleCollectionResult = function ($scope) {
                 Context.getCollection().then(function (list) {
                     $scope.collection = Angular.CollectionViewModel.createFromList(list, $routeParams, $location);
                     $scope.collectionTemplate = svrPath + "Content/partials/nestedCollection.html";
                 }, function (error) {
-                    this.handleError(error);
+                    setError(error);
                 });
             };
 
@@ -246,7 +247,7 @@
                     $scope.collection = Angular.CollectionViewModel.createFromDetails(details, $routeParams);
                     $scope.collectionTemplate = svrPath + "Content/partials/nestedCollection.html";
                 }, function (error) {
-                    this.handleError(error);
+                    setError(error);
                 });
             };
 
@@ -339,7 +340,7 @@
                         });
                     }
                 }, function (error) {
-                    this.handleError(error);
+                    setError(error);
                 });
             };
 
@@ -366,7 +367,7 @@
                     handleResult(result);
                 }, function (error) {
                     if (error) {
-                        this.handleError(error);
+                        setError(error);
                     }
                 });
             };
@@ -402,7 +403,7 @@
                 }).then(function (object) {
                     handleNestedObject(object, $scope);
                 }, function (error) {
-                    this.handleError(error);
+                    setError(error);
                 });
             };
 
@@ -414,7 +415,129 @@
                 Context.getNestedObject(collectionItemType, collectionItemKey).then(function (object) {
                     handleNestedObject(object, $scope);
                 }, function (error) {
-                    this.handleError(error);
+                    setError(error);
+                });
+            };
+
+            this.handleServices = function ($scope) {
+                Context.getServices().then(function (services) {
+                    $scope.services = Angular.ServicesViewModel.create(services);
+                    Context.setObject(null);
+                    Context.setNestedObject(null);
+                }, function (error) {
+                    setError(error);
+                });
+            };
+
+            this.handleService = function ($scope) {
+                Context.getObject($routeParams.sid).then(function (service) {
+                    $scope.object = Angular.ServiceViewModel.create(service, $routeParams);
+                }, function (error) {
+                    setError(error);
+                });
+            };
+
+            this.handleResult = function ($scope) {
+                var result = $routeParams.resultObject.split("-");
+                var dt = result[0];
+                var id = result[1];
+
+                Context.getNestedObject(dt, id).then(function (object) {
+                    $scope.result = Angular.DomainObjectViewModel.create(object, $routeParams);
+                    $scope.nestedTemplate = svrPath + "Content/partials/nestedObject.html";
+                    Context.setNestedObject(object);
+                }, function (error) {
+                    $scope.object = {};
+                });
+            };
+
+            this.handleError = function ($scope) {
+                var error = Context.getError();
+                if (error) {
+                    var evm = Angular.ErrorViewModel.create(error);
+                    $scope.error = evm;
+                    $scope.errorTemplate = svrPath + "Content/partials/error.html";
+                }
+            };
+
+            this.handleAppBar = function ($scope) {
+                $scope.appBar = {};
+
+                $scope.appBar.template = svrPath + "Content/partials/appbar.html";
+
+                $scope.appBar.goHome = "#/";
+
+                $scope.appBar.goBack = function () {
+                    parent.history.back();
+                };
+
+                $scope.appBar.goForward = function () {
+                    parent.history.forward();
+                };
+
+                $scope.appBar.hideEdit = true;
+
+                if ($routeParams.dt && $routeParams.id) {
+                    Context.getObject($routeParams.dt, $routeParams.id).then(function (object) {
+                        $scope.appBar.hideEdit = !(object) || $routeParams.editMode || false;
+
+                        $scope.appBar.doEdit = "#" + $location.path() + "?editMode=true";
+                    });
+                }
+            };
+
+            this.handleObject = function ($scope) {
+                Context.getObject($routeParams.dt, $routeParams.id).then(function (object) {
+                    Context.setNestedObject(null);
+                    $scope.actionTemplate = $routeParams.editMode ? "" : svrPath + "Content/partials/actions.html";
+                    $scope.propertiesTemplate = svrPath + ($routeParams.editMode ? "Content/partials/editProperties.html" : "Content/partials/viewProperties.html");
+
+                    $scope.object = Angular.DomainObjectViewModel.create(object, $routeParams, function (ovm) {
+                        var update = object.getUpdateMap();
+
+                        var properties = _.filter(ovm.properties, function (property) {
+                            return property.isEditable;
+                        });
+                        _.each(properties, function (property) {
+                            return update.setProperty(property.id, property.getValue());
+                        });
+
+                        RepresentationLoader.populate(update, true, new Spiro.DomainObjectRepresentation()).then(function (updatedObject) {
+                            var rawLinks = (object).get("links");
+                            (updatedObject).set("links", rawLinks);
+
+                            $cacheFactory.get('$http').remove(updatedObject.url());
+
+                            Context.setObject(updatedObject);
+
+                            $location.search("");
+                        }, function (error) {
+                            if (error instanceof Spiro.ErrorMap) {
+                                var errorMap = error;
+
+                                _.each(properties, function (property) {
+                                    var error = errorMap.valuesMap()[property.id];
+
+                                    if (error) {
+                                        property.value = error.value.toValueString();
+                                        property.error = error.invalidReason;
+                                    }
+                                });
+
+                                ovm.message = errorMap.invalidReason();
+                            } else if (error instanceof Spiro.ErrorRepresentation) {
+                                var errorRep = error;
+                                var evm = Angular.ErrorViewModel.create(errorRep);
+                                $scope.error = evm;
+
+                                $scope.propertiesTemplate = svrPath + "Content/partials/error.html";
+                            } else {
+                                ovm.message = error;
+                            }
+                        });
+                    });
+                }, function (error) {
+                    $scope.object = {};
                 });
             };
         });

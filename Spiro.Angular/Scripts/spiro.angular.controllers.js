@@ -1,22 +1,12 @@
 ﻿var Spiro;
 (function (Spiro) {
     (function (Angular) {
-        Angular.app.controller('ServicesController', function ($scope, RepresentationLoader, Context, Handlers) {
-            Context.getServices().then(function (services) {
-                $scope.services = Angular.ServicesViewModel.create(services);
-                Context.setObject(null);
-                Context.setNestedObject(null);
-            }, function (error) {
-                Handlers.handleError(error);
-            });
+        Angular.app.controller('ServicesController', function ($scope, Handlers) {
+            Handlers.handleServices($scope);
         });
 
-        Angular.app.controller('ServiceController', function ($scope, $routeParams, RepresentationLoader, Context, Handlers) {
-            Context.getObject($routeParams.sid).then(function (service) {
-                $scope.object = Angular.ServiceViewModel.create(service, $routeParams);
-            }, function (error) {
-                Handlers.handleError(error);
-            });
+        Angular.app.controller('ServiceController', function ($scope, Handlers) {
+            Handlers.handleService($scope);
         });
 
         Angular.app.controller('DialogController', function ($routeParams, $scope, Handlers) {
@@ -34,17 +24,7 @@
             } else if ($routeParams.collectionItem) {
                 Handlers.handleCollectionItem($scope);
             } else if ($routeParams.resultObject) {
-                var result = $routeParams.resultObject.split("-");
-                var dt = result[0];
-                var id = result[1];
-
-                Context.getNestedObject(dt, id).then(function (object) {
-                    $scope.result = Angular.DomainObjectViewModel.create(object, $routeParams);
-                    $scope.nestedTemplate = svrPath + "Content/partials/nestedObject.html";
-                    Context.setNestedObject(object);
-                }, function (error) {
-                    $scope.object = {};
-                });
+                Handlers.handleResult($scope);
             }
         });
 
@@ -56,94 +36,16 @@
             }
         });
 
-        Angular.app.controller('ObjectController', function ($scope, $routeParams, $location, $cacheFactory, RepresentationLoader, Context) {
-            Context.getObject($routeParams.dt, $routeParams.id).then(function (object) {
-                Context.setNestedObject(null);
-                $scope.actionTemplate = $routeParams.editMode ? "" : svrPath + "Content/partials/actions.html";
-                $scope.propertiesTemplate = svrPath + ($routeParams.editMode ? "Content/partials/editProperties.html" : "Content/partials/viewProperties.html");
-
-                $scope.object = Angular.DomainObjectViewModel.create(object, $routeParams, function (ovm) {
-                    var update = object.getUpdateMap();
-
-                    var properties = _.filter(ovm.properties, function (property) {
-                        return property.isEditable;
-                    });
-                    _.each(properties, function (property) {
-                        return update.setProperty(property.id, property.getValue());
-                    });
-
-                    RepresentationLoader.populate(update, true, new Spiro.DomainObjectRepresentation()).then(function (updatedObject) {
-                        var rawLinks = (object).get("links");
-                        (updatedObject).set("links", rawLinks);
-
-                        $cacheFactory.get('$http').remove(updatedObject.url());
-
-                        Context.setObject(updatedObject);
-
-                        $location.search("");
-                    }, function (error) {
-                        if (error instanceof Spiro.ErrorMap) {
-                            var errorMap = error;
-
-                            _.each(properties, function (property) {
-                                var error = errorMap.valuesMap()[property.id];
-
-                                if (error) {
-                                    property.value = error.value.toValueString();
-                                    property.error = error.invalidReason;
-                                }
-                            });
-
-                            ovm.message = errorMap.invalidReason();
-                        } else if (error instanceof Spiro.ErrorRepresentation) {
-                            var errorRep = error;
-                            var evm = Angular.ErrorViewModel.create(errorRep);
-                            $scope.error = evm;
-
-                            $scope.propertiesTemplate = svrPath + "Content/partials/error.html";
-                        } else {
-                            ovm.message = error;
-                        }
-                    });
-                });
-            }, function (error) {
-                $scope.object = {};
-            });
+        Angular.app.controller('ObjectController', function ($scope, Handlers) {
+            Handlers.handleObject($scope);
         });
 
-        Angular.app.controller('ErrorController', function ($scope, Context) {
-            var error = Context.getError();
-            if (error) {
-                var evm = Angular.ErrorViewModel.create(error);
-                $scope.error = evm;
-                $scope.errorTemplate = svrPath + "Content/partials/error.html";
-            }
+        Angular.app.controller('ErrorController', function ($scope, Handlers) {
+            Handlers.handleError($scope);
         });
 
-        Angular.app.controller('AppBarController', function ($scope, $routeParams, $location, Context) {
-            $scope.appBar = {};
-
-            $scope.appBar.template = svrPath + "Content/partials/appbar.html";
-
-            $scope.appBar.goHome = "#/";
-
-            $scope.appBar.goBack = function () {
-                parent.history.back();
-            };
-
-            $scope.appBar.goForward = function () {
-                parent.history.forward();
-            };
-
-            $scope.appBar.hideEdit = true;
-
-            if ($routeParams.dt && $routeParams.id) {
-                Context.getObject($routeParams.dt, $routeParams.id).then(function (object) {
-                    $scope.appBar.hideEdit = !(object) || $routeParams.editMode || false;
-
-                    $scope.appBar.doEdit = "#" + $location.path() + "?editMode=true";
-                });
-            }
+        Angular.app.controller('AppBarController', function ($scope, Handlers) {
+            Handlers.handleAppBar($scope);
         });
     })(Spiro.Angular || (Spiro.Angular = {}));
     var Angular = Spiro.Angular;
