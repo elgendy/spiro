@@ -1,7 +1,7 @@
 /// <reference path="spiro.models.ts"/>
 /// <reference path="typings/jquery/jquery.d.ts" />
 /// <reference path="typings/backbone/backbone.d.ts"/>
-/// <reference path="typings/underscore/underscore.d.ts" />
+/// <reference path="typings/underscore/underscore-typed.d.ts" />
 /// <reference path="typings/qunit/qunit.d.ts" />
 
 
@@ -159,7 +159,7 @@ module SpiroModelTests {
 
             for (var i = 0; i < serviceWithData.length; i++) {
 
-                var service: Spiro.Link = serviceWithData[i];
+                var service = serviceWithData[i];
                 var s: Spiro.Link = service[0];
                 var d: string = service[1];
                 var url = "http://mvc.nakedobjects.net:1081/RestDemo/services/AdventureWorksModel." + d;

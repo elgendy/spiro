@@ -227,7 +227,7 @@ module Spiro.Angular {
 
             dialogViewModel.close = toAppUrl(actionRep.upLink().href(), $routeParams, ["action"]); 
 
-            dialogViewModel.parameters = _.map(parameters, (parm, id) => { return ParameterViewModel.create(parm, id); });
+            dialogViewModel.parameters = _.map(parameters, (parm, id?) => { return ParameterViewModel.create(parm, id); });
 
             dialogViewModel.doShow = () => invoke(dialogViewModel, true); 
             dialogViewModel.doInvoke = () => invoke(dialogViewModel, false);  
@@ -407,7 +407,7 @@ module Spiro.Angular {
           
             this.message = ""; 
 
-            this.properties = _.map(properties, (property, id) => { return PropertyViewModel.create(property, id, $routeParams); });
+            this.properties = _.map(properties, (property, id?) => { return PropertyViewModel.create(property, id, $routeParams); });
             this.collections = _.map(collections, (collection) => { return CollectionViewModel.create(collection, $routeParams); });
             this.actions = _.map(actions, (action) => { return ActionViewModel.create(action, $routeParams); });
 

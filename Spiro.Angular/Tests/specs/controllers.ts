@@ -725,9 +725,6 @@ describe('Handlers Service', function () {
                 });
 
             });
-
-
-
         });
 
         describe('if it has an error', function () {

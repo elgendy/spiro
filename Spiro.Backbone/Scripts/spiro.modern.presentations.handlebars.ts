@@ -17,7 +17,7 @@
 /// <reference path="typings/backbone/backbone.mine.d.ts" />
 /// <reference path="typings/handlebars/handlebars.d.ts" />
 /// <reference path="typings/modernizr/modernizr.d.ts" />
-/// <reference path="typings/underscore/underscore.d.ts" />
+/// <reference path="typings/underscore/underscore-typed.d.ts" />
 /// <reference path="spiro.models.ts" />
 /// <reference path="spiro.models.helpers.ts" />
 /// <reference path="spiro.modern.presentations.ts" />
@@ -64,7 +64,7 @@ module Spiro.Modern.HandlebarsTemplating {
 
     function setColourMapValues(dt: string, context: Object) {
         var map = getColourMapValues(dt);
-        _.each(map, (element: string, index: string) => context[index] = element);
+        _.each(map, (element: any, index?: string) => context[index] = element);
         return context;
     }
 
@@ -597,7 +597,7 @@ module Spiro.Modern.HandlebarsTemplating {
             var parameters = this.model.parameters();
             var parametersElement = this.element.find(".parameters");
 
-            _.each(parameters, (parameter: Parameter, pId: string) => {
+            _.each(parameters, (parameter: Parameter, pId?: string) => {
                 var error = errors[pId];
                 var pp = new ParameterPresentation(parameter, pId, parametersElement, error);
                 this.parameters.push(pp);
@@ -648,7 +648,7 @@ module Spiro.Modern.HandlebarsTemplating {
             var items = this.model.value().models;
             var itemsElement = this.element.find(".items");
 
-            _.each(items, (link: Link, i: number) => {
+            _.each(items, (link: Link, i?: number) => {
                 var cip = new ListItemPresentation(link, i, itemsElement);
                 cip.on("link", (id) => this.trigger("link", id));
                 cip.draw();
@@ -733,7 +733,7 @@ module Spiro.Modern.HandlebarsTemplating {
 
             function insertColumns(header: HeaderItem[], model: DomainObjectRepresentation) {
 
-                var members = _.map(model.propertyMembers(), (pm: PropertyMember, id: string) => {
+                var members = _.map(model.propertyMembers(), (pm: PropertyMember, id?: string) => {
                     return { id: id, name: pm.extensions().friendlyName };
                 });
 
@@ -871,7 +871,7 @@ module Spiro.Modern.HandlebarsTemplating {
 
 
             var properties = this.model.propertyMembers();
-            _.each(properties, (property: PropertyMember, pId: string) => {
+            _.each(properties, (property: PropertyMember, pId?: string) => {
                 var pp = new TableCellPresentation(property, pId, true, this.element);
                 pp.on("link", (id) => this.trigger("link", id));
                 pp.draw();
@@ -939,7 +939,7 @@ module Spiro.Modern.HandlebarsTemplating {
             this.editProperties = [];
 
             var properties = this.model.propertyMembers();
-            _.each(properties, (property: PropertyMember, pId: string) => {
+            _.each(properties, (property: PropertyMember, pId?: string) => {
                 var error = (errors || <ErrorValueMap>{})[pId];
 
                 if (isEdit && !property.disabledReason()) {
@@ -957,7 +957,7 @@ module Spiro.Modern.HandlebarsTemplating {
             });
 
             var collections = this.model.collectionMembers();
-            _.each(collections, (collection: CollectionMember, cId: string) => {
+            _.each(collections, (collection: CollectionMember, cId?: string) => {
                 var cp = new CollectionMemberPresentation(collection, cId, propertiesElement);
                 cp.on("collection", (id) => this.trigger("collection", id));
                 cp.draw();
@@ -1083,7 +1083,7 @@ module Spiro.Modern.HandlebarsTemplating {
             var actionsElement = allActions.find(".actions");
             var actions = this.model.actionMembers();
 
-            _.each(actions, (action: ActionMember, aId: string) => {
+            _.each(actions, (action: ActionMember, aId?: string) => {
                 var ap = new ActionPresentation(action, aId, actionsElement);
                 ap.on("action", (id) => this.trigger("action", id));
                 ap.draw();
@@ -1236,7 +1236,7 @@ module Spiro.Modern.HandlebarsTemplating {
 
         draw(): void {
             this.element = $(".properties-pane");
-            _.each(this.model.value().models, (link: Link, i: number) => {
+            _.each(this.model.value().models, (link: Link, i?: number) => {
                 var sp = new ServiceLinkPresentation(link, i, this.element);
                 sp.on("link", (id) => this.trigger("link", id));
                 sp.draw();

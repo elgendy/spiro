@@ -1,4 +1,5 @@
 ﻿/// <reference path="typings/angularjs/angular.d.ts" />
+/// <reference path="typings/underscore/underscore-typed.d.ts" />
 /// <reference path="spiro.models.ts" />
 /// <reference path="spiro.angular.viewmodels.ts" />
 
@@ -437,7 +438,7 @@ module Spiro.Angular {
             Context.getObject($routeParams.sid || $routeParams.dt, $routeParams.id).
                 then(function (object: DomainObjectRepresentation) {
 
-                    var actions: { key: string; value: ActionMember; }[] = _.map(object.actionMembers(), (value, key) => {
+                    var actions: { key: string; value: ActionMember; }[] = _.map(object.actionMembers(), (value, key?) => {
                         return { key: key, value: value };
                     });
                     var action = _.find(actions, (kvp) => { return kvp.key === $routeParams.action; });
@@ -500,7 +501,7 @@ module Spiro.Angular {
             Context.getObject($routeParams.sid || $routeParams.dt, $routeParams.id).
                 then(function (object: DomainObjectRepresentation) {
 
-                    var actions: { key: string; value: ActionMember; }[] = _.map(object.actionMembers(), (value, key) => {
+                    var actions: { key: string; value: ActionMember; }[] = _.map(object.actionMembers(), (value, key?) => {
                         return { key: key, value: value };
                     });
                     var action = _.find(actions, (kvp) => { return kvp.key === $routeParams.action; });
@@ -536,7 +537,7 @@ module Spiro.Angular {
 
         // TODO make this generic and replace various finder code 
         function findProperty(map: PropertyMemberMap, id: string) {
-            var properties: { key: string; value: PropertyMember; }[] = _.map(map, (value, key) => {
+            var properties: { key: string; value: PropertyMember; }[] = _.map(map, (value, key?) => {
                 return { key: key, value: value };
             });
             return _.find(properties, (kvp) => { return kvp.key === id; });
@@ -545,7 +546,7 @@ module Spiro.Angular {
         this.handleProperty = function ($scope) {
             Context.getObject($routeParams.dt, $routeParams.id).
                 then(function (object: DomainObjectRepresentation) {
-                    var properties: { key: string; value: PropertyMember; }[] = _.map(object.propertyMembers(), (value, key) => {
+                    var properties: { key: string; value: PropertyMember; }[] = _.map(object.propertyMembers(), (value, key?) => {
                         return { key: key, value: value };
                     });
                     var property = _.find(properties, (kvp) => { return kvp.key === $routeParams.property; });
@@ -660,6 +661,55 @@ module Spiro.Angular {
             }
         };
 
+        function updateObject($scope, object : DomainObjectRepresentation, ovm : DomainObjectViewModel) {
+            var update = object.getUpdateMap();
+
+            var properties = _.filter(ovm.properties, (property) => property.isEditable);
+            _.each(properties, (property) => update.setProperty(property.id, property.getValue()));
+
+            RepresentationLoader.populate(update, true, new DomainObjectRepresentation()).
+                then(function (updatedObject: DomainObjectRepresentation) {
+
+                    // This is a kludge because updated object has no self link.
+                    var rawLinks = (<any>object).get("links");
+                    (<any>updatedObject).set("links", rawLinks);
+
+                    // remove pre-changed object from cache
+                    $cacheFactory.get('$http').remove(updatedObject.url());
+
+                    Context.setObject(updatedObject);
+
+                    $location.search("");
+
+                }, function (error: any) {
+
+                    if (error instanceof ErrorMap) {
+                        var errorMap = <ErrorMap>error;
+
+                        _.each(properties, (property) => {
+                            var error = errorMap.valuesMap()[property.id];
+
+                            if (error) {
+                                property.value = error.value.toValueString();
+                                property.error = error.invalidReason;
+                            }
+                        });
+
+                        ovm.message = errorMap.invalidReason();
+                    }
+                    else if (error instanceof ErrorRepresentation) {
+                        var errorRep = <ErrorRepresentation>error;
+                        var evm = ViewModelFactory.errorViewModel(errorRep);
+                        $scope.error = evm;
+
+                        $scope.propertiesTemplate = svrPath + "Content/partials/error.html";
+                    }
+                    else {
+                        ovm.message = error;
+                    }
+                });  
+        }
+
         this.handleObject = function ($scope) {
             Context.getObject($routeParams.dt, $routeParams.id).
                 then(function (object: DomainObjectRepresentation) {
@@ -668,56 +718,8 @@ module Spiro.Angular {
                     $scope.actionTemplate = $routeParams.editMode ? "" : svrPath + "Content/partials/actions.html";
                     $scope.propertiesTemplate = svrPath + ($routeParams.editMode ? "Content/partials/editProperties.html" : "Content/partials/viewProperties.html");
 
-                    $scope.object = ViewModelFactory.domainObjectViewModel(object, function (ovm: DomainObjectViewModel) {
+                    $scope.object = ViewModelFactory.domainObjectViewModel(object,  <(ovm : DomainObjectViewModel) => void> _.partial(updateObject, $scope, object)    );
 
-                        var update = object.getUpdateMap();
-
-                        var properties = _.filter(ovm.properties, (property) => property.isEditable);
-                        _.each(properties, (property) => update.setProperty(property.id, property.getValue()));
-
-                        RepresentationLoader.populate(update, true, new DomainObjectRepresentation()).
-                            then(function (updatedObject: DomainObjectRepresentation) {
-
-                                // This is a kludge because updated object has no self link.
-                                var rawLinks = (<any>object).get("links");
-                                (<any>updatedObject).set("links", rawLinks);
-
-                                // remove pre-changed object from cache
-                                $cacheFactory.get('$http').remove(updatedObject.url());
-
-                                Context.setObject(updatedObject);
-
-                                $location.search("");
-
-                            }, function (error: any) {
-
-                                if (error instanceof ErrorMap) {
-                                    var errorMap = <ErrorMap>error;
-
-                                    _.each(properties, (property) => {
-                                        var error = errorMap.valuesMap()[property.id];
-
-                                        if (error) {
-                                            property.value = error.value.toValueString();
-                                            property.error = error.invalidReason;
-                                        }
-                                    });
-
-                                    ovm.message = errorMap.invalidReason();
-                                }
-                                else if (error instanceof ErrorRepresentation) {
-                                    var errorRep = <ErrorRepresentation>error;
-                                    var evm = ViewModelFactory.errorViewModel(errorRep);
-                                    $scope.error = evm;
-
-                                    $scope.propertiesTemplate = svrPath + "Content/partials/error.html";
-                                }
-                                else {
-                                    ovm.message = error;
-                                }
-                            });
-
-                    });
                 }, function (error) {
                     setError(error);
                 });

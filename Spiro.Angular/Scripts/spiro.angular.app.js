@@ -535,56 +535,58 @@
                 }
             };
 
+            function updateObject($scope, object, ovm) {
+                var update = object.getUpdateMap();
+
+                var properties = _.filter(ovm.properties, function (property) {
+                    return property.isEditable;
+                });
+                _.each(properties, function (property) {
+                    return update.setProperty(property.id, property.getValue());
+                });
+
+                RepresentationLoader.populate(update, true, new Spiro.DomainObjectRepresentation()).then(function (updatedObject) {
+                    var rawLinks = (object).get("links");
+                    (updatedObject).set("links", rawLinks);
+
+                    $cacheFactory.get('$http').remove(updatedObject.url());
+
+                    Context.setObject(updatedObject);
+
+                    $location.search("");
+                }, function (error) {
+                    if (error instanceof Spiro.ErrorMap) {
+                        var errorMap = error;
+
+                        _.each(properties, function (property) {
+                            var error = errorMap.valuesMap()[property.id];
+
+                            if (error) {
+                                property.value = error.value.toValueString();
+                                property.error = error.invalidReason;
+                            }
+                        });
+
+                        ovm.message = errorMap.invalidReason();
+                    } else if (error instanceof Spiro.ErrorRepresentation) {
+                        var errorRep = error;
+                        var evm = ViewModelFactory.errorViewModel(errorRep);
+                        $scope.error = evm;
+
+                        $scope.propertiesTemplate = svrPath + "Content/partials/error.html";
+                    } else {
+                        ovm.message = error;
+                    }
+                });
+            }
+
             this.handleObject = function ($scope) {
                 Context.getObject($routeParams.dt, $routeParams.id).then(function (object) {
                     Context.setNestedObject(null);
                     $scope.actionTemplate = $routeParams.editMode ? "" : svrPath + "Content/partials/actions.html";
                     $scope.propertiesTemplate = svrPath + ($routeParams.editMode ? "Content/partials/editProperties.html" : "Content/partials/viewProperties.html");
 
-                    $scope.object = ViewModelFactory.domainObjectViewModel(object, function (ovm) {
-                        var update = object.getUpdateMap();
-
-                        var properties = _.filter(ovm.properties, function (property) {
-                            return property.isEditable;
-                        });
-                        _.each(properties, function (property) {
-                            return update.setProperty(property.id, property.getValue());
-                        });
-
-                        RepresentationLoader.populate(update, true, new Spiro.DomainObjectRepresentation()).then(function (updatedObject) {
-                            var rawLinks = (object).get("links");
-                            (updatedObject).set("links", rawLinks);
-
-                            $cacheFactory.get('$http').remove(updatedObject.url());
-
-                            Context.setObject(updatedObject);
-
-                            $location.search("");
-                        }, function (error) {
-                            if (error instanceof Spiro.ErrorMap) {
-                                var errorMap = error;
-
-                                _.each(properties, function (property) {
-                                    var error = errorMap.valuesMap()[property.id];
-
-                                    if (error) {
-                                        property.value = error.value.toValueString();
-                                        property.error = error.invalidReason;
-                                    }
-                                });
-
-                                ovm.message = errorMap.invalidReason();
-                            } else if (error instanceof Spiro.ErrorRepresentation) {
-                                var errorRep = error;
-                                var evm = ViewModelFactory.errorViewModel(errorRep);
-                                $scope.error = evm;
-
-                                $scope.propertiesTemplate = svrPath + "Content/partials/error.html";
-                            } else {
-                                ovm.message = error;
-                            }
-                        });
-                    });
+                    $scope.object = ViewModelFactory.domainObjectViewModel(object, _.partial(updateObject, $scope, object));
                 }, function (error) {
                     setError(error);
                 });

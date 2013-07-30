@@ -11,6 +11,7 @@ files = [
   JASMINE,
   JASMINE_ADAPTER,
     
+  'Spiro.Angular/Scripts/underscore.min.js',
   'Spiro.Angular/Scripts/angular.min.js',
   'Spiro.Angular/Scripts/angular-resource.min.js',
   'Spiro.Angular/Scripts/angular-mocks.js',  
