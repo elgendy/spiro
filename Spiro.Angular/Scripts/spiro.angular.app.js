@@ -290,13 +290,7 @@
 
             this.handleCollection = function ($scope) {
                 Context.getObject($routeParams.dt, $routeParams.id).then(function (object) {
-                    var collections = _.map(object.collectionMembers(), function (value, key) {
-                        return { key: key, value: value };
-                    });
-                    var collection = _.find(collections, function (kvp) {
-                        return kvp.key === $routeParams.collection;
-                    });
-                    var collectionDetails = collection.value.getDetails();
+                    var collectionDetails = object.collectionMember($routeParams.collection).getDetails();
                     return RepresentationLoader.populate(collectionDetails);
                 }).then(function (details) {
                     $scope.collection = ViewModelFactory.collectionViewModel(details);

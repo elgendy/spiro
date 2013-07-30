@@ -305,8 +305,86 @@ describe('Handlers Service', function () {
             return f(mock);
         };
 
-        spyOn(tgt, func).andReturn(mp);
+        return spyOn(tgt, func).andReturn(mp);
     }
+
+    describe('handleCollectionResult', function () {
+
+        var testObject = new Spiro.ListRepresentation(); 
+        var testViewModel = { test: testObject };
+        var getCollection; 
+        var collectionViewModel; 
+
+        beforeEach(inject(function ($rootScope, Handlers: Spiro.Angular.HandlersInterface, Context: Spiro.Angular.ContextInterface, ViewModelFactory : Spiro.Angular.VMFInterface) {
+            $scope = $rootScope.$new();
+
+            getCollection = mockPromise(Context, 'getCollection', testObject);
+            collectionViewModel = spyOn(ViewModelFactory, 'collectionViewModel').andReturn(testViewModel);
+
+            Handlers.handleCollectionResult($scope);
+        }));
+
+
+        it('should update the scope', function () {
+            expect(getCollection).toHaveBeenCalled();
+            expect(collectionViewModel).toHaveBeenCalledWith(testObject); 
+
+            expect($scope.collection).toEqual(testViewModel);
+            expect($scope.collectionTemplate).toEqual("Content/partials/nestedCollection.html");
+        });
+
+        // TODO handle error ? 
+
+    });
+
+    describe('handleCollection', function () {
+
+        var testObject = new Spiro.DomainObjectRepresentation();
+        var testMember = new Spiro.CollectionMember({}, testObject);
+        var testDetails = new Spiro.CollectionRepresentation();
+        var testViewModel = { test: testObject };
+
+        var getObject;
+        var collectionMember;
+        var collectionDetails;
+        var populate; 
+        var collectionViewModel;
+
+        beforeEach(inject(function ($rootScope, $routeParams, Handlers: Spiro.Angular.HandlersInterface, Context: Spiro.Angular.ContextInterface, ViewModelFactory: Spiro.Angular.VMFInterface, RepresentationLoader : Spiro.Angular.RLInterface) {
+            $scope = $rootScope.$new();
+
+            getObject = mockPromise(Context, 'getObject', testObject);
+
+            collectionMember = spyOn(testObject, "collectionMember").andReturn(testMember);
+            collectionDetails = spyOn(testMember, "getDetails").andReturn(testDetails);  
+            populate = mockPromise(RepresentationLoader, "populate", testDetails); 
+            collectionViewModel = spyOn(ViewModelFactory, 'collectionViewModel').andReturn(testViewModel);
+
+
+            $routeParams.dt = "test";
+            $routeParams.id = "1";
+            $routeParams.collection = "aCollection";        
+
+            Handlers.handleCollection($scope);
+        }));
+
+
+        it('should update the scope', function () {
+            expect(getObject).toHaveBeenCalledWith("test", "1");
+            expect(collectionMember).toHaveBeenCalledWith("aCollection");
+            expect(collectionDetails).toHaveBeenCalled();
+            expect(populate).toHaveBeenCalledWith(testDetails);
+            expect(collectionViewModel).toHaveBeenCalledWith(testDetails);
+
+            expect($scope.collection).toEqual(testViewModel);
+            expect($scope.collectionTemplate).toEqual("Content/partials/nestedCollection.html");
+        });
+
+        // TODO handle error ? 
+
+    });
+
+
 
 
     describe('handleError', function () {

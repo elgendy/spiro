@@ -385,12 +385,7 @@ module Spiro.Angular {
 
             Context.getObject($routeParams.dt, $routeParams.id).
                 then(function (object: DomainObjectRepresentation) {
-
-                    var collections: { key: string; value: CollectionMember }[] = _.map(object.collectionMembers(), (value, key) => {
-                        return { key: key, value: value };
-                    });
-                    var collection = _.find(collections, (kvp) => { return kvp.key === $routeParams.collection; });
-                    var collectionDetails = collection.value.getDetails();
+                    var collectionDetails = object.collectionMember($routeParams.collection).getDetails();
                     return RepresentationLoader.populate(collectionDetails);
                 }).
                 then(function (details: CollectionRepresentation) {

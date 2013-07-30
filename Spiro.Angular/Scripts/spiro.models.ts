@@ -803,7 +803,7 @@ module Spiro {
     // matches 14.4.2 
     export class CollectionMember extends Member {
         constructor(wrapped, parent) {
-            super(wrapped, parent)
+            super(wrapped, parent);
         }
 
         value(): DomainObjectRepresentation[] {
