@@ -577,6 +577,91 @@ describe('Handlers Service', function () {
         });
     });
 
+    describe('handleObject', function () {
+        var getObject;
+
+        describe('if it finds object', function () {
+            var testObject = new Spiro.DomainObjectRepresentation();
+            var testViewModel = { test: testObject };
+
+            var objectViewModel;
+            var setNestedObject;
+
+            beforeEach(inject(function ($rootScope, $routeParams, Handlers, Context, ViewModelFactory) {
+                $scope = $rootScope.$new();
+
+                getObject = spyOnPromise(Context, 'getObject', testObject);
+
+                objectViewModel = spyOn(ViewModelFactory, 'domainObjectViewModel').andReturn(testViewModel);
+                setNestedObject = spyOn(Context, 'setNestedObject');
+
+                $routeParams.dt = "test";
+                $routeParams.id = "1";
+
+                Handlers.handleObject($scope);
+            }));
+
+            describe('not in edit mode', function () {
+                beforeEach(inject(function ($rootScope, $routeParams, Handlers, Context, ViewModelFactory) {
+                    Handlers.handleObject($scope);
+                }));
+
+                it('should update the scope', function () {
+                    expect(getObject).toHaveBeenCalledWith("test", "1");
+                    expect(objectViewModel).toHaveBeenCalledWith(testObject, jasmine.any(Function));
+                    expect(setNestedObject).toHaveBeenCalledWith(null);
+
+                    expect($scope.object).toEqual(testViewModel);
+                    expect($scope.actionTemplate).toEqual("Content/partials/actions.html");
+                    expect($scope.propertiesTemplate).toEqual("Content/partials/viewProperties.html");
+                });
+            });
+
+            describe('in edit mode', function () {
+                beforeEach(inject(function ($rootScope, $routeParams, Handlers, Context, ViewModelFactory) {
+                    $routeParams.editMode = "test";
+                    Handlers.handleObject($scope);
+                }));
+
+                it('should update the scope', function () {
+                    expect(getObject).toHaveBeenCalledWith("test", "1");
+                    expect(objectViewModel).toHaveBeenCalledWith(testObject, jasmine.any(Function));
+                    expect(setNestedObject).toHaveBeenCalledWith(null);
+
+                    expect($scope.object).toEqual(testViewModel);
+                    expect($scope.actionTemplate).toEqual("");
+                    expect($scope.propertiesTemplate).toEqual("Content/partials/editProperties.html");
+                });
+            });
+        });
+
+        describe('if it has an error', function () {
+            var testObject = new Spiro.ErrorRepresentation();
+            var setError;
+
+            beforeEach(inject(function ($rootScope, $routeParams, Handlers, Context) {
+                $scope = $rootScope.$new();
+
+                getObject = spyOnPromiseFail(Context, 'getObject', testObject);
+                setError = spyOn(Context, 'setError');
+
+                $routeParams.dt = "test";
+                $routeParams.id = "1";
+
+                Handlers.handleObject($scope);
+            }));
+
+            it('should update the context', function () {
+                expect(getObject).toHaveBeenCalledWith("test", "1");
+                expect(setError).toHaveBeenCalledWith(testObject);
+
+                expect($scope.object).toBeUndefined();
+                expect($scope.actionTemplate).toBeUndefined();
+                expect($scope.propertiesTemplate).toBeUndefined();
+            });
+        });
+    });
+
     describe('handleError', function () {
         beforeEach(inject(function ($rootScope, Handlers, Context) {
             $scope = $rootScope.$new();

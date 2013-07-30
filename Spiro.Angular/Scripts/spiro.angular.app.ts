@@ -370,6 +370,7 @@ module Spiro.Angular {
             Context.setError(errorRep);
         };
 
+        // tested
         this.handleCollectionResult = function ($scope) {
 
             Context.getCollection().
@@ -381,6 +382,7 @@ module Spiro.Angular {
                 });
         };
 
+        // tested
         this.handleCollection = function ($scope) {
 
             Context.getObject($routeParams.dt, $routeParams.id).
@@ -574,6 +576,7 @@ module Spiro.Angular {
                 });
         };
 
+        // tested
         this.handleServices = function ($scope) {
             Context.getServices().
                 then(function (services: DomainServicesRepresentation) {
@@ -586,6 +589,7 @@ module Spiro.Angular {
 
         };
 
+        // tested
         this.handleService = function ($scope) {
             Context.getObject($routeParams.sid).
                 then(function (service: DomainObjectRepresentation) {
@@ -596,6 +600,7 @@ module Spiro.Angular {
 
         };
 
+        // tested
         this.handleResult = function ($scope) {
             var result = $routeParams.resultObject.split("-");
             var dt = result[0];
@@ -612,6 +617,7 @@ module Spiro.Angular {
 
         };
 
+        // tested
         this.handleError = function ($scope) {
             var error = Context.getError();
             if (error) {
@@ -621,6 +627,7 @@ module Spiro.Angular {
             }
         };
 
+        // tested
         this.handleAppBar = function ($scope) {
             $scope.appBar = {};
 
@@ -652,7 +659,6 @@ module Spiro.Angular {
                     });
             }
         };
-
 
         this.handleObject = function ($scope) {
             Context.getObject($routeParams.dt, $routeParams.id).
@@ -713,7 +719,7 @@ module Spiro.Angular {
 
                     });
                 }, function (error) {
-                    $scope.object = {};
+                    setError(error);
                 });
 
         };

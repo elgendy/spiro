@@ -586,7 +586,7 @@
                         });
                     });
                 }, function (error) {
-                    $scope.object = {};
+                    setError(error);
                 });
             };
         });
