@@ -534,7 +534,129 @@ describe('Handlers Service', function () {
                 expect($scope.nestedTemplate).toBeUndefined();
             });
         });
-      
+    
+
+    });
+
+    describe('handleServices', function () {
+        var getServices;
+
+        describe('if it finds services', function () {
+
+            var testObject = new Spiro.DomainServicesRepresentation();
+            var testViewModel = { test: testObject };
+
+            var servicesViewModel;
+            var setObject;
+            var setNestedObject;
+
+            beforeEach(inject(function ($rootScope, $routeParams, Handlers: Spiro.Angular.HandlersInterface, Context: Spiro.Angular.ContextInterface, ViewModelFactory: Spiro.Angular.VMFInterface) {
+                $scope = $rootScope.$new();
+
+                getServices = spyOnPromise(Context, 'getServices', testObject);
+                
+                servicesViewModel = spyOn(ViewModelFactory, 'servicesViewModel').andReturn(testViewModel);
+                setNestedObject = spyOn(Context, 'setNestedObject');
+                setObject = spyOn(Context, 'setObject');
+
+                Handlers.handleServices($scope);
+            }));
+
+
+            it('should update the scope', function () {
+                expect(getServices).toHaveBeenCalled();
+                expect(servicesViewModel).toHaveBeenCalledWith(testObject);
+                expect(setObject).toHaveBeenCalledWith(null);
+                expect(setNestedObject).toHaveBeenCalledWith(null);
+
+                expect($scope.services).toEqual(testViewModel);
+            });
+
+        });
+
+        describe('if it has an error', function () {
+
+            var testObject = new Spiro.ErrorRepresentation();
+            var setError;
+
+            beforeEach(inject(function ($rootScope, $routeParams, Handlers: Spiro.Angular.HandlersInterface, Context: Spiro.Angular.ContextInterface) {
+                $scope = $rootScope.$new();
+
+                getServices = spyOnPromiseFail(Context, 'getServices', testObject);
+                setError = spyOn(Context, 'setError');
+
+                Handlers.handleServices($scope);
+            }));
+
+
+            it('should update the context', function () {
+                expect(getServices).toHaveBeenCalled();
+                expect(setError).toHaveBeenCalledWith(testObject);
+
+                expect($scope.services).toBeUndefined();
+            });
+        });
+    
+
+    });
+
+    describe('handleService', function () {
+        var getObject;
+
+        describe('if it finds service', function () {
+
+            var testObject = new Spiro.DomainObjectRepresentation();
+            var testViewModel = { test: testObject };
+
+            var serviceViewModel;
+  
+            beforeEach(inject(function ($rootScope, $routeParams, Handlers: Spiro.Angular.HandlersInterface, Context: Spiro.Angular.ContextInterface, ViewModelFactory: Spiro.Angular.VMFInterface) {
+                $scope = $rootScope.$new();
+
+                getObject = spyOnPromise(Context, 'getObject', testObject);
+
+                serviceViewModel = spyOn(ViewModelFactory, 'serviceViewModel').andReturn(testViewModel);
+                
+                $routeParams.sid = "test";
+
+                Handlers.handleService($scope);
+            }));
+
+
+            it('should update the scope', function () {
+                expect(getObject).toHaveBeenCalledWith("test");
+                expect(serviceViewModel).toHaveBeenCalledWith(testObject);
+        
+                expect($scope.object).toEqual(testViewModel);
+            });
+
+        });
+
+        describe('if it has an error', function () {
+
+            var testObject = new Spiro.ErrorRepresentation();
+            var setError;
+
+            beforeEach(inject(function ($rootScope, $routeParams, Handlers: Spiro.Angular.HandlersInterface, Context: Spiro.Angular.ContextInterface) {
+                $scope = $rootScope.$new();
+
+                getObject = spyOnPromiseFail(Context, 'getObject', testObject);
+                setError = spyOn(Context, 'setError');
+
+                $routeParams.sid = "test";
+
+                Handlers.handleService($scope);
+            }));
+
+
+            it('should update the context', function () {
+                expect(getObject).toHaveBeenCalledWith("test");
+                expect(setError).toHaveBeenCalledWith(testObject);
+
+                expect($scope.object).toBeUndefined();
+            });
+        });
+
 
     });
 
