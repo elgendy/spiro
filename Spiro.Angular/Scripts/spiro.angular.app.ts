@@ -384,6 +384,7 @@ module Spiro.Angular {
                 });
         };
 
+        // tested
         this.handleActionDialog = function ($scope) {
             Context.getObject($routeParams.sid || $routeParams.dt, $routeParams.id).
                 then(function (object: DomainObjectRepresentation) {

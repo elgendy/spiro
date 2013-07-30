@@ -496,25 +496,81 @@ describe('Handlers Service', function () {
                 actionDetails = spyOn(testMember, "getDetails").andReturn(testDetails);
                 populate = spyOnPromise(RepresentationLoader, "populate", testDetails);
                 dialogViewModel = spyOn(ViewModelFactory, 'dialogViewModel').andReturn(testViewModel);
-                spyOn(testDetails, "extensions").andReturn({ hasParams: true });
-
-                $routeParams.dt = "test";
-                $routeParams.id = "1";
-                $routeParams.action = "anAction";
-
-                Handlers.handleActionDialog($scope);
+                          
             }));
 
+            describe('if it is a service', function () {
 
-            it('should update the scope', function () {
-                expect(getObject).toHaveBeenCalledWith("test", "1");
-                expect(actionMember).toHaveBeenCalledWith("anAction");
-                expect(actionDetails).toHaveBeenCalled();
-                expect(populate).toHaveBeenCalledWith(testDetails);
-                expect(dialogViewModel).toHaveBeenCalledWith(testDetails, jasmine.any(Function));
+                beforeEach(inject(function ($rootScope, $routeParams, Handlers: Spiro.Angular.HandlersInterface) {
+                    spyOn(testDetails, "extensions").andReturn({ hasParams: true });
 
-                expect($scope.dialog).toEqual(testViewModel);
-                expect($scope.dialogTemplate).toEqual("Content/partials/dialog.html");
+                    $routeParams.sid = "testService";
+                    $routeParams.action = "anAction";      
+
+                    Handlers.handleActionDialog($scope);
+                }));
+
+                it('should update the scope', function () {
+                    expect(getObject).toHaveBeenCalledWith("testService", undefined);
+                    expect(actionMember).toHaveBeenCalledWith("anAction");
+                    expect(actionDetails).toHaveBeenCalled();
+                    expect(populate).toHaveBeenCalledWith(testDetails);
+                    expect(dialogViewModel).toHaveBeenCalledWith(testDetails, jasmine.any(Function));
+
+                    expect($scope.dialog).toEqual(testViewModel);
+                    expect($scope.dialogTemplate).toEqual("Content/partials/dialog.html");
+                });
+
+            });
+
+
+
+            describe('if it has params', function () {
+
+                beforeEach(inject(function ($rootScope, $routeParams, Handlers: Spiro.Angular.HandlersInterface) {
+                    spyOn(testDetails, "extensions").andReturn({ hasParams: true });
+                    $routeParams.dt = "test";
+                    $routeParams.id = "1";
+                    $routeParams.action = "anAction";      
+
+                    Handlers.handleActionDialog($scope);
+                }));
+
+                it('should update the scope', function () {
+                    expect(getObject).toHaveBeenCalledWith("test", "1");
+                    expect(actionMember).toHaveBeenCalledWith("anAction");
+                    expect(actionDetails).toHaveBeenCalled();
+                    expect(populate).toHaveBeenCalledWith(testDetails);
+                    expect(dialogViewModel).toHaveBeenCalledWith(testDetails, jasmine.any(Function));
+
+                    expect($scope.dialog).toEqual(testViewModel);
+                    expect($scope.dialogTemplate).toEqual("Content/partials/dialog.html");
+                });
+
+            });
+
+            describe('if it has no params', function () {
+
+                beforeEach(inject(function ($rootScope, $routeParams, Handlers: Spiro.Angular.HandlersInterface) {
+                    spyOn(testDetails, "extensions").andReturn({ hasParams: false });
+                    $routeParams.dt = "test";
+                    $routeParams.id = "1";
+                    $routeParams.action = "anAction";      
+
+                    Handlers.handleActionDialog($scope);
+                }));
+
+                it('should update the scope', function () {
+                    expect(getObject).toHaveBeenCalledWith("test", "1");
+                    expect(actionMember).toHaveBeenCalledWith("anAction");
+                    expect(actionDetails).toHaveBeenCalled();
+                    expect(populate).toHaveBeenCalledWith(testDetails);
+                    expect(dialogViewModel).wasNotCalled();
+
+                    expect($scope.dialog).toBeUndefined();
+                    expect($scope.dialogTemplate).toBeUndefined();
+                });
+
             });
 
         });
