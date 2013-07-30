@@ -256,7 +256,7 @@ describe('Handlers Service', function () {
 
     beforeEach(module('app'));
 
-    function mockPromise(tgt, func, mock) {
+    function spyOnPromise(tgt, func, mock) {
         var mp = {};
 
         mp.then = function (f) {
@@ -266,68 +266,148 @@ describe('Handlers Service', function () {
         return spyOn(tgt, func).andReturn(mp);
     }
 
+    function spyOnPromiseFail(tgt, func, mock) {
+        var mp = {};
+
+        mp.then = function (fok, fnok) {
+            return fnok(mock);
+        };
+
+        return spyOn(tgt, func).andReturn(mp);
+    }
+
+    function spyOnPromiseNestedFail(tgt, func, mock) {
+        var mp = {};
+
+        mp.then = function (fok) {
+            var mmp = {};
+
+            mmp.then = function (f1ok, f1nok) {
+                return f1nok(mock);
+            };
+
+            return mmp;
+        };
+
+        return spyOn(tgt, func).andReturn(mp);
+    }
+
     describe('handleCollectionResult', function () {
-        var testObject = new Spiro.ListRepresentation();
-        var testViewModel = { test: testObject };
         var getCollection;
-        var collectionViewModel;
 
-        beforeEach(inject(function ($rootScope, Handlers, Context, ViewModelFactory) {
-            $scope = $rootScope.$new();
+        describe('if it finds collection', function () {
+            var testObject = new Spiro.ListRepresentation();
+            var testViewModel = { test: testObject };
 
-            getCollection = mockPromise(Context, 'getCollection', testObject);
-            collectionViewModel = spyOn(ViewModelFactory, 'collectionViewModel').andReturn(testViewModel);
+            var collectionViewModel;
 
-            Handlers.handleCollectionResult($scope);
-        }));
+            beforeEach(inject(function ($rootScope, Handlers, Context, ViewModelFactory) {
+                $scope = $rootScope.$new();
 
-        it('should update the scope', function () {
-            expect(getCollection).toHaveBeenCalled();
-            expect(collectionViewModel).toHaveBeenCalledWith(testObject);
+                getCollection = spyOnPromise(Context, 'getCollection', testObject);
+                collectionViewModel = spyOn(ViewModelFactory, 'collectionViewModel').andReturn(testViewModel);
 
-            expect($scope.collection).toEqual(testViewModel);
-            expect($scope.collectionTemplate).toEqual("Content/partials/nestedCollection.html");
+                Handlers.handleCollectionResult($scope);
+            }));
+
+            it('should update the scope', function () {
+                expect(getCollection).toHaveBeenCalled();
+                expect(collectionViewModel).toHaveBeenCalledWith(testObject);
+
+                expect($scope.collection).toEqual(testViewModel);
+                expect($scope.collectionTemplate).toEqual("Content/partials/nestedCollection.html");
+            });
+        });
+
+        describe('if it has an error', function () {
+            var testObject = new Spiro.ErrorRepresentation();
+            var setError;
+
+            beforeEach(inject(function ($rootScope, Handlers, Context) {
+                $scope = $rootScope.$new();
+
+                getCollection = spyOnPromiseFail(Context, 'getCollection', testObject);
+                setError = spyOn(Context, 'setError');
+
+                Handlers.handleCollectionResult($scope);
+            }));
+
+            it('should update the context', function () {
+                expect(getCollection).toHaveBeenCalled();
+                expect(setError).toHaveBeenCalledWith(testObject);
+
+                expect($scope.collection).toBeUndefined();
+                expect($scope.collectionTemplate).toBeUndefined();
+            });
         });
     });
 
     describe('handleCollection', function () {
-        var testObject = new Spiro.DomainObjectRepresentation();
-        var testMember = new Spiro.CollectionMember({}, testObject);
-        var testDetails = new Spiro.CollectionRepresentation();
-        var testViewModel = { test: testObject };
-
         var getObject;
-        var collectionMember;
-        var collectionDetails;
-        var populate;
-        var collectionViewModel;
 
-        beforeEach(inject(function ($rootScope, $routeParams, Handlers, Context, ViewModelFactory, RepresentationLoader) {
-            $scope = $rootScope.$new();
+        describe('if it finds object', function () {
+            var testObject = new Spiro.DomainObjectRepresentation();
+            var testMember = new Spiro.CollectionMember({}, testObject);
+            var testDetails = new Spiro.CollectionRepresentation();
+            var testViewModel = { test: testObject };
 
-            getObject = mockPromise(Context, 'getObject', testObject);
+            var collectionMember;
+            var collectionDetails;
+            var populate;
+            var collectionViewModel;
 
-            collectionMember = spyOn(testObject, "collectionMember").andReturn(testMember);
-            collectionDetails = spyOn(testMember, "getDetails").andReturn(testDetails);
-            populate = mockPromise(RepresentationLoader, "populate", testDetails);
-            collectionViewModel = spyOn(ViewModelFactory, 'collectionViewModel').andReturn(testViewModel);
+            beforeEach(inject(function ($rootScope, $routeParams, Handlers, Context, ViewModelFactory, RepresentationLoader) {
+                $scope = $rootScope.$new();
 
-            $routeParams.dt = "test";
-            $routeParams.id = "1";
-            $routeParams.collection = "aCollection";
+                getObject = spyOnPromise(Context, 'getObject', testObject);
 
-            Handlers.handleCollection($scope);
-        }));
+                collectionMember = spyOn(testObject, "collectionMember").andReturn(testMember);
+                collectionDetails = spyOn(testMember, "getDetails").andReturn(testDetails);
+                populate = spyOnPromise(RepresentationLoader, "populate", testDetails);
+                collectionViewModel = spyOn(ViewModelFactory, 'collectionViewModel').andReturn(testViewModel);
 
-        it('should update the scope', function () {
-            expect(getObject).toHaveBeenCalledWith("test", "1");
-            expect(collectionMember).toHaveBeenCalledWith("aCollection");
-            expect(collectionDetails).toHaveBeenCalled();
-            expect(populate).toHaveBeenCalledWith(testDetails);
-            expect(collectionViewModel).toHaveBeenCalledWith(testDetails);
+                $routeParams.dt = "test";
+                $routeParams.id = "1";
+                $routeParams.collection = "aCollection";
 
-            expect($scope.collection).toEqual(testViewModel);
-            expect($scope.collectionTemplate).toEqual("Content/partials/nestedCollection.html");
+                Handlers.handleCollection($scope);
+            }));
+
+            it('should update the scope', function () {
+                expect(getObject).toHaveBeenCalledWith("test", "1");
+                expect(collectionMember).toHaveBeenCalledWith("aCollection");
+                expect(collectionDetails).toHaveBeenCalled();
+                expect(populate).toHaveBeenCalledWith(testDetails);
+                expect(collectionViewModel).toHaveBeenCalledWith(testDetails);
+
+                expect($scope.collection).toEqual(testViewModel);
+                expect($scope.collectionTemplate).toEqual("Content/partials/nestedCollection.html");
+            });
+        });
+
+        describe('if it has an error', function () {
+            var testObject = new Spiro.ErrorRepresentation();
+            var setError;
+
+            beforeEach(inject(function ($rootScope, $routeParams, Handlers, Context) {
+                $scope = $rootScope.$new();
+
+                getObject = spyOnPromiseNestedFail(Context, 'getObject', testObject);
+                setError = spyOn(Context, 'setError');
+
+                $routeParams.dt = "test";
+                $routeParams.id = "1";
+
+                Handlers.handleCollection($scope);
+            }));
+
+            it('should update the context', function () {
+                expect(getObject).toHaveBeenCalledWith("test", "1");
+                expect(setError).toHaveBeenCalledWith(testObject);
+
+                expect($scope.collection).toBeUndefined();
+                expect($scope.collectionTemplate).toBeUndefined();
+            });
         });
     });
 
@@ -379,7 +459,7 @@ describe('Handlers Service', function () {
                 $routeParams.dt = "test";
                 $routeParams.id = "1";
 
-                mockPromise(Context, 'getObject', new Spiro.DomainObjectRepresentation());
+                spyOnPromise(Context, 'getObject', new Spiro.DomainObjectRepresentation());
 
                 spyOn($location, 'path').andReturn("aPath");
 

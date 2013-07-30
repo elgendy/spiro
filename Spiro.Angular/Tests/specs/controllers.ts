@@ -297,7 +297,7 @@ describe('Handlers Service', function () {
 
     beforeEach(module('app'));
 
-    function mockPromise(tgt: Object, func: string, mock: Object) {
+    function spyOnPromise(tgt: Object, func: string, mock: Object) {
 
         var mp: any = {};
 
@@ -308,79 +308,167 @@ describe('Handlers Service', function () {
         return spyOn(tgt, func).andReturn(mp);
     }
 
+    function spyOnPromiseFail(tgt: Object, func: string, mock: Object) {
+
+        var mp: any = {};
+
+        mp.then = (fok, fnok) => {
+            return fnok(mock);
+        };
+
+        return spyOn(tgt, func).andReturn(mp);
+    }
+
+    function spyOnPromiseNestedFail(tgt: Object, func: string, mock: Object) {
+
+        var mp: any = {};
+
+        mp.then = (fok) => {
+            var mmp: any = {}; 
+            
+            mmp.then = (f1ok, f1nok) => {
+                return f1nok(mock);
+            };
+
+            return mmp; 
+        };
+
+        return spyOn(tgt, func).andReturn(mp);
+    }
+
+
     describe('handleCollectionResult', function () {
 
-        var testObject = new Spiro.ListRepresentation(); 
-        var testViewModel = { test: testObject };
-        var getCollection; 
-        var collectionViewModel; 
+        var getCollection;
 
-        beforeEach(inject(function ($rootScope, Handlers: Spiro.Angular.HandlersInterface, Context: Spiro.Angular.ContextInterface, ViewModelFactory : Spiro.Angular.VMFInterface) {
-            $scope = $rootScope.$new();
+        describe('if it finds collection', function () {
 
-            getCollection = mockPromise(Context, 'getCollection', testObject);
-            collectionViewModel = spyOn(ViewModelFactory, 'collectionViewModel').andReturn(testViewModel);
-
-            Handlers.handleCollectionResult($scope);
-        }));
+            
+            var testObject = new Spiro.ListRepresentation();
+            var testViewModel = { test: testObject };
+           
+            var collectionViewModel; 
 
 
-        it('should update the scope', function () {
-            expect(getCollection).toHaveBeenCalled();
-            expect(collectionViewModel).toHaveBeenCalledWith(testObject); 
+            beforeEach(inject(function ($rootScope, Handlers: Spiro.Angular.HandlersInterface, Context: Spiro.Angular.ContextInterface, ViewModelFactory: Spiro.Angular.VMFInterface) {
+                $scope = $rootScope.$new();
 
-            expect($scope.collection).toEqual(testViewModel);
-            expect($scope.collectionTemplate).toEqual("Content/partials/nestedCollection.html");
+                getCollection = spyOnPromise(Context, 'getCollection', testObject);
+                collectionViewModel = spyOn(ViewModelFactory, 'collectionViewModel').andReturn(testViewModel);
+
+                Handlers.handleCollectionResult($scope);
+            }));
+
+
+            it('should update the scope', function () {
+                expect(getCollection).toHaveBeenCalled();
+                expect(collectionViewModel).toHaveBeenCalledWith(testObject);
+
+                expect($scope.collection).toEqual(testViewModel);
+                expect($scope.collectionTemplate).toEqual("Content/partials/nestedCollection.html");
+            });
         });
 
-        // TODO handle error ? 
+        describe('if it has an error', function () {
 
+            var testObject = new Spiro.ErrorRepresentation();
+            var setError; 
+
+            beforeEach(inject(function ($rootScope, Handlers: Spiro.Angular.HandlersInterface, Context: Spiro.Angular.ContextInterface) {
+                $scope = $rootScope.$new();
+
+                getCollection = spyOnPromiseFail(Context, 'getCollection', testObject);
+                setError = spyOn(Context, 'setError'); 
+          
+                Handlers.handleCollectionResult($scope);
+            }));
+
+
+            it('should update the context', function () {
+                expect(getCollection).toHaveBeenCalled();
+                expect(setError).toHaveBeenCalledWith(testObject);
+                
+                expect($scope.collection).toBeUndefined();
+                expect($scope.collectionTemplate).toBeUndefined();
+            });
+        });
     });
 
     describe('handleCollection', function () {
 
-        var testObject = new Spiro.DomainObjectRepresentation();
-        var testMember = new Spiro.CollectionMember({}, testObject);
-        var testDetails = new Spiro.CollectionRepresentation();
-        var testViewModel = { test: testObject };
-
         var getObject;
-        var collectionMember;
-        var collectionDetails;
-        var populate; 
-        var collectionViewModel;
 
-        beforeEach(inject(function ($rootScope, $routeParams, Handlers: Spiro.Angular.HandlersInterface, Context: Spiro.Angular.ContextInterface, ViewModelFactory: Spiro.Angular.VMFInterface, RepresentationLoader : Spiro.Angular.RLInterface) {
-            $scope = $rootScope.$new();
+        describe('if it finds object', function () {
 
-            getObject = mockPromise(Context, 'getObject', testObject);
+            var testObject = new Spiro.DomainObjectRepresentation();
+            var testMember = new Spiro.CollectionMember({}, testObject);
+            var testDetails = new Spiro.CollectionRepresentation();
+            var testViewModel = { test: testObject };
 
-            collectionMember = spyOn(testObject, "collectionMember").andReturn(testMember);
-            collectionDetails = spyOn(testMember, "getDetails").andReturn(testDetails);  
-            populate = mockPromise(RepresentationLoader, "populate", testDetails); 
-            collectionViewModel = spyOn(ViewModelFactory, 'collectionViewModel').andReturn(testViewModel);
+            
+            var collectionMember;
+            var collectionDetails;
+            var populate;
+            var collectionViewModel;
+
+            beforeEach(inject(function ($rootScope, $routeParams, Handlers: Spiro.Angular.HandlersInterface, Context: Spiro.Angular.ContextInterface, ViewModelFactory: Spiro.Angular.VMFInterface, RepresentationLoader: Spiro.Angular.RLInterface) {
+                $scope = $rootScope.$new();
+
+                getObject = spyOnPromise(Context, 'getObject', testObject);
+
+                collectionMember = spyOn(testObject, "collectionMember").andReturn(testMember);
+                collectionDetails = spyOn(testMember, "getDetails").andReturn(testDetails);
+                populate = spyOnPromise(RepresentationLoader, "populate", testDetails);
+                collectionViewModel = spyOn(ViewModelFactory, 'collectionViewModel').andReturn(testViewModel);
 
 
-            $routeParams.dt = "test";
-            $routeParams.id = "1";
-            $routeParams.collection = "aCollection";        
+                $routeParams.dt = "test";
+                $routeParams.id = "1";
+                $routeParams.collection = "aCollection";
 
-            Handlers.handleCollection($scope);
-        }));
+                Handlers.handleCollection($scope);
+            }));
 
 
-        it('should update the scope', function () {
-            expect(getObject).toHaveBeenCalledWith("test", "1");
-            expect(collectionMember).toHaveBeenCalledWith("aCollection");
-            expect(collectionDetails).toHaveBeenCalled();
-            expect(populate).toHaveBeenCalledWith(testDetails);
-            expect(collectionViewModel).toHaveBeenCalledWith(testDetails);
+            it('should update the scope', function () {
+                expect(getObject).toHaveBeenCalledWith("test", "1");
+                expect(collectionMember).toHaveBeenCalledWith("aCollection");
+                expect(collectionDetails).toHaveBeenCalled();
+                expect(populate).toHaveBeenCalledWith(testDetails);
+                expect(collectionViewModel).toHaveBeenCalledWith(testDetails);
 
-            expect($scope.collection).toEqual(testViewModel);
-            expect($scope.collectionTemplate).toEqual("Content/partials/nestedCollection.html");
+                expect($scope.collection).toEqual(testViewModel);
+                expect($scope.collectionTemplate).toEqual("Content/partials/nestedCollection.html");
+            });
+
         });
 
-        // TODO handle error ? 
+        describe('if it has an error', function () {
+
+            var testObject = new Spiro.ErrorRepresentation();
+            var setError;
+
+            beforeEach(inject(function ($rootScope, $routeParams, Handlers: Spiro.Angular.HandlersInterface, Context: Spiro.Angular.ContextInterface) {
+                $scope = $rootScope.$new();
+
+                getObject = spyOnPromiseNestedFail(Context, 'getObject', testObject);
+                setError = spyOn(Context, 'setError');
+        
+                $routeParams.dt = "test";
+                $routeParams.id = "1";
+                
+                Handlers.handleCollection($scope);
+            }));
+
+
+            it('should update the context', function () {
+                expect(getObject).toHaveBeenCalledWith("test", "1");
+                expect(setError).toHaveBeenCalledWith(testObject);
+
+                expect($scope.collection).toBeUndefined();
+                expect($scope.collectionTemplate).toBeUndefined();
+            });
+        });
 
     });
 
@@ -443,7 +531,7 @@ describe('Handlers Service', function () {
                 $routeParams.dt = "test";
                 $routeParams.id = "1";
 
-                mockPromise(Context, 'getObject', new Spiro.DomainObjectRepresentation());
+                spyOnPromise(Context, 'getObject', new Spiro.DomainObjectRepresentation());
 
                 spyOn($location, 'path').andReturn("aPath");
 
