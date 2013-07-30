@@ -427,8 +427,6 @@ module Spiro.Angular {
 
                 resultParm = "resultCollection=" + $routeParams.action + pps;  // todo add some parm handling code 
                 actionParm = show ? "&action=" + $routeParams.action : "";
-
-
             }
             $location.search(resultParm + actionParm);
         }
@@ -609,7 +607,7 @@ module Spiro.Angular {
                     $scope.nestedTemplate = svrPath + "Content/partials/nestedObject.html";
                     Context.setNestedObject(object);
                 }, function (error) {
-                    $scope.object = {};
+                    setError(error);
                 });
 
         };

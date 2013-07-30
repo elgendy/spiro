@@ -411,6 +411,64 @@ describe('Handlers Service', function () {
         });
     });
 
+    describe('handleResult', function () {
+        var getNestedObject;
+
+        describe('if it finds object', function () {
+            var testObject = new Spiro.DomainObjectRepresentation();
+            var testViewModel = { test: testObject };
+
+            var objectViewModel;
+            var setNestedObject;
+
+            beforeEach(inject(function ($rootScope, $routeParams, Handlers, Context, ViewModelFactory) {
+                $scope = $rootScope.$new();
+
+                getNestedObject = spyOnPromise(Context, 'getNestedObject', testObject);
+
+                objectViewModel = spyOn(ViewModelFactory, 'domainObjectViewModel').andReturn(testViewModel);
+                setNestedObject = spyOn(Context, 'setNestedObject');
+
+                $routeParams.resultObject = "test-1";
+
+                Handlers.handleResult($scope);
+            }));
+
+            it('should update the scope', function () {
+                expect(getNestedObject).toHaveBeenCalledWith("test", "1");
+                expect(objectViewModel).toHaveBeenCalledWith(testObject);
+                expect(setNestedObject).toHaveBeenCalledWith(testObject);
+
+                expect($scope.result).toEqual(testViewModel);
+                expect($scope.nestedTemplate).toEqual("Content/partials/nestedObject.html");
+            });
+        });
+
+        describe('if it has an error', function () {
+            var testObject = new Spiro.ErrorRepresentation();
+            var setError;
+
+            beforeEach(inject(function ($rootScope, $routeParams, Handlers, Context) {
+                $scope = $rootScope.$new();
+
+                getNestedObject = spyOnPromiseFail(Context, 'getNestedObject', testObject);
+                setError = spyOn(Context, 'setError');
+
+                $routeParams.resultObject = "test-1";
+
+                Handlers.handleResult($scope);
+            }));
+
+            it('should update the context', function () {
+                expect(getNestedObject).toHaveBeenCalledWith("test", "1");
+                expect(setError).toHaveBeenCalledWith(testObject);
+
+                expect($scope.result).toBeUndefined();
+                expect($scope.nestedTemplate).toBeUndefined();
+            });
+        });
+    });
+
     describe('handleError', function () {
         beforeEach(inject(function ($rootScope, Handlers, Context) {
             $scope = $rootScope.$new();

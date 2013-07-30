@@ -56,7 +56,6 @@ module Spiro.Angular {
     });
 
     app.controller('AppBarController', function ($scope, Handlers: HandlersInterface) {
-        Handlers.handleAppBar($scope);
-    
+        Handlers.handleAppBar($scope);    
     });
 }

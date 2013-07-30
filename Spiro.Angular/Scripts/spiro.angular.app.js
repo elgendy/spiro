@@ -496,7 +496,7 @@
                     $scope.nestedTemplate = svrPath + "Content/partials/nestedObject.html";
                     Context.setNestedObject(object);
                 }, function (error) {
-                    $scope.object = {};
+                    setError(error);
                 });
             };
 
