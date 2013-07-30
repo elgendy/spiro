@@ -268,17 +268,6 @@
         });
 
         Angular.app.service("Handlers", function ($routeParams, $location, $q, $cacheFactory, RepresentationLoader, Context, ViewModelFactory) {
-            function setError(error) {
-                var errorRep;
-                if (error instanceof Spiro.ErrorRepresentation) {
-                    errorRep = error;
-                } else {
-                    errorRep = new Spiro.ErrorRepresentation({ message: "an unrecognised error has occurred" });
-                }
-                Context.setError(errorRep);
-            }
-            ;
-
             this.handleCollectionResult = function ($scope) {
                 Context.getCollection().then(function (list) {
                     $scope.collection = ViewModelFactory.collectionViewModel(list);
@@ -300,93 +289,14 @@
                 });
             };
 
-            function handleResult(result, dvm, show) {
-                if (result.result().isNull()) {
-                    if (dvm) {
-                        dvm.error = "no result found";
-                    }
-                    return;
-                }
-
-                var resultParm = "";
-                var actionParm = "";
-
-                if (result.resultType() === "object") {
-                    var resultObject = result.result().object();
-
-                    Context.setNestedObject(resultObject);
-
-                    resultParm = "resultObject=" + resultObject.domainType() + "-" + resultObject.instanceId();
-                    actionParm = show ? "&action=" + $routeParams.action : "";
-                }
-
-                if (result.resultType() === "list") {
-                    var resultList = result.result().list();
-
-                    Context.setCollection(resultList);
-
-                    var pps = dvm ? _.reduce(dvm.parameters, function (memo, parm) {
-                        return memo + parm.value + "-";
-                    }, "") : "";
-
-                    resultParm = "resultCollection=" + $routeParams.action + pps;
-                    actionParm = show ? "&action=" + $routeParams.action : "";
-                }
-                $location.search(resultParm + actionParm);
-            }
-
             this.handleActionDialog = function ($scope) {
                 Context.getObject($routeParams.sid || $routeParams.dt, $routeParams.id).then(function (object) {
-                    var actions = _.map(object.actionMembers(), function (value, key) {
-                        return { key: key, value: value };
-                    });
-                    var action = _.find(actions, function (kvp) {
-                        return kvp.key === $routeParams.action;
-                    });
-                    var actionTarget = action.value.getDetails();
-
+                    var actionTarget = object.actionMember($routeParams.action).getDetails();
                     return RepresentationLoader.populate(actionTarget);
                 }).then(function (action) {
                     if (action.extensions().hasParams) {
                         $scope.dialogTemplate = svrPath + "Content/partials/dialog.html";
-                        $scope.dialog = ViewModelFactory.dialogViewModel(action, function (dvm, show) {
-                            dvm.clearErrors();
-
-                            var invoke = action.getInvoke();
-                            invoke.attributes = {};
-
-                            var parameters = dvm.parameters;
-                            _.each(parameters, function (parm) {
-                                return invoke.setParameter(parm.id, new Spiro.Value(parm.value || ""));
-                            });
-
-                            RepresentationLoader.populate(invoke, true).then(function (result) {
-                                handleResult(result, dvm, show);
-                            }, function (error) {
-                                if (error instanceof Spiro.ErrorMap) {
-                                    var errorMap = error;
-
-                                    _.each(parameters, function (parm) {
-                                        var error = errorMap.valuesMap()[parm.id];
-
-                                        if (error) {
-                                            parm.value = error.value.toValueString();
-                                            parm.error = error.invalidReason;
-                                        }
-                                    });
-
-                                    dvm.error = errorMap.invalidReason();
-                                } else if (error instanceof Spiro.ErrorRepresentation) {
-                                    var errorRep = error;
-                                    var evm = ViewModelFactory.errorViewModel(errorRep);
-                                    $scope.error = evm;
-
-                                    $scope.dialogTemplate = svrPath + "Content/partials/error.html";
-                                } else {
-                                    dvm.error = error;
-                                }
-                            });
-                        });
+                        $scope.dialog = ViewModelFactory.dialogViewModel(action, _.partial(invokeAction, $scope, action));
                     }
                 }, function (error) {
                     setError(error);
@@ -395,25 +305,20 @@
 
             this.handleActionResult = function ($scope) {
                 Context.getObject($routeParams.sid || $routeParams.dt, $routeParams.id).then(function (object) {
-                    var actions = _.map(object.actionMembers(), function (value, key) {
-                        return { key: key, value: value };
-                    });
-                    var action = _.find(actions, function (kvp) {
-                        return kvp.key === $routeParams.action;
-                    });
+                    var action = object.actionMember($routeParams.action);
 
-                    if (action.value.extensions().hasParams) {
+                    if (action.extensions().hasParams) {
                         var delay = $q.defer();
                         delay.reject();
                         return delay.promise;
                     }
-                    var actionTarget = action.value.getDetails();
+                    var actionTarget = action.getDetails();
                     return RepresentationLoader.populate(actionTarget);
                 }).then(function (action) {
                     var result = action.getInvoke();
                     return RepresentationLoader.populate(result, true);
                 }).then(function (result) {
-                    handleResult(result);
+                    setResult(result);
                 }, function (error) {
                     if (error) {
                         setError(error);
@@ -421,36 +326,15 @@
                 });
             };
 
-            function handleNestedObject(object, $scope) {
-                $scope.result = ViewModelFactory.domainObjectViewModel(object);
-                $scope.nestedTemplate = svrPath + "Content/partials/nestedObject.html";
-                Context.setNestedObject(object);
-            }
-
-            function findProperty(map, id) {
-                var properties = _.map(map, function (value, key) {
-                    return { key: key, value: value };
-                });
-                return _.find(properties, function (kvp) {
-                    return kvp.key === id;
-                });
-            }
-
             this.handleProperty = function ($scope) {
                 Context.getObject($routeParams.dt, $routeParams.id).then(function (object) {
-                    var properties = _.map(object.propertyMembers(), function (value, key) {
-                        return { key: key, value: value };
-                    });
-                    var property = _.find(properties, function (kvp) {
-                        return kvp.key === $routeParams.property;
-                    });
-                    var propertyDetails = property.value.getDetails();
+                    var propertyDetails = object.propertyMember($routeParams.property).getDetails();
                     return RepresentationLoader.populate(propertyDetails);
                 }).then(function (details) {
                     var target = details.value().link().getTarget();
                     return RepresentationLoader.populate(target);
                 }).then(function (object) {
-                    handleNestedObject(object, $scope);
+                    setNestedObject(object, $scope);
                 }, function (error) {
                     setError(error);
                 });
@@ -462,7 +346,7 @@
                 var collectionItemKey = collectionItemTypeKey[1];
 
                 Context.getNestedObject(collectionItemType, collectionItemKey).then(function (object) {
-                    handleNestedObject(object, $scope);
+                    setNestedObject(object, $scope);
                 }, function (error) {
                     setError(error);
                 });
@@ -535,6 +419,109 @@
                 }
             };
 
+            this.handleObject = function ($scope) {
+                Context.getObject($routeParams.dt, $routeParams.id).then(function (object) {
+                    Context.setNestedObject(null);
+                    $scope.actionTemplate = $routeParams.editMode ? "" : svrPath + "Content/partials/actions.html";
+                    $scope.propertiesTemplate = svrPath + ($routeParams.editMode ? "Content/partials/editProperties.html" : "Content/partials/viewProperties.html");
+
+                    $scope.object = ViewModelFactory.domainObjectViewModel(object, _.partial(updateObject, $scope, object));
+                }, function (error) {
+                    setError(error);
+                });
+            };
+
+            function setNestedObject(object, $scope) {
+                $scope.result = ViewModelFactory.domainObjectViewModel(object);
+                $scope.nestedTemplate = svrPath + "Content/partials/nestedObject.html";
+                Context.setNestedObject(object);
+            }
+
+            function setResult(result, dvm, show) {
+                if (result.result().isNull()) {
+                    if (dvm) {
+                        dvm.error = "no result found";
+                    }
+                    return;
+                }
+
+                var resultParm = "";
+                var actionParm = "";
+
+                if (result.resultType() === "object") {
+                    var resultObject = result.result().object();
+
+                    Context.setNestedObject(resultObject);
+
+                    resultParm = "resultObject=" + resultObject.domainType() + "-" + resultObject.instanceId();
+                    actionParm = show ? "&action=" + $routeParams.action : "";
+                }
+
+                if (result.resultType() === "list") {
+                    var resultList = result.result().list();
+
+                    Context.setCollection(resultList);
+
+                    var pps = dvm ? _.reduce(dvm.parameters, function (memo, parm) {
+                        return memo + parm.value + "-";
+                    }, "") : "";
+
+                    resultParm = "resultCollection=" + $routeParams.action + pps;
+                    actionParm = show ? "&action=" + $routeParams.action : "";
+                }
+                $location.search(resultParm + actionParm);
+            }
+
+            function invokeAction($scope, action, dvm, show) {
+                dvm.clearErrors();
+
+                var invoke = action.getInvoke();
+                invoke.attributes = {};
+
+                var parameters = dvm.parameters;
+                _.each(parameters, function (parm) {
+                    return invoke.setParameter(parm.id, new Spiro.Value(parm.value || ""));
+                });
+
+                RepresentationLoader.populate(invoke, true).then(function (result) {
+                    setResult(result, dvm, show);
+                }, function (error) {
+                    if (error instanceof Spiro.ErrorMap) {
+                        var errorMap = error;
+
+                        _.each(parameters, function (parm) {
+                            var errorValue = errorMap.valuesMap()[parm.id];
+
+                            if (errorValue) {
+                                parm.value = errorValue.value.toValueString();
+                                parm.error = errorValue.invalidReason;
+                            }
+                        });
+
+                        dvm.error = errorMap.invalidReason();
+                    } else if (error instanceof Spiro.ErrorRepresentation) {
+                        var errorRep = error;
+                        var evm = ViewModelFactory.errorViewModel(errorRep);
+                        $scope.error = evm;
+
+                        $scope.dialogTemplate = svrPath + "Content/partials/error.html";
+                    } else {
+                        dvm.error = error;
+                    }
+                });
+            }
+
+            function setError(error) {
+                var errorRep;
+                if (error instanceof Spiro.ErrorRepresentation) {
+                    errorRep = error;
+                } else {
+                    errorRep = new Spiro.ErrorRepresentation({ message: "an unrecognised error has occurred" });
+                }
+                Context.setError(errorRep);
+            }
+            ;
+
             function updateObject($scope, object, ovm) {
                 var update = object.getUpdateMap();
 
@@ -559,11 +546,11 @@
                         var errorMap = error;
 
                         _.each(properties, function (property) {
-                            var error = errorMap.valuesMap()[property.id];
+                            var errorValue = errorMap.valuesMap()[property.id];
 
-                            if (error) {
-                                property.value = error.value.toValueString();
-                                property.error = error.invalidReason;
+                            if (errorValue) {
+                                property.value = errorValue.value.toValueString();
+                                property.error = errorValue.invalidReason;
                             }
                         });
 
@@ -579,18 +566,6 @@
                     }
                 });
             }
-
-            this.handleObject = function ($scope) {
-                Context.getObject($routeParams.dt, $routeParams.id).then(function (object) {
-                    Context.setNestedObject(null);
-                    $scope.actionTemplate = $routeParams.editMode ? "" : svrPath + "Content/partials/actions.html";
-                    $scope.propertiesTemplate = svrPath + ($routeParams.editMode ? "Content/partials/editProperties.html" : "Content/partials/viewProperties.html");
-
-                    $scope.object = ViewModelFactory.domainObjectViewModel(object, _.partial(updateObject, $scope, object));
-                }, function (error) {
-                    setError(error);
-                });
-            };
         });
     })(Spiro.Angular || (Spiro.Angular = {}));
     var Angular = Spiro.Angular;
