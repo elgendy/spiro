@@ -396,7 +396,7 @@ module Spiro.Angular {
                 then(function (action: ActionRepresentation) {
                     if (action.extensions().hasParams) {
                         $scope.dialogTemplate = svrPath + "Content/partials/dialog.html";
-                        $scope.dialog = ViewModelFactory.dialogViewModel(action, <(dvm: DialogViewModel, show: boolean) => void > _.partial(invokeAction, $scope, action));
+                        $scope.dialog = ViewModelFactory.dialogViewModel(action, <(dvm: DialogViewModel, show: boolean) => void > _.partial(handlers.invokeAction, $scope, action));
                     }
                 }, function (error) {
                     setError(error);
@@ -608,7 +608,7 @@ module Spiro.Angular {
             $location.search(resultParm + actionParm);
         };
 
-        function invokeAction($scope, action: Spiro.ActionRepresentation, dvm: DialogViewModel, show: boolean) {
+        this.invokeAction = function ($scope, action: Spiro.ActionRepresentation, dvm: DialogViewModel, show: boolean) {
             dvm.clearErrors();
 
             var invoke = action.getInvoke();
@@ -640,15 +640,13 @@ module Spiro.Angular {
                         var errorRep = <ErrorRepresentation>error;
                         var evm = ViewModelFactory.errorViewModel(errorRep);
                         $scope.error = evm;
-
                         $scope.dialogTemplate = svrPath + "Content/partials/error.html";
                     }
                     else {
                         dvm.error = error;
                     }
                 });
-        }
-
+        };
 
         function setError(error) {
 
@@ -660,7 +658,7 @@ module Spiro.Angular {
                 errorRep = new ErrorRepresentation({ message: "an unrecognised error has occurred" });
             }
             Context.setError(errorRep);
-        };
+        }
 
         function updateObject($scope, object: DomainObjectRepresentation, ovm: DomainObjectViewModel) {
             var update = object.getUpdateMap();

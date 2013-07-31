@@ -298,7 +298,7 @@
                 }).then(function (action) {
                     if (action.extensions().hasParams) {
                         $scope.dialogTemplate = svrPath + "Content/partials/dialog.html";
-                        $scope.dialog = ViewModelFactory.dialogViewModel(action, _.partial(invokeAction, $scope, action));
+                        $scope.dialog = ViewModelFactory.dialogViewModel(action, _.partial(handlers.invokeAction, $scope, action));
                     }
                 }, function (error) {
                     setError(error);
@@ -474,7 +474,7 @@
                 $location.search(resultParm + actionParm);
             };
 
-            function invokeAction($scope, action, dvm, show) {
+            this.invokeAction = function ($scope, action, dvm, show) {
                 dvm.clearErrors();
 
                 var invoke = action.getInvoke();
@@ -505,13 +505,12 @@
                         var errorRep = error;
                         var evm = ViewModelFactory.errorViewModel(errorRep);
                         $scope.error = evm;
-
                         $scope.dialogTemplate = svrPath + "Content/partials/error.html";
                     } else {
                         dvm.error = error;
                     }
                 });
-            }
+            };
 
             function setError(error) {
                 var errorRep;
@@ -522,7 +521,6 @@
                 }
                 Context.setError(errorRep);
             }
-            ;
 
             function updateObject($scope, object, ovm) {
                 var update = object.getUpdateMap();

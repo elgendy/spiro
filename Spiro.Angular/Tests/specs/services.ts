@@ -381,7 +381,7 @@ describe('Handlers Service', function () {
             var actionResult;
             var populate;
             var setResult;
-            
+
             beforeEach(inject(function ($rootScope, $routeParams, Handlers: Spiro.Angular.HandlersInterface, Context: Spiro.Angular.ContextInterface, ViewModelFactory: Spiro.Angular.VMFInterface, RepresentationLoader: Spiro.Angular.RLInterface) {
                 $scope = $rootScope.$new();
 
@@ -1000,128 +1000,183 @@ describe('Handlers Service', function () {
             });
 
         });
+    });
 
+    describe('setResult helper', function () {
 
-        describe('setResult helper', function () {
+        var testActionResult = new Spiro.ActionResultRepresentation();
+        var testViewModel = new Spiro.Angular.DialogViewModel();
+        var location;
 
-            var testActionResult = new Spiro.ActionResultRepresentation();
-            var testViewModel = new Spiro.Angular.DialogViewModel();
-            var location;
+        beforeEach(inject(function ($location) {
+            location = $location;
+        }));
 
-            beforeEach(inject(function ($location) {
-                location = $location;
+        describe('result is null', function () {
+
+            var testResult = new Spiro.Result(null, 'object');
+
+            beforeEach(inject(function (Handlers: Spiro.Angular.HandlersInterface) {
+                spyOn(testActionResult, 'result').andReturn(testResult);
+                (<any>Handlers).setResult(testActionResult, testViewModel);
             }));
 
-            describe('result is null', function () {
+            it('should set view model error', function () {
+                expect(testViewModel.error).toBe("no result found");
+                expect(location.search()).toEqual({});
+            });
+        });
 
-                var testResult = new Spiro.Result(null, 'object');
+        describe('result is object', function () {
+
+            var testObject = new Spiro.DomainObjectRepresentation();
+            var testResult = new Spiro.Result({}, 'object');
+            var setNestedObject;
+
+            beforeEach(inject(function ($routeParams, Context: Spiro.Angular.ContextInterface) {
+
+                spyOn(testActionResult, 'result').andReturn(testResult);
+                spyOn(testActionResult, 'resultType').andReturn('object');
+                spyOn(testResult, 'object').andReturn(testObject);
+                setNestedObject = spyOn(Context, 'setNestedObject');
+
+                spyOn(testObject, 'domainType').andReturn("test");
+                spyOn(testObject, 'instanceId').andReturn("1");
+
+                $routeParams.action = "anAction";
+            }));
+
+
+            describe('with show flag', function () {
 
                 beforeEach(inject(function (Handlers: Spiro.Angular.HandlersInterface) {
-                    spyOn(testActionResult, 'result').andReturn(testResult);
-                    (<any>Handlers).setResult(testActionResult, testViewModel);
+                    (<any>Handlers).setResult(testActionResult, testViewModel, true);
                 }));
 
-                it('should set view model error', function () {
-                    expect(testViewModel.error).toBe("no result found");
-                    expect(location.search()).toEqual({});
+                it('should set nested object and search', function () {
+                    expect(setNestedObject).toHaveBeenCalledWith(testObject);
+                    expect(location.search()).toEqual({ resultObject: 'test-1', action: 'anAction' });
+                });
+
+            });
+
+            describe('without show flag', function () {
+
+                beforeEach(inject(function (Handlers: Spiro.Angular.HandlersInterface) {
+                    (<any>Handlers).setResult(testActionResult);
+                }));
+
+                it('should set nested object and search', function () {
+                    expect(setNestedObject).toHaveBeenCalledWith(testObject);
+                    expect(location.search()).toEqual({ resultObject: 'test-1' });
+                });
+
+            });
+        });
+
+        describe('result is list', function () {
+
+            var testList = new Spiro.ListRepresentation();
+            var testResult = new Spiro.Result([], 'list');
+            var setCollection;
+
+            beforeEach(inject(function ($routeParams, Context: Spiro.Angular.ContextInterface) {
+
+                spyOn(testActionResult, 'result').andReturn(testResult);
+                spyOn(testActionResult, 'resultType').andReturn('list');
+                spyOn(testResult, 'list').andReturn(testList);
+                setCollection = spyOn(Context, 'setCollection');
+
+                $routeParams.action = "anAction";
+            }));
+
+            describe('with show flag', function () {
+
+                var testParameters = [new Spiro.Angular.ParameterViewModel(), new Spiro.Angular.ParameterViewModel()];
+                testParameters[0].value = "1";
+                testParameters[1].value = "2";
+
+                beforeEach(inject(function (Handlers: Spiro.Angular.HandlersInterface) {
+
+                    testViewModel.parameters = testParameters;
+
+                    (<any>Handlers).setResult(testActionResult, testViewModel, true);
+                }));
+
+                it('should set collection and search', function () {
+                    expect(setCollection).toHaveBeenCalledWith(testList);
+                    expect(location.search()).toEqual({ resultCollection: 'anAction1-2-', action: 'anAction' });
                 });
             });
 
-            describe('result is object', function () {
+            describe('without show flag', function () {
 
-                var testObject = new Spiro.DomainObjectRepresentation();
-                var testResult = new Spiro.Result({}, 'object');
-                var setNestedObject;
-                
-                beforeEach(inject(function ($routeParams, Context: Spiro.Angular.ContextInterface) {
-
-                    spyOn(testActionResult, 'result').andReturn(testResult);
-                    spyOn(testActionResult, 'resultType').andReturn('object');
-                    spyOn(testResult, 'object').andReturn(testObject);
-                    setNestedObject = spyOn(Context, 'setNestedObject');
-
-                    spyOn(testObject, 'domainType').andReturn("test");
-                    spyOn(testObject, 'instanceId').andReturn("1");
-
-                    $routeParams.action = "anAction";
+                beforeEach(inject(function (Handlers: Spiro.Angular.HandlersInterface) {
+                    (<any>Handlers).setResult(testActionResult);
                 }));
 
-
-                describe('with show flag', function () {
-
-                    beforeEach(inject(function (Handlers: Spiro.Angular.HandlersInterface) {
-                        (<any>Handlers).setResult(testActionResult, testViewModel, true);
-                    }));
-
-                    it('should set nested object and search', function () {
-                        expect(setNestedObject).toHaveBeenCalledWith(testObject);
-                        expect(location.search()).toEqual({ resultObject: 'test-1', action : 'anAction' });
-                    });
-
+                it('should set collection and search', function () {
+                    expect(setCollection).toHaveBeenCalledWith(testList);
+                    expect(location.search()).toEqual({ resultCollection: 'anAction' });
                 });
 
-                describe('without show flag', function () {
-
-                    beforeEach(inject(function (Handlers: Spiro.Angular.HandlersInterface) {
-                        (<any>Handlers).setResult(testActionResult);
-                    }));
-
-                    it('should set nested object and search', function () {
-                        expect(setNestedObject).toHaveBeenCalledWith(testObject);
-                        expect(location.search()).toEqual({ resultObject: 'test-1' });
-                    });
-
-                });
-            });
-
-            describe('result is list', function () {
-
-                var testList = new Spiro.ListRepresentation();
-                var testResult = new Spiro.Result([], 'list');
-                var setCollection;
-                
-                beforeEach(inject(function ($routeParams, Context: Spiro.Angular.ContextInterface) {
-
-                    spyOn(testActionResult, 'result').andReturn(testResult);
-                    spyOn(testActionResult, 'resultType').andReturn('list');
-                    spyOn(testResult, 'list').andReturn(testList);
-                    setCollection = spyOn(Context, 'setCollection');
-
-                    $routeParams.action = "anAction";
-                }));
-
-                describe('with show flag', function () {
-
-                    var testParameters = [new Spiro.Angular.ParameterViewModel(), new Spiro.Angular.ParameterViewModel()];
-                    testParameters[0].value = "1";
-                    testParameters[1].value = "2";
-
-                    beforeEach(inject(function (Handlers: Spiro.Angular.HandlersInterface) {
-
-                        testViewModel.parameters = testParameters;
-
-                        (<any>Handlers).setResult(testActionResult, testViewModel, true);
-                    }));
-
-                    it('should set collection and search', function () {
-                        expect(setCollection).toHaveBeenCalledWith(testList);
-                        expect(location.search()).toEqual({ resultCollection: 'anAction1-2-', action: 'anAction' });
-                    });
-                });
-
-                describe('without show flag', function () {
-
-                    beforeEach(inject(function (Handlers: Spiro.Angular.HandlersInterface) {
-                        (<any>Handlers).setResult(testActionResult);
-                    }));
-
-                    it('should set collection and search', function () {
-                        expect(setCollection).toHaveBeenCalledWith(testList);
-                        expect(location.search()).toEqual({ resultCollection: 'anAction' });
-                    });
-
-                });
             });
         });
     });
+
+    describe('invokeAction helper', function () {
+
+        var testAction = new Spiro.ActionRepresentation();
+        var testActionResult = new Spiro.ActionResultRepresentation();
+        var testViewModel = new Spiro.Angular.DialogViewModel();
+
+        var populate; 
+        var clearErrors; 
+        var setParameter; 
+
+        beforeEach(inject(function ($rootScope, RepresentationLoader : Spiro.Angular.RLInterface) {   
+            
+            spyOn(testAction, 'getInvoke').andReturn(testActionResult); 
+            populate = spyOnPromise(RepresentationLoader, 'populate', testActionResult); 
+            clearErrors = spyOn(testViewModel, 'clearErrors');
+            setParameter = spyOn(testActionResult, 'setParameter'); 
+            $scope = $rootScope.$new();
+        }));
+
+        describe('invoke is successful', function () {
+
+            var setResult; 
+            var testParameters = [new Spiro.Angular.ParameterViewModel(), new Spiro.Angular.ParameterViewModel()];
+            testParameters[0].value = "1";
+            testParameters[1].value = "2";
+            testParameters[0].id = "one";
+            testParameters[1].id = "two";  
+          
+            beforeEach(inject(function (Handlers: Spiro.Angular.HandlersInterface, Context: Spiro.Angular.ContextInterface) {
+                
+                setResult = spyOn(Handlers, 'setResult');
+                testViewModel.parameters = testParameters;
+         
+                (<any>Handlers).invokeAction($scope, testAction, testViewModel, false);
+            }));
+
+            it('should set result', function () {
+                expect(setParameter.callCount == 2).toBeTruthy(); 
+
+                expect(setParameter.calls[0].args[0] == "one").toBeTruthy(); 
+                expect(setParameter.calls[0].args[1].scalar() == "1").toBeTruthy(); 
+
+                expect(setParameter.calls[1].args[0] == "two").toBeTruthy();
+                expect(setParameter.calls[1].args[1].scalar() == "2").toBeTruthy(); 
+
+                expect(clearErrors).toHaveBeenCalled(); 
+                expect(populate).toHaveBeenCalledWith(testActionResult, true); 
+
+                expect(setResult).toHaveBeenCalledWith(testActionResult, testViewModel, false); 
+            });
+        });
+
+    
+    });
+
 });
