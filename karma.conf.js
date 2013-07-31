@@ -32,10 +32,14 @@ exclude = [
   
 ];
 
+preprocessors = {
+  'Spiro.Angular/Scripts/spiro.*.js': 'coverage'
+};
+
 
 // test results reporter to use
 // possible values: 'dots', 'progress', 'junit'
-reporters = ['progress', 'junit'];
+reporters = ['progress', 'junit', 'coverage' ];
 
 junitReporter = {
     outputFile: 'test-results/karma-test-results.xml'

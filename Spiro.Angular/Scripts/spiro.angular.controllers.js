@@ -15,7 +15,7 @@
             }
         });
 
-        Angular.app.controller('NestedObjectController', function ($scope, $q, $routeParams, $location, RepresentationLoader, Context, Handlers) {
+        Angular.app.controller('NestedObjectController', function ($scope, $routeParams, Handlers) {
             if ($routeParams.action) {
                 Handlers.handleActionResult($scope);
             }
@@ -28,7 +28,7 @@
             }
         });
 
-        Angular.app.controller('CollectionController', function ($routeParams, $scope, Handlers) {
+        Angular.app.controller('CollectionController', function ($scope, $routeParams, Handlers) {
             if ($routeParams.resultCollection) {
                 Handlers.handleCollectionResult($scope);
             } else if ($routeParams.collection) {

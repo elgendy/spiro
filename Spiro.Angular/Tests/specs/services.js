@@ -438,6 +438,89 @@ describe('Handlers Service', function () {
         });
     });
 
+    describe('handleProperty', function () {
+        var getObject;
+
+        describe('if it finds object', function () {
+            var testObject = new Spiro.DomainObjectRepresentation();
+            var testMember = new Spiro.PropertyMember({}, testObject);
+            var testDetails = new Spiro.PropertyRepresentation();
+            var testValue = new Spiro.Value({});
+            var testLink = new Spiro.Link();
+            var testTarget = new Spiro.DomainObjectRepresentation();
+            var testViewModel = { test: testTarget };
+
+            var propertyMember;
+            var propertyDetails;
+            var setNestedObject;
+            var objectViewModel;
+
+            var populate;
+
+            beforeEach(inject(function ($rootScope, $routeParams, Handlers, Context, ViewModelFactory, RepresentationLoader) {
+                $scope = $rootScope.$new();
+
+                getObject = spyOnPromise(Context, 'getObject', testObject);
+
+                propertyMember = spyOn(testObject, "propertyMember").andReturn(testMember);
+                propertyDetails = spyOn(testMember, "getDetails").andReturn(testDetails);
+
+                spyOn(testDetails, "value").andReturn(testValue);
+                spyOn(testValue, "link").andReturn(testLink);
+                spyOn(testLink, "getTarget").andReturn(testTarget);
+
+                populate = spyOnPromiseConditional(RepresentationLoader, "populate", testDetails, testTarget);
+
+                objectViewModel = spyOn(ViewModelFactory, 'domainObjectViewModel').andReturn(testViewModel);
+                setNestedObject = spyOn(Context, 'setNestedObject');
+
+                $routeParams.dt = "test";
+                $routeParams.id = "1";
+                $routeParams.property = "aProperty";
+
+                Handlers.handleProperty($scope);
+            }));
+
+            it('should update the scope', function () {
+                expect(getObject).toHaveBeenCalledWith("test", "1");
+                expect(propertyMember).toHaveBeenCalledWith("aProperty");
+                expect(propertyDetails).toHaveBeenCalled();
+
+                expect(populate).toHaveBeenCalled();
+
+                expect(setNestedObject).toHaveBeenCalledWith(testTarget);
+
+                expect($scope.result).toEqual(testViewModel);
+                expect($scope.nestedTemplate).toEqual("Content/partials/nestedObject.html");
+            });
+        });
+
+        describe('if it has an error', function () {
+            var testObject = new Spiro.ErrorRepresentation();
+            var setError;
+
+            beforeEach(inject(function ($rootScope, $routeParams, Handlers, Context) {
+                $scope = $rootScope.$new();
+
+                getObject = spyOnPromise2NestedFail(Context, 'getObject', testObject);
+                setError = spyOn(Context, 'setError');
+
+                $routeParams.dt = "test";
+                $routeParams.id = "1";
+
+                Handlers.handleProperty($scope);
+            }));
+
+            it('should update the context', function () {
+                expect(getObject).toHaveBeenCalledWith("test", "1");
+                expect(setError).toHaveBeenCalledWith(testObject);
+
+                expect($scope.dialog).toBeUndefined();
+                expect($scope.dialogTemplate).toBeUndefined();
+            });
+        });
+    });
+
     describe('handleResult', function () {
         var getNestedObject;
 

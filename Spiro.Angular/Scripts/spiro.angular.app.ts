@@ -403,6 +403,7 @@ module Spiro.Angular {
                 });
         };
 
+        // tested
         this.handleActionResult = function ($scope) {
             Context.getObject($routeParams.sid || $routeParams.dt, $routeParams.id).
                 then(function (object: DomainObjectRepresentation) {
@@ -430,6 +431,7 @@ module Spiro.Angular {
                 });
         };
         
+        // tested
         this.handleProperty = function ($scope) {
             Context.getObject($routeParams.dt, $routeParams.id).
                 then(function (object: DomainObjectRepresentation) {

@@ -3,6 +3,7 @@
 /// <reference path="spiro.angular.viewmodels.ts" />
 /// <reference path="spiro.angular.app.ts" />
 
+// tested 
 module Spiro.Angular {
 
     declare var svrPath: string;
@@ -21,7 +22,7 @@ module Spiro.Angular {
         }
     });
 
-    app.controller('NestedObjectController', function ($scope, $q, $routeParams, $location, RepresentationLoader: RLInterface, Context: ContextInterface, Handlers: HandlersInterface) {
+    app.controller('NestedObjectController', function ($scope, $routeParams, Handlers: HandlersInterface) {
 
         // action takes priority 
         if ($routeParams.action) {
@@ -38,7 +39,7 @@ module Spiro.Angular {
         }
     });
 
-    app.controller('CollectionController', function ($routeParams, $scope, Handlers: HandlersInterface) {
+    app.controller('CollectionController', function ($scope, $routeParams, Handlers: HandlersInterface) {
         if ($routeParams.resultCollection) {
             Handlers.handleCollectionResult($scope);
         }
