@@ -1028,7 +1028,7 @@ describe('Handlers Service', function () {
             testParameters[0].id = "one";
             testParameters[1].id = "two";
 
-            beforeEach(inject(function (Handlers, Context) {
+            beforeEach(inject(function (Handlers) {
                 setResult = spyOn(Handlers, 'setResult');
                 testViewModel.parameters = testParameters;
 

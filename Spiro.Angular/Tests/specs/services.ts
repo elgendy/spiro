@@ -1152,7 +1152,7 @@ describe('Handlers Service', function () {
             testParameters[0].id = "one";
             testParameters[1].id = "two";  
           
-            beforeEach(inject(function (Handlers: Spiro.Angular.HandlersInterface, Context: Spiro.Angular.ContextInterface) {
+            beforeEach(inject(function (Handlers: Spiro.Angular.HandlersInterface) {
                 
                 setResult = spyOn(Handlers, 'setResult');
                 testViewModel.parameters = testParameters;

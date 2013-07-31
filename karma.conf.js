@@ -33,7 +33,7 @@ exclude = [
 ];
 
 preprocessors = {
-  'Spiro.Angular/Scripts/spiro.*.js': 'coverage'
+  'Spiro.Angular/Scripts/spiro.angular.*.js': 'coverage'
 };
 
 
@@ -43,10 +43,9 @@ reporters = ['progress', 'junit', 'coverage' ];
 
 
 coverageReporter = {
-  type : 'cobertura',
-  dir : 'coverage/'
-}
-
+    type: 'cobertura',
+    dir: 'coverage/'
+};
 
 junitReporter = {
     outputFile: 'test-results/karma-test-results.xml'
