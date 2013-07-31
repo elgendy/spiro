@@ -41,6 +41,13 @@ preprocessors = {
 // possible values: 'dots', 'progress', 'junit'
 reporters = ['progress', 'junit', 'coverage' ];
 
+
+coverageReporter = {
+  type : 'cobertura',
+  dir : 'coverage/'
+}
+
+
 junitReporter = {
     outputFile: 'test-results/karma-test-results.xml'
 };
