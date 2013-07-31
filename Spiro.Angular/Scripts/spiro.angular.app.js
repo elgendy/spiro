@@ -268,6 +268,8 @@
         });
 
         Angular.app.service("Handlers", function ($routeParams, $location, $q, $cacheFactory, RepresentationLoader, Context, ViewModelFactory) {
+            var handlers = this;
+
             this.handleCollectionResult = function ($scope) {
                 Context.getCollection().then(function (list) {
                     $scope.collection = ViewModelFactory.collectionViewModel(list);
@@ -318,7 +320,7 @@
                     var result = action.getInvoke();
                     return RepresentationLoader.populate(result, true);
                 }).then(function (result) {
-                    setResult(result);
+                    handlers.setResult(result);
                 }, function (error) {
                     if (error) {
                         setError(error);
@@ -437,7 +439,7 @@
                 Context.setNestedObject(object);
             }
 
-            function setResult(result, dvm, show) {
+            this.setResult = function (result, dvm, show) {
                 if (result.result().isNull()) {
                     if (dvm) {
                         dvm.error = "no result found";
@@ -470,7 +472,7 @@
                     actionParm = show ? "&action=" + $routeParams.action : "";
                 }
                 $location.search(resultParm + actionParm);
-            }
+            };
 
             function invokeAction($scope, action, dvm, show) {
                 dvm.clearErrors();
@@ -484,7 +486,7 @@
                 });
 
                 RepresentationLoader.populate(invoke, true).then(function (result) {
-                    setResult(result, dvm, show);
+                    handlers.setResult(result, dvm, show);
                 }, function (error) {
                     if (error instanceof Spiro.ErrorMap) {
                         var errorMap = error;

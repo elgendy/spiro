@@ -358,6 +358,8 @@ module Spiro.Angular {
     // TODO rename 
     app.service("Handlers", function ($routeParams, $location, $q, $cacheFactory, RepresentationLoader: RLInterface, Context: ContextInterface, ViewModelFactory: VMFInterface) {
         
+        var handlers = this; 
+
         // tested
         this.handleCollectionResult = function ($scope) {
             Context.getCollection().
@@ -419,7 +421,7 @@ module Spiro.Angular {
                     return RepresentationLoader.populate(result, true);
                 }).
                 then(function (result: ActionResultRepresentation) {
-                    setResult(result);
+                    handlers.setResult(result);
                 }, function (error) {
                     if (error) {
                         setError(error);
@@ -559,7 +561,6 @@ module Spiro.Angular {
 
         };
 
-
         // helper functions 
 
         function setNestedObject(object: DomainObjectRepresentation, $scope) {
@@ -568,7 +569,9 @@ module Spiro.Angular {
             Context.setNestedObject(object);
         }
 
-        function setResult(result: ActionResultRepresentation, dvm?: DialogViewModel, show?: boolean) {
+        // expose for testing 
+
+        this.setResult = function (result: ActionResultRepresentation, dvm?: DialogViewModel, show?: boolean) {
             if (result.result().isNull()) {
                 if (dvm) {
                     dvm.error = "no result found";
@@ -601,7 +604,7 @@ module Spiro.Angular {
                 actionParm = show ? "&action=" + $routeParams.action : "";
             }
             $location.search(resultParm + actionParm);
-        }
+        };
 
         function invokeAction($scope, action: Spiro.ActionRepresentation, dvm: DialogViewModel, show: boolean) {
             dvm.clearErrors();
@@ -614,7 +617,7 @@ module Spiro.Angular {
 
             RepresentationLoader.populate(invoke, true).
                 then(function (result: ActionResultRepresentation) {
-                    setResult(result, dvm, show);
+                    handlers.setResult(result, dvm, show);
                 }, function (error: any) {
 
                     if (error instanceof ErrorMap) {

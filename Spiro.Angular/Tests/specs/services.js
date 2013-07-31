@@ -13,11 +13,34 @@ describe('Handlers Service', function () {
         return spyOn(tgt, func).andReturn(mp);
     }
 
-    function spyOnPromiseFail(tgt, func, mock) {
+    function spyOnPromiseConditional(tgt, func, mock1, mock2) {
+        var mp = {};
+        var first = true;
+
+        mp.then = function (f) {
+            var result = first ? f(mock1) : f(mock2);
+            first = false;
+            return result;
+        };
+
+        return spyOn(tgt, func).andReturn(mp);
+    }
+
+    function mockPromiseFail(mock) {
         var mp = {};
 
         mp.then = function (fok, fnok) {
             return fnok(mock);
+        };
+
+        return mp;
+    }
+
+    function spyOnPromiseFail(tgt, func, mock) {
+        var mp = {};
+
+        mp.then = function (fok, fnok) {
+            return fnok ? fnok(mock) : fok(mock);
         };
 
         return spyOn(tgt, func).andReturn(mp);
@@ -31,6 +54,28 @@ describe('Handlers Service', function () {
 
             mmp.then = function (f1ok, f1nok) {
                 return f1nok(mock);
+            };
+
+            return mmp;
+        };
+
+        return spyOn(tgt, func).andReturn(mp);
+    }
+
+    function spyOnPromise2NestedFail(tgt, func, mock) {
+        var mp = {};
+
+        mp.then = function (fok) {
+            var mmp = {};
+
+            mmp.then = function (f1ok) {
+                var mmmp = {};
+
+                mmmp.then = function (f2ok, f2nok) {
+                    return f2nok(mock);
+                };
+
+                return mmmp;
             };
 
             return mmp;
@@ -264,6 +309,123 @@ describe('Handlers Service', function () {
                 $routeParams.id = "1";
 
                 Handlers.handleActionDialog($scope);
+            }));
+
+            it('should update the context', function () {
+                expect(getObject).toHaveBeenCalledWith("test", "1");
+                expect(setError).toHaveBeenCalledWith(testObject);
+
+                expect($scope.dialog).toBeUndefined();
+                expect($scope.dialogTemplate).toBeUndefined();
+            });
+        });
+    });
+
+    describe('handleActionResult', function () {
+        var getObject;
+
+        describe('if it finds object', function () {
+            var testObject = new Spiro.DomainObjectRepresentation();
+            var testMember = new Spiro.ActionMember({}, testObject);
+            var testDetails = new Spiro.ActionRepresentation();
+            var testResult = new Spiro.ActionResultRepresentation();
+
+            var actionMember;
+            var actionDetails;
+            var actionResult;
+            var populate;
+            var setResult;
+
+            beforeEach(inject(function ($rootScope, $routeParams, Handlers, Context, ViewModelFactory, RepresentationLoader) {
+                $scope = $rootScope.$new();
+
+                getObject = spyOnPromise(Context, 'getObject', testObject);
+
+                actionMember = spyOn(testObject, "actionMember").andReturn(testMember);
+                actionDetails = spyOn(testMember, "getDetails").andReturn(testDetails);
+                actionResult = spyOn(testDetails, "getInvoke").andReturn(testResult);
+                populate = spyOnPromiseConditional(RepresentationLoader, "populate", testDetails, testResult);
+
+                setResult = spyOn(Handlers, "setResult");
+            }));
+
+            describe('if it is a service', function () {
+                beforeEach(inject(function ($rootScope, $routeParams, Handlers) {
+                    spyOn(testMember, "extensions").andReturn({ hasParams: false });
+
+                    $routeParams.sid = "testService";
+                    $routeParams.action = "anAction";
+
+                    Handlers.handleActionResult($scope);
+                }));
+
+                it('should update the scope', function () {
+                    expect(getObject).toHaveBeenCalledWith("testService", undefined);
+                    expect(actionMember).toHaveBeenCalledWith("anAction");
+                    expect(actionDetails).toHaveBeenCalled();
+                    expect(actionResult).toHaveBeenCalled();
+
+                    expect(populate).toHaveBeenCalled();
+                    expect(setResult).toHaveBeenCalled();
+                });
+            });
+
+            describe('if it has no params', function () {
+                beforeEach(inject(function ($rootScope, $routeParams, Handlers) {
+                    spyOn(testMember, "extensions").andReturn({ hasParams: false });
+                    $routeParams.dt = "test";
+                    $routeParams.id = "1";
+                    $routeParams.action = "anAction";
+
+                    Handlers.handleActionResult($scope);
+                }));
+
+                it('should update the scope', function () {
+                    expect(getObject).toHaveBeenCalledWith("test", "1");
+                    expect(actionMember).toHaveBeenCalledWith("anAction");
+                    expect(actionDetails).toHaveBeenCalled();
+                    expect(actionResult).toHaveBeenCalled();
+
+                    expect(populate).toHaveBeenCalled();
+                    expect(setResult).toHaveBeenCalled();
+                });
+            });
+
+            describe('if it has params', function () {
+                beforeEach(inject(function ($rootScope, $routeParams, Handlers) {
+                    spyOn(testMember, "extensions").andReturn({ hasParams: true });
+                    $routeParams.dt = "test";
+                    $routeParams.id = "1";
+                    $routeParams.action = "anAction";
+
+                    Handlers.handleActionResult($scope);
+                }));
+
+                it('should not update the scope', function () {
+                    expect(getObject).toHaveBeenCalledWith("test", "1");
+                    expect(actionMember).toHaveBeenCalledWith("anAction");
+                    expect(actionDetails).wasNotCalled();
+                    expect(actionResult).wasNotCalled();
+
+                    expect(setResult).wasNotCalled();
+                });
+            });
+        });
+
+        describe('if it has an error', function () {
+            var testObject = new Spiro.ErrorRepresentation();
+            var setError;
+
+            beforeEach(inject(function ($rootScope, $routeParams, Handlers, Context) {
+                $scope = $rootScope.$new();
+
+                getObject = spyOnPromise2NestedFail(Context, 'getObject', testObject);
+                setError = spyOn(Context, 'setError');
+
+                $routeParams.dt = "test";
+                $routeParams.id = "1";
+
+                Handlers.handleActionResult($scope);
             }));
 
             it('should update the context', function () {
