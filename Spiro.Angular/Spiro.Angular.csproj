@@ -244,6 +244,10 @@
       <DependentUpon>controllers.ts</DependentUpon>
     </Content>
     <TypeScriptCompile Include="Tests\specs\testData.ts" />
+    <TypeScriptCompile Include="Tests\specs\services.ts" />
+    <Content Include="Tests\specs\services.js">
+      <DependentUpon>services.ts</DependentUpon>
+    </Content>
     <Content Include="Tests\specs\testData.js">
       <DependentUpon>testData.ts</DependentUpon>
     </Content>
