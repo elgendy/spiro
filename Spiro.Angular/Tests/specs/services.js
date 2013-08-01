@@ -1164,12 +1164,68 @@ describe('Handlers Service', function () {
             beforeEach(inject(function ($rootScope, $routeParams, Handlers, RepresentationLoader) {
                 populate = spyOnPromiseFail(RepresentationLoader, 'populate', testError);
                 setInvokeUpdateError = spyOn(Handlers, 'setInvokeUpdateError');
-
                 (Handlers).updateObject($scope, testObject, testViewModel);
             }));
 
             it('should set the error', function () {
                 expect(setInvokeUpdateError).toHaveBeenCalledWith($scope, testError, editableProperties, testViewModel);
+            });
+        });
+    });
+
+    describe('setInvokeUpdateError helper', function () {
+        var testViewModel = { message: "" };
+
+        beforeEach(inject(function ($rootScope) {
+            $scope = $rootScope.$new();
+        }));
+
+        describe('if error is errorMap', function () {
+            var error = { "one": { "value": "1", "invalidReason": "a reason" }, "two": { "value": "2" }, "x-ro-invalid-reason": "another reason" };
+
+            var errorMap = new Spiro.ErrorMap(error, "status", "a warning message");
+            var vms = [{ id: "one", value: null, message: null }, { id: "two", value: null, message: null }];
+
+            beforeEach(inject(function (Handlers) {
+                (Handlers).setInvokeUpdateError($scope, errorMap, vms, testViewModel);
+            }));
+
+            it('should set the parameters and error', function () {
+                expect(vms[0].value).toBe("1");
+                expect(vms[0].message).toBe("a reason");
+                expect(vms[1].value).toBe("2");
+                expect(vms[1].message).toBeUndefined();
+
+                expect(testViewModel.message).toBe("another reason");
+            });
+        });
+
+        describe('if error is errorRep', function () {
+            var testError = new Spiro.ErrorRepresentation();
+            var testErrorViewModel = new Spiro.Angular.ErrorViewModel();
+            var errorViewModel;
+
+            beforeEach(inject(function (Handlers, ViewModelFactory) {
+                errorViewModel = spyOn(ViewModelFactory, 'errorViewModel').andReturn(testErrorViewModel);
+                (Handlers).setInvokeUpdateError($scope, testError, [], testViewModel);
+            }));
+
+            it('should set the scope ', function () {
+                expect(errorViewModel).toHaveBeenCalledWith(testError);
+                expect($scope.error).toBe(testErrorViewModel);
+                expect($scope.dialogTemplate).toBe("Content/partials/error.html");
+            });
+        });
+
+        describe('if error is string', function () {
+            var errorMessage = 'an error message';
+
+            beforeEach(inject(function ($rootScope, $routeParams, Handlers) {
+                (Handlers).setInvokeUpdateError($scope, errorMessage, [], testViewModel);
+            }));
+
+            it('should set the scope ', function () {
+                expect(testViewModel.message).toBe(errorMessage);
             });
         });
     });
