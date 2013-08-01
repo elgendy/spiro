@@ -15,7 +15,7 @@
                 <div ng-switch-when="true" class='property-value input-control text'>
                     <input type='hidden' value='{{property.reference}}' ng-model="property.reference" />
                     <input type='text' value='{{property.value}}' placeholder='{{property.value}}' ng-model="property.value" />
-                    <div class='error'>{{property.error}}</div>
+                    <div class='error'>{{property.message}}</div>
                 </div>
             </div>
             <div ng-switch-when="scalar" ng-switch="property.isEditable">
@@ -24,7 +24,7 @@
 
                 <div ng-switch-when="true" class='property-value input-control text'>
                     <input type='text' placeholder='{{property.value}}' ng-model="property.value" />
-                    <div class='error'>{{property.error}}</div>
+                    <div class='error'>{{property.message}}</div>
                 </div>
             </div>
         </div>

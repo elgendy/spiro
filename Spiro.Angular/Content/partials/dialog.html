@@ -9,10 +9,10 @@
                 <div class='parameter-name'>{{parameter.title}}</div>
                 <div class='parameter-value input-control text'>
                     <input type='text' placeholder='{{parameter.dflt}}' ng-model="parameter.value" />
-                    <div class='error'>{{parameter.error}}</div>
+                    <div class='error'>{{parameter.message}}</div>
                 </div>
             </div>
-            {{dialog.error}}
+            {{dialog.message}}
         </div>
 
         <div ng-switch="dialog.isQuery">

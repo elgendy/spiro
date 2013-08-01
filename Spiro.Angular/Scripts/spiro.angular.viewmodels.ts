@@ -166,11 +166,11 @@ module Spiro.Angular {
         title: string;
         dflt: string; 
         value: string; 
-        error: string; 
+        message: string; 
         id: string; 
 
-        clearError() {
-            this.error = "";
+        clearMessage() {
+            this.message = "";
         }
 
         static create(parmRep: Parameter, id : string) {
@@ -178,7 +178,7 @@ module Spiro.Angular {
 
             parmViewModel.title = parmRep.extensions().friendlyName;
             parmViewModel.dflt = parmRep.default().toValueString();
-            parmViewModel.error = ""; 
+            parmViewModel.message = ""; 
             parmViewModel.value = ""; 
             parmViewModel.id = id; 
           
@@ -202,7 +202,7 @@ module Spiro.Angular {
     export class DialogViewModel {
 
         title: string;
-        error: string;
+        message: string;
         close: string; 
         isQuery: bool; 
 
@@ -211,9 +211,9 @@ module Spiro.Angular {
         doShow() { }
         doInvoke() { }
 
-        clearErrors() {
-            this.error = ""; 
-            _.each(this.parameters, (parm) => parm.clearError());
+        clearMessages() {
+            this.message = ""; 
+            _.each(this.parameters, (parm) => parm.clearMessage());
         }
 
         static create(actionRep: ActionRepresentation, $routeParams,  invoke: (dvm : DialogViewModel, show : boolean) => void ) {
@@ -223,7 +223,7 @@ module Spiro.Angular {
             dialogViewModel.title = actionRep.extensions().friendlyName;
             dialogViewModel.isQuery = actionRep.invokeLink().method() === "GET";
 
-            dialogViewModel.error = "";
+            dialogViewModel.message = "";
 
             dialogViewModel.close = toAppUrl(actionRep.upLink().href(), $routeParams, ["action"]); 
 
@@ -246,7 +246,7 @@ module Spiro.Angular {
         target: string;
         color: string; 
         id: string; 
-        error: string; 
+        message: string; 
         isEditable: boolean;
         reference: string; 
 

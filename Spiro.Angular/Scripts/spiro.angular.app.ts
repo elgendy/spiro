@@ -556,7 +556,7 @@ module Spiro.Angular {
                     $scope.actionTemplate = $routeParams.editMode ? "" : svrPath + "Content/partials/actions.html";
                     $scope.propertiesTemplate = svrPath + ($routeParams.editMode ? "Content/partials/editProperties.html" : "Content/partials/viewProperties.html");
 
-                    $scope.object = ViewModelFactory.domainObjectViewModel(object, <(ovm: DomainObjectViewModel) => void > _.partial(updateObject, $scope, object));
+                    $scope.object = ViewModelFactory.domainObjectViewModel(object, <(ovm: DomainObjectViewModel) => void > _.partial(handlers.updateObject, $scope, object));
                 }, function (error) {
                     setError(error);
                 });
@@ -571,12 +571,24 @@ module Spiro.Angular {
             Context.setNestedObject(object);
         }
 
+        function setError(error) {
+
+            var errorRep: ErrorRepresentation;
+            if (error instanceof ErrorRepresentation) {
+                errorRep = <ErrorRepresentation>error;
+            }
+            else {
+                errorRep = new ErrorRepresentation({ message: "an unrecognised error has occurred" });
+            }
+            Context.setError(errorRep);
+        }
+
         // expose for testing 
 
         this.setResult = function (result: ActionResultRepresentation, dvm?: DialogViewModel, show?: boolean) {
             if (result.result().isNull()) {
                 if (dvm) {
-                    dvm.error = "no result found";
+                    dvm.message = "no result found";
                 }
                 return;
             }
@@ -608,8 +620,30 @@ module Spiro.Angular {
             $location.search(resultParm + actionParm);
         };
 
+        this.setInvokeUpdateError = function($scope, error: any, vms: { id: string; value: string; message: string; }[], vm: { message: string; }) {         
+            if (error instanceof ErrorMap) {
+                _.each(vms, (vmi) => {
+                    var errorValue = error.valuesMap()[vmi.id];
+                    
+                    if (errorValue) {
+                        vmi.value = errorValue.value.toValueString();
+                        vmi.message = errorValue.invalidReason;
+                    }
+                });
+                vm.message = (<ErrorMap>error).invalidReason();
+            }
+            else if (error instanceof ErrorRepresentation) {
+                var evm = ViewModelFactory.errorViewModel(error);
+                $scope.error = evm;
+                $scope.dialogTemplate = svrPath + "Content/partials/error.html";
+            }
+            else {
+                vm.message = error;
+            }      
+        }
+
         this.invokeAction = function ($scope, action: Spiro.ActionRepresentation, dvm: DialogViewModel, show: boolean) {
-            dvm.clearErrors();
+            dvm.clearMessages();
 
             var invoke = action.getInvoke();
             invoke.attributes = {}; // todo make automatic 
@@ -621,46 +655,11 @@ module Spiro.Angular {
                 then(function (result: ActionResultRepresentation) {
                     handlers.setResult(result, dvm, show);
                 }, function (error: any) {
-
-                    if (error instanceof ErrorMap) {
-                        var errorMap = <ErrorMap>error;
-
-                        _.each(parameters, (parm) => {
-                            var errorValue = errorMap.valuesMap()[parm.id];
-
-                            if (errorValue) {
-                                parm.value = errorValue.value.toValueString();
-                                parm.error = errorValue.invalidReason;
-                            }
-                        });
-
-                        dvm.error = errorMap.invalidReason();
-                    }
-                    else if (error instanceof ErrorRepresentation) {
-                        var errorRep = <ErrorRepresentation>error;
-                        var evm = ViewModelFactory.errorViewModel(errorRep);
-                        $scope.error = evm;
-                        $scope.dialogTemplate = svrPath + "Content/partials/error.html";
-                    }
-                    else {
-                        dvm.error = error;
-                    }
+                    handlers.setInvokeUpdateError($scope, error, parameters, dvm);
                 });
         };
 
-        function setError(error) {
-
-            var errorRep: ErrorRepresentation;
-            if (error instanceof ErrorRepresentation) {
-                errorRep = <ErrorRepresentation>error;
-            }
-            else {
-                errorRep = new ErrorRepresentation({ message: "an unrecognised error has occurred" });
-            }
-            Context.setError(errorRep);
-        }
-
-        function updateObject($scope, object: DomainObjectRepresentation, ovm: DomainObjectViewModel) {
+        this.updateObject = function ($scope, object: DomainObjectRepresentation, ovm: DomainObjectViewModel) {
             var update = object.getUpdateMap();
 
             var properties = _.filter(ovm.properties, (property) => property.isEditable);
@@ -677,38 +676,10 @@ module Spiro.Angular {
                     $cacheFactory.get('$http').remove(updatedObject.url());
 
                     Context.setObject(updatedObject);
-
                     $location.search("");
-
                 }, function (error: any) {
-
-                    if (error instanceof ErrorMap) {
-                        var errorMap = <ErrorMap>error;
-
-                        _.each(properties, (property) => {
-                            var errorValue = errorMap.valuesMap()[property.id];
-
-                            if (errorValue) {
-                                property.value = errorValue.value.toValueString();
-                                property.error = errorValue.invalidReason;
-                            }
-                        });
-
-                        ovm.message = errorMap.invalidReason();
-                    }
-                    else if (error instanceof ErrorRepresentation) {
-                        var errorRep = <ErrorRepresentation>error;
-                        var evm = ViewModelFactory.errorViewModel(errorRep);
-                        $scope.error = evm;
-
-                        $scope.propertiesTemplate = svrPath + "Content/partials/error.html";
-                    }
-                    else {
-                        ovm.message = error;
-                    }
+                    handlers.setInvokeUpdateError($scope, error, properties, ovm);
                 });
-        }
-
-    
+        };  
     });
 }

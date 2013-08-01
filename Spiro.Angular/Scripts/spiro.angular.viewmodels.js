@@ -147,8 +147,8 @@ var Spiro;
         var ParameterViewModel = (function () {
             function ParameterViewModel() {
             }
-            ParameterViewModel.prototype.clearError = function () {
-                this.error = "";
+            ParameterViewModel.prototype.clearMessage = function () {
+                this.message = "";
             };
 
             ParameterViewModel.create = function (parmRep, id) {
@@ -156,7 +156,7 @@ var Spiro;
 
                 parmViewModel.title = parmRep.extensions().friendlyName;
                 parmViewModel.dflt = parmRep.default().toValueString();
-                parmViewModel.error = "";
+                parmViewModel.message = "";
                 parmViewModel.value = "";
                 parmViewModel.id = id;
 
@@ -187,10 +187,10 @@ var Spiro;
             DialogViewModel.prototype.doInvoke = function () {
             };
 
-            DialogViewModel.prototype.clearErrors = function () {
-                this.error = "";
+            DialogViewModel.prototype.clearMessages = function () {
+                this.message = "";
                 _.each(this.parameters, function (parm) {
-                    return parm.clearError();
+                    return parm.clearMessage();
                 });
             };
 
@@ -201,7 +201,7 @@ var Spiro;
                 dialogViewModel.title = actionRep.extensions().friendlyName;
                 dialogViewModel.isQuery = actionRep.invokeLink().method() === "GET";
 
-                dialogViewModel.error = "";
+                dialogViewModel.message = "";
 
                 dialogViewModel.close = toAppUrl(actionRep.upLink().href(), $routeParams, ["action"]);
 

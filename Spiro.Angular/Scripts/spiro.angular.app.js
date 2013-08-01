@@ -427,7 +427,7 @@
                     $scope.actionTemplate = $routeParams.editMode ? "" : svrPath + "Content/partials/actions.html";
                     $scope.propertiesTemplate = svrPath + ($routeParams.editMode ? "Content/partials/editProperties.html" : "Content/partials/viewProperties.html");
 
-                    $scope.object = ViewModelFactory.domainObjectViewModel(object, _.partial(updateObject, $scope, object));
+                    $scope.object = ViewModelFactory.domainObjectViewModel(object, _.partial(handlers.updateObject, $scope, object));
                 }, function (error) {
                     setError(error);
                 });
@@ -439,10 +439,20 @@
                 Context.setNestedObject(object);
             }
 
+            function setError(error) {
+                var errorRep;
+                if (error instanceof Spiro.ErrorRepresentation) {
+                    errorRep = error;
+                } else {
+                    errorRep = new Spiro.ErrorRepresentation({ message: "an unrecognised error has occurred" });
+                }
+                Context.setError(errorRep);
+            }
+
             this.setResult = function (result, dvm, show) {
                 if (result.result().isNull()) {
                     if (dvm) {
-                        dvm.error = "no result found";
+                        dvm.message = "no result found";
                     }
                     return;
                 }
@@ -474,8 +484,28 @@
                 $location.search(resultParm + actionParm);
             };
 
+            this.setInvokeUpdateError = function ($scope, error, vms, vm) {
+                if (error instanceof Spiro.ErrorMap) {
+                    _.each(vms, function (vmi) {
+                        var errorValue = error.valuesMap()[vmi.id];
+
+                        if (errorValue) {
+                            vmi.value = errorValue.value.toValueString();
+                            vmi.message = errorValue.invalidReason;
+                        }
+                    });
+                    vm.message = (error).invalidReason();
+                } else if (error instanceof Spiro.ErrorRepresentation) {
+                    var evm = ViewModelFactory.errorViewModel(error);
+                    $scope.error = evm;
+                    $scope.dialogTemplate = svrPath + "Content/partials/error.html";
+                } else {
+                    vm.message = error;
+                }
+            };
+
             this.invokeAction = function ($scope, action, dvm, show) {
-                dvm.clearErrors();
+                dvm.clearMessages();
 
                 var invoke = action.getInvoke();
                 invoke.attributes = {};
@@ -488,41 +518,11 @@
                 RepresentationLoader.populate(invoke, true).then(function (result) {
                     handlers.setResult(result, dvm, show);
                 }, function (error) {
-                    if (error instanceof Spiro.ErrorMap) {
-                        var errorMap = error;
-
-                        _.each(parameters, function (parm) {
-                            var errorValue = errorMap.valuesMap()[parm.id];
-
-                            if (errorValue) {
-                                parm.value = errorValue.value.toValueString();
-                                parm.error = errorValue.invalidReason;
-                            }
-                        });
-
-                        dvm.error = errorMap.invalidReason();
-                    } else if (error instanceof Spiro.ErrorRepresentation) {
-                        var errorRep = error;
-                        var evm = ViewModelFactory.errorViewModel(errorRep);
-                        $scope.error = evm;
-                        $scope.dialogTemplate = svrPath + "Content/partials/error.html";
-                    } else {
-                        dvm.error = error;
-                    }
+                    handlers.setInvokeUpdateError($scope, error, parameters, dvm);
                 });
             };
 
-            function setError(error) {
-                var errorRep;
-                if (error instanceof Spiro.ErrorRepresentation) {
-                    errorRep = error;
-                } else {
-                    errorRep = new Spiro.ErrorRepresentation({ message: "an unrecognised error has occurred" });
-                }
-                Context.setError(errorRep);
-            }
-
-            function updateObject($scope, object, ovm) {
+            this.updateObject = function ($scope, object, ovm) {
                 var update = object.getUpdateMap();
 
                 var properties = _.filter(ovm.properties, function (property) {
@@ -539,33 +539,11 @@
                     $cacheFactory.get('$http').remove(updatedObject.url());
 
                     Context.setObject(updatedObject);
-
                     $location.search("");
                 }, function (error) {
-                    if (error instanceof Spiro.ErrorMap) {
-                        var errorMap = error;
-
-                        _.each(properties, function (property) {
-                            var errorValue = errorMap.valuesMap()[property.id];
-
-                            if (errorValue) {
-                                property.value = errorValue.value.toValueString();
-                                property.error = errorValue.invalidReason;
-                            }
-                        });
-
-                        ovm.message = errorMap.invalidReason();
-                    } else if (error instanceof Spiro.ErrorRepresentation) {
-                        var errorRep = error;
-                        var evm = ViewModelFactory.errorViewModel(errorRep);
-                        $scope.error = evm;
-
-                        $scope.propertiesTemplate = svrPath + "Content/partials/error.html";
-                    } else {
-                        ovm.message = error;
-                    }
+                    handlers.setInvokeUpdateError($scope, error, properties, ovm);
                 });
-            }
+            };
         });
     })(Spiro.Angular || (Spiro.Angular = {}));
     var Angular = Spiro.Angular;

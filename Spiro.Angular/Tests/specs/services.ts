@@ -1022,7 +1022,7 @@ describe('Handlers Service', function () {
             }));
 
             it('should set view model error', function () {
-                expect(testViewModel.error).toBe("no result found");
+                expect(testViewModel.message).toBe("no result found");
                 expect(location.search()).toEqual({});
             });
         });
@@ -1131,14 +1131,14 @@ describe('Handlers Service', function () {
         var testViewModel = new Spiro.Angular.DialogViewModel();
 
         var populate; 
-        var clearErrors; 
+        var clearMessages; 
         var setParameter; 
 
         beforeEach(inject(function ($rootScope, RepresentationLoader : Spiro.Angular.RLInterface) {   
             
             spyOn(testAction, 'getInvoke').andReturn(testActionResult); 
             populate = spyOnPromise(RepresentationLoader, 'populate', testActionResult); 
-            clearErrors = spyOn(testViewModel, 'clearErrors');
+            clearMessages = spyOn(testViewModel, 'clearMessages');
             setParameter = spyOn(testActionResult, 'setParameter'); 
             $scope = $rootScope.$new();
         }));
@@ -1169,7 +1169,7 @@ describe('Handlers Service', function () {
                 expect(setParameter.calls[1].args[0] == "two").toBeTruthy();
                 expect(setParameter.calls[1].args[1].scalar() == "2").toBeTruthy(); 
 
-                expect(clearErrors).toHaveBeenCalled(); 
+                expect(clearMessages).toHaveBeenCalled(); 
                 expect(populate).toHaveBeenCalledWith(testActionResult, true); 
 
                 expect(setResult).toHaveBeenCalledWith(testActionResult, testViewModel, false); 
@@ -1178,5 +1178,90 @@ describe('Handlers Service', function () {
 
     
     });
+
+    describe('updateObject helper', function () {
+
+        var testObject = new Spiro.DomainObjectRepresentation();
+        var testUpdatedObject = new Spiro.DomainObjectRepresentation();
+        var testUpdate = {}; 
+        var testViewModel = new Spiro.Angular.DomainObjectViewModel();
+        var testRawLinks = { testLinks: "" };
+
+        var populate;
+        var setProperty;
+        var set; 
+     
+        beforeEach(inject(function ($rootScope, RepresentationLoader: Spiro.Angular.RLInterface) {
+
+            (<any>testUpdate).setProperty = () => { };
+
+            spyOn(testObject, 'getUpdateMap').andReturn(testUpdate);
+            setProperty = spyOn(testUpdate, 'setProperty');
+            populate = spyOnPromise(RepresentationLoader, 'populate', testUpdatedObject);
+
+            spyOn(testObject, 'get').andReturn(testRawLinks);
+            set = spyOn(testUpdatedObject, 'set');
+
+            $scope = $rootScope.$new();
+        }));
+
+        describe('update is successful', function () {
+
+            var setObject;
+            var testProperties = [new Spiro.Angular.PropertyViewModel(), new Spiro.Angular.PropertyViewModel(), new Spiro.Angular.PropertyViewModel()];
+            
+            testProperties[0].id = "one";
+            testProperties[0].value = "1";
+            testProperties[0].isEditable = true;
+
+            testProperties[1].id = "two";
+            testProperties[1].value = "2";
+            testProperties[1].isEditable = true;
+
+            testProperties[2].id = "three";
+            testProperties[2].value = "3";
+            testProperties[2].isEditable = false;
+
+            var location; 
+            var cacheFactory; 
+            var testCache = {};
+            var remove; 
+
+            beforeEach(inject(function ($location, $cacheFactory, Handlers: Spiro.Angular.HandlersInterface, Context: Spiro.Angular.ContextInterface) {
+
+                setObject = spyOn(Context, 'setObject');
+                testViewModel.properties = testProperties;
+                location = $location; 
+                cacheFactory = $cacheFactory; 
+                (<any>testCache).remove = (url: string) => { };
+
+                spyOn(cacheFactory, 'get').andReturn(testCache); 
+                remove = spyOn(testCache, 'remove');
+
+                testUpdatedObject.hateoasUrl = "testUrl";
+                
+                (<any>Handlers).updateObject($scope, testObject, testViewModel);
+            }));
+
+            it('should set result', function () {
+                expect(setProperty.callCount == 2).toBeTruthy();
+
+                //expect(setParameter.calls[0].args[0] == "one").toBeTruthy();
+                //expect(setParameter.calls[0].args[1].scalar() == "1").toBeTruthy();
+
+                //expect(setParameter.calls[1].args[0] == "two").toBeTruthy();
+                //expect(setParameter.calls[1].args[1].scalar() == "2").toBeTruthy();
+
+                expect(remove).toHaveBeenCalledWith("testUrl"); 
+                expect(location.search()).toEqual({ });
+                expect(set).toHaveBeenCalledWith('links', testRawLinks); 
+                expect(populate).toHaveBeenCalledWith(testUpdate, true, new Spiro.DomainObjectRepresentation());
+                expect(setObject).toHaveBeenCalledWith(testUpdatedObject);
+            });
+        });
+
+
+    });
+
 
 });
