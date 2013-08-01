@@ -620,11 +620,11 @@ module Spiro.Angular {
             $location.search(resultParm + actionParm);
         };
 
-        this.setInvokeUpdateError = function($scope, error: any, vms: { id: string; value: string; message: string; }[], vm: { message: string; }) {         
+        this.setInvokeUpdateError = function ($scope, error: any, vms: { id: string; value: string; message: string; }[], vm: { message: string; }) {
             if (error instanceof ErrorMap) {
                 _.each(vms, (vmi) => {
                     var errorValue = error.valuesMap()[vmi.id];
-                    
+
                     if (errorValue) {
                         vmi.value = errorValue.value.toValueString();
                         vmi.message = errorValue.invalidReason;
@@ -639,8 +639,8 @@ module Spiro.Angular {
             }
             else {
                 vm.message = error;
-            }      
-        }
+            }
+        };
 
         this.invokeAction = function ($scope, action: Spiro.ActionRepresentation, dvm: DialogViewModel, show: boolean) {
             dvm.clearMessages();

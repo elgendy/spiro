@@ -1130,14 +1130,20 @@ describe('Handlers Service', function () {
         var testActionResult = new Spiro.ActionResultRepresentation();
         var testViewModel = new Spiro.Angular.DialogViewModel();
 
+        var testParameters = [new Spiro.Angular.ParameterViewModel(), new Spiro.Angular.ParameterViewModel()];
+        testParameters[0].value = "1";
+        testParameters[1].value = "2";
+        testParameters[0].id = "one";
+        testParameters[1].id = "two";  
+
         var populate; 
         var clearMessages; 
         var setParameter; 
 
-        beforeEach(inject(function ($rootScope, RepresentationLoader : Spiro.Angular.RLInterface) {   
+        beforeEach(inject(function ($rootScope) {   
             
             spyOn(testAction, 'getInvoke').andReturn(testActionResult); 
-            populate = spyOnPromise(RepresentationLoader, 'populate', testActionResult); 
+           
             clearMessages = spyOn(testViewModel, 'clearMessages');
             setParameter = spyOn(testActionResult, 'setParameter'); 
             $scope = $rootScope.$new();
@@ -1146,14 +1152,10 @@ describe('Handlers Service', function () {
         describe('invoke is successful', function () {
 
             var setResult; 
-            var testParameters = [new Spiro.Angular.ParameterViewModel(), new Spiro.Angular.ParameterViewModel()];
-            testParameters[0].value = "1";
-            testParameters[1].value = "2";
-            testParameters[0].id = "one";
-            testParameters[1].id = "two";  
+            
           
-            beforeEach(inject(function (Handlers: Spiro.Angular.HandlersInterface) {
-                
+            beforeEach(inject(function (Handlers: Spiro.Angular.HandlersInterface, RepresentationLoader : Spiro.Angular.RLInterface) {
+                populate = spyOnPromise(RepresentationLoader, 'populate', testActionResult); 
                 setResult = spyOn(Handlers, 'setResult');
                 testViewModel.parameters = testParameters;
          
@@ -1163,11 +1165,11 @@ describe('Handlers Service', function () {
             it('should set result', function () {
                 expect(setParameter.callCount == 2).toBeTruthy(); 
 
-                expect(setParameter.calls[0].args[0] == "one").toBeTruthy(); 
-                expect(setParameter.calls[0].args[1].scalar() == "1").toBeTruthy(); 
+                expect(setParameter.calls[0].args[0]).toBe("one"); 
+                expect(setParameter.calls[0].args[1].scalar()).toBe("1"); 
 
-                expect(setParameter.calls[1].args[0] == "two").toBeTruthy();
-                expect(setParameter.calls[1].args[1].scalar() == "2").toBeTruthy(); 
+                expect(setParameter.calls[1].args[0]).toBe("two");
+                expect(setParameter.calls[1].args[1].scalar()).toBe("2"); 
 
                 expect(clearMessages).toHaveBeenCalled(); 
                 expect(populate).toHaveBeenCalledWith(testActionResult, true); 
@@ -1176,7 +1178,21 @@ describe('Handlers Service', function () {
             });
         });
 
-    
+        describe('if invoke has an error', function () {
+
+            var testObject = new Spiro.ErrorRepresentation();
+            var setInvokeUpdateError;
+
+            beforeEach(inject(function ($rootScope, $routeParams, Handlers: Spiro.Angular.HandlersInterface, RepresentationLoader: Spiro.Angular.RLInterface, Context: Spiro.Angular.ContextInterface) {
+                populate = spyOnPromiseFail(RepresentationLoader, 'populate', testObject); 
+                setInvokeUpdateError = spyOn(Handlers, 'setInvokeUpdateError');
+                (<any>Handlers).invokeAction($scope, testAction, testViewModel, false);
+            }));
+
+            it('should set the error', function () {
+                expect(setInvokeUpdateError).toHaveBeenCalledWith($scope, testObject, testParameters, testViewModel); 
+            });
+        });  
     });
 
     describe('updateObject helper', function () {
@@ -1186,6 +1202,24 @@ describe('Handlers Service', function () {
         var testUpdate = {}; 
         var testViewModel = new Spiro.Angular.DomainObjectViewModel();
         var testRawLinks = { testLinks: "" };
+
+        var testProperties = [new Spiro.Angular.PropertyViewModel(), new Spiro.Angular.PropertyViewModel(), new Spiro.Angular.PropertyViewModel()];
+        
+        testProperties[0].id = "one";
+        testProperties[0].value = "1";
+        testProperties[0].isEditable = true;
+        testProperties[0].type = 'scalar';
+
+        testProperties[1].id = "two";
+        testProperties[1].value = "2";
+        testProperties[1].isEditable = true;
+        testProperties[1].type = 'scalar';
+
+        testProperties[2].id = "three";
+        testProperties[2].value = "3";
+        testProperties[2].isEditable = false;
+        testProperties[2].type = 'scalar';
+
 
         var populate;
         var setProperty;
@@ -1197,7 +1231,7 @@ describe('Handlers Service', function () {
 
             spyOn(testObject, 'getUpdateMap').andReturn(testUpdate);
             setProperty = spyOn(testUpdate, 'setProperty');
-            populate = spyOnPromise(RepresentationLoader, 'populate', testUpdatedObject);
+            testViewModel.properties = testProperties;
 
             spyOn(testObject, 'get').andReturn(testRawLinks);
             set = spyOn(testUpdatedObject, 'set');
@@ -1208,32 +1242,21 @@ describe('Handlers Service', function () {
         describe('update is successful', function () {
 
             var setObject;
-            var testProperties = [new Spiro.Angular.PropertyViewModel(), new Spiro.Angular.PropertyViewModel(), new Spiro.Angular.PropertyViewModel()];
-            
-            testProperties[0].id = "one";
-            testProperties[0].value = "1";
-            testProperties[0].isEditable = true;
-
-            testProperties[1].id = "two";
-            testProperties[1].value = "2";
-            testProperties[1].isEditable = true;
-
-            testProperties[2].id = "three";
-            testProperties[2].value = "3";
-            testProperties[2].isEditable = false;
-
+         
             var location; 
             var cacheFactory; 
             var testCache = {};
             var remove; 
 
-            beforeEach(inject(function ($location, $cacheFactory, Handlers: Spiro.Angular.HandlersInterface, Context: Spiro.Angular.ContextInterface) {
+            beforeEach(inject(function ($location, $cacheFactory, Handlers: Spiro.Angular.HandlersInterface, RepresentationLoader: Spiro.Angular.RLInterface, Context: Spiro.Angular.ContextInterface) {
 
                 setObject = spyOn(Context, 'setObject');
-                testViewModel.properties = testProperties;
+               
                 location = $location; 
                 cacheFactory = $cacheFactory; 
                 (<any>testCache).remove = (url: string) => { };
+
+                populate = spyOnPromise(RepresentationLoader, 'populate', testUpdatedObject);
 
                 spyOn(cacheFactory, 'get').andReturn(testCache); 
                 remove = spyOn(testCache, 'remove');
@@ -1246,11 +1269,11 @@ describe('Handlers Service', function () {
             it('should set result', function () {
                 expect(setProperty.callCount == 2).toBeTruthy();
 
-                //expect(setParameter.calls[0].args[0] == "one").toBeTruthy();
-                //expect(setParameter.calls[0].args[1].scalar() == "1").toBeTruthy();
+                expect(setProperty.calls[0].args[0]).toBe("one");
+                expect(setProperty.calls[0].args[1].scalar()).toBe("1");
 
-                //expect(setParameter.calls[1].args[0] == "two").toBeTruthy();
-                //expect(setParameter.calls[1].args[1].scalar() == "2").toBeTruthy();
+                expect(setProperty.calls[1].args[0]).toBe("two");
+                expect(setProperty.calls[1].args[1].scalar()).toBe("2");
 
                 expect(remove).toHaveBeenCalledWith("testUrl"); 
                 expect(location.search()).toEqual({ });
@@ -1259,6 +1282,26 @@ describe('Handlers Service', function () {
                 expect(setObject).toHaveBeenCalledWith(testUpdatedObject);
             });
         });
+
+        describe('if update has an error', function () {
+
+            var testError = new Spiro.ErrorRepresentation();
+            var setInvokeUpdateError;
+            var editableProperties = _.filter(testProperties, (tp) => tp.isEditable);
+
+            beforeEach(inject(function ($rootScope, $routeParams, Handlers: Spiro.Angular.HandlersInterface, RepresentationLoader: Spiro.Angular.RLInterface) {
+                populate = spyOnPromiseFail(RepresentationLoader, 'populate', testError);
+                setInvokeUpdateError = spyOn(Handlers, 'setInvokeUpdateError');
+
+               
+
+                (<any>Handlers).updateObject($scope, testObject, testViewModel);
+            }));
+
+            it('should set the error', function () {
+                expect(setInvokeUpdateError).toHaveBeenCalledWith($scope, testError, editableProperties, testViewModel);
+            });
+        });  
 
 
     });
