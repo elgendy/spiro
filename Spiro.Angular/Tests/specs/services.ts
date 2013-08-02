@@ -1490,5 +1490,155 @@ describe('Services', function () {
 
         });
 
+        describe('getObject', function () {
+
+            var testObject = new Spiro.DomainObjectRepresentation(); 
+           
+            var context;
+            var result;
+
+            var getDomainObject;
+            var getService;
+
+            beforeEach(inject(function ($rootScope, $routeParams, Context: Spiro.Angular.ContextInterface, RepresentationLoader: Spiro.Angular.RLInterface) {
+                spyOnPromise(RepresentationLoader, 'populate', testObject);
+                getDomainObject = spyOnPromise(Context, 'getDomainObject', testObject);
+                getService = spyOnPromise(Context, 'getService', testObject);
+
+                spyOn(testObject, 'domainType').andReturn("test");
+                spyOn(testObject, 'instanceId').andReturn("1");
+                spyOn(testObject, 'serviceId').andReturn(undefined);
+
+                context = Context; 
+            }));
+
+            describe('when currentObject is set', function () {
+
+                
+
+                beforeEach(inject(function ($rootScope) {
+
+                    context.setObject(testObject); 
+
+                    runs(function () {
+                        context.getObject("test", "1").then(function (object) {
+                            result = object;
+                        });
+                        $rootScope.$apply();
+                    });
+
+                    waitsFor(function () {
+                        return !!result;
+                    }, "result not set", 1000);
+                }));
+
+
+                it('returns object representation', function () {
+                    expect(getDomainObject).wasNotCalled();
+                    expect(getService).wasNotCalled();
+                    expect(result).toBe(testObject);
+                });
+            });
+
+            describe('when currentObject is not set', function () {
+
+                beforeEach(inject(function ($rootScope) {
+
+                    runs(function () {
+                        context.getObject("test", "1").then(function (object) {
+                            result = object;
+                        });
+                        $rootScope.$apply();
+                    });
+
+                    waitsFor(function () {
+                        return !!result;
+                    }, "result not set", 1000);
+                }));
+
+
+                it('returns object representation', function () {
+                    expect(getDomainObject).toHaveBeenCalledWith("test", "1"); 
+                    expect(getService).wasNotCalled();
+                    expect(result).toBe(testObject);
+                });
+            });
+
+        });
+
+        describe('getService', function () {
+
+            var testObject = new Spiro.DomainObjectRepresentation();
+            
+            var context;
+            var result;
+
+            var getDomainObject;
+            var getService;
+
+            beforeEach(inject(function ($rootScope, $routeParams, Context: Spiro.Angular.ContextInterface, RepresentationLoader: Spiro.Angular.RLInterface) {
+                spyOnPromise(RepresentationLoader, 'populate', testObject);
+                getDomainObject = spyOnPromise(Context, 'getDomainObject', testObject);
+                getService = spyOnPromise(Context, 'getService', testObject);
+
+                spyOn(testObject, 'domainType').andReturn(undefined);
+                spyOn(testObject, 'instanceId').andReturn(undefined);
+                spyOn(testObject, 'serviceId').andReturn("test");
+
+                context = Context;
+            }));
+
+            describe('when currentObject is set', function () {
+
+                beforeEach(inject(function ($rootScope) {
+
+                    context.setObject(testObject);
+
+                    runs(function () {
+                        context.getObject("test").then(function (object) {
+                            result = object;
+                        });
+                        $rootScope.$apply();
+                    });
+
+                    waitsFor(function () {
+                        return !!result;
+                    }, "result not set", 1000);
+                }));
+
+
+                it('returns service representation', function () {
+                    expect(getDomainObject).wasNotCalled();
+                    expect(getService).wasNotCalled();
+                    expect(result).toBe(testObject);
+                });
+            });
+
+            describe('when currentObject is not set', function () {
+
+                beforeEach(inject(function ($rootScope) {
+
+                    runs(function () {
+                        context.getObject("test").then(function (object) {
+                            result = object;
+                        });
+                        $rootScope.$apply();
+                    });
+
+                    waitsFor(function () {
+                        return !!result;
+                    }, "result not set", 1000);
+                }));
+
+
+                it('returns service representation', function () {
+                    expect(getDomainObject).wasNotCalled();
+                    expect(getService).toHaveBeenCalledWith("test");
+                    expect(result).toBe(testObject);
+                });
+            });
+
+        });
+
     });
 });
