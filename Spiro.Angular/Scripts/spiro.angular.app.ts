@@ -30,53 +30,10 @@ module Spiro.Angular {
             });
     });
 
-    export interface ContextInterface {
-        getHome: () => ng.IPromise;
-        getServices: () => ng.IPromise;
-        getObject: (type: string, id?: string) => ng.IPromise;
-        setObject: (object: DomainObjectRepresentation) => void;
-        getNestedObject: (type: string, id: string) => ng.IPromise;
-        setNestedObject: (object: DomainObjectRepresentation) => void;
-
-        getCollection: () => ng.IPromise;
-        setCollection: (list: ListRepresentation) => void;
-
-        getError: () => ErrorRepresentation;
-        setError: (object: ErrorRepresentation) => void;
-
-
-    }
+   
 
     export interface RLInterface {
         populate: (m: HateoasModel, ignoreCache?: bool, r?: HateoasModel) => ng.IPromise;
-    }
-
-    function getUrl(model: HateoasModel): string {
-
-        var url = model.url();
-
-        if (model.method === "GET" || model.method === "DELETE") {
-            var asJson = _.clone((<any>model).attributes);
-
-            if (_.toArray(asJson).length > 0) {
-                var map = JSON.stringify(asJson);
-                var encodedMap = encodeURI(map);
-                url += "?" + encodedMap;
-            }
-        }
-
-        return url;
-    }
-
-    function getData(model: HateoasModel): Object {
-
-        var data = {};
-
-        if (model.method === "POST" || model.method === "PUT") {
-            data = _.clone((<any>model).attributes);
-        }
-
-        return data;
     }
 
     export interface VMFInterface {
@@ -93,7 +50,6 @@ module Spiro.Angular {
         servicesViewModel(servicesRep: DomainServicesRepresentation): ServicesViewModel;
         serviceViewModel(serviceRep: DomainObjectRepresentation): ServiceViewModel;
         domainObjectViewModel(objectRep: DomainObjectRepresentation, save?: (ovm: DomainObjectViewModel) => void ): DomainObjectViewModel;
-
     }
 
     app.service('ViewModelFactory', function ($routeParams, $location) {
@@ -150,11 +106,39 @@ module Spiro.Angular {
         this.domainObjectViewModel = function (objectRep: DomainObjectRepresentation, save?: (ovm: DomainObjectViewModel) => void ) {
             return DomainObjectViewModel.create(objectRep, $routeParams, save);
         };
-
     });
 
     // TODO investigate using transformations to transform results 
     app.service("RepresentationLoader", function ($http, $q) {
+
+        function getUrl(model: HateoasModel): string {
+
+            var url = model.url();
+
+            if (model.method === "GET" || model.method === "DELETE") {
+                var asJson = _.clone((<any>model).attributes);
+
+                if (_.toArray(asJson).length > 0) {
+                    var map = JSON.stringify(asJson);
+                    var encodedMap = encodeURI(map);
+                    url += "?" + encodedMap;
+                }
+            }
+
+            return url;
+        }
+
+        function getData(model: HateoasModel): Object {
+
+            var data = {};
+
+            if (model.method === "POST" || model.method === "PUT") {
+                data = _.clone((<any>model).attributes);
+            }
+
+            return data;
+        }
+
         this.populate = function (model: HateoasModel, ignoreCache?: bool, expected?: HateoasModel) {
 
             var response = expected || model;
@@ -193,6 +177,19 @@ module Spiro.Angular {
         };
     });
 
+    export interface ContextInterface {
+        getHome: () => ng.IPromise;
+        getServices: () => ng.IPromise;
+        getObject: (type: string, id?: string) => ng.IPromise;
+        setObject: (object: DomainObjectRepresentation) => void;
+        getNestedObject: (type: string, id: string) => ng.IPromise;
+        setNestedObject: (object: DomainObjectRepresentation) => void;
+        getCollection: () => ng.IPromise;
+        setCollection: (list: ListRepresentation) => void;
+        getError: () => ErrorRepresentation;
+        setError: (object: ErrorRepresentation) => void;
+    }
+
     app.service('Context', function ($q, RepresentationLoader: RLInterface) {
 
         var currentHome: HomePageRepresentation = null;
@@ -203,7 +200,6 @@ module Spiro.Angular {
         }
 
         this.getDomainObject = function (type: string, id: string) {
-
             var object = new DomainObjectRepresentation();
             object.hateoasUrl = appPath + "/objects/" + type + "/" + id;
             return RepresentationLoader.populate(object);
@@ -357,8 +353,8 @@ module Spiro.Angular {
 
     // TODO rename 
     app.service("Handlers", function ($routeParams, $location, $q, $cacheFactory, RepresentationLoader: RLInterface, Context: ContextInterface, ViewModelFactory: VMFInterface) {
-        
-        var handlers = this; 
+
+        var handlers = this;
 
         // tested
         this.handleCollectionResult = function ($scope) {
@@ -430,7 +426,7 @@ module Spiro.Angular {
                     // otherwise just action with parms 
                 });
         };
-        
+
         // tested
         this.handleProperty = function ($scope) {
             Context.getObject($routeParams.dt, $routeParams.id).
@@ -680,6 +676,6 @@ module Spiro.Angular {
                 }, function (error: any) {
                     handlers.setInvokeUpdateError($scope, error, properties, ovm);
                 });
-        };  
+        };
     });
 }

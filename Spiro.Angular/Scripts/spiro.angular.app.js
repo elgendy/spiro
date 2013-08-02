@@ -18,32 +18,6 @@
             });
         });
 
-        function getUrl(model) {
-            var url = model.url();
-
-            if (model.method === "GET" || model.method === "DELETE") {
-                var asJson = _.clone((model).attributes);
-
-                if (_.toArray(asJson).length > 0) {
-                    var map = JSON.stringify(asJson);
-                    var encodedMap = encodeURI(map);
-                    url += "?" + encodedMap;
-                }
-            }
-
-            return url;
-        }
-
-        function getData(model) {
-            var data = {};
-
-            if (model.method === "POST" || model.method === "PUT") {
-                data = _.clone((model).attributes);
-            }
-
-            return data;
-        }
-
         Angular.app.service('ViewModelFactory', function ($routeParams, $location) {
             this.errorViewModel = function (errorRep) {
                 return Angular.ErrorViewModel.create(errorRep);
@@ -100,6 +74,32 @@
         });
 
         Angular.app.service("RepresentationLoader", function ($http, $q) {
+            function getUrl(model) {
+                var url = model.url();
+
+                if (model.method === "GET" || model.method === "DELETE") {
+                    var asJson = _.clone((model).attributes);
+
+                    if (_.toArray(asJson).length > 0) {
+                        var map = JSON.stringify(asJson);
+                        var encodedMap = encodeURI(map);
+                        url += "?" + encodedMap;
+                    }
+                }
+
+                return url;
+            }
+
+            function getData(model) {
+                var data = {};
+
+                if (model.method === "POST" || model.method === "PUT") {
+                    data = _.clone((model).attributes);
+                }
+
+                return data;
+            }
+
             this.populate = function (model, ignoreCache, expected) {
                 var response = expected || model;
                 var useCache = !ignoreCache;

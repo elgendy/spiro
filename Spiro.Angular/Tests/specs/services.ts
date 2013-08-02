@@ -3,10 +3,7 @@
 /// <reference path="../../Scripts/typings/angularjs/angular-mocks.d.ts" />
 /// <reference path="../../Scripts/spiro.angular.app.ts" />
 
-describe('Handlers Service', function () {
-    var $scope;
-
-    beforeEach(module('app'));
+describe('Services', function () {
 
     function spyOnPromise(tgt: Object, func: string, mock: Object) {
 
@@ -42,7 +39,6 @@ describe('Handlers Service', function () {
 
         return mp;
     }
-
 
     // TODO sure this could be recursive - fix once tests are running 
     function spyOnPromiseFail(tgt: Object, func: string, mock: Object) {
@@ -96,1272 +92,1331 @@ describe('Handlers Service', function () {
         return spyOn(tgt, func).andReturn(mp);
     }
 
+    describe('Handlers Service', function () {
+        var $scope;
 
-    describe('handleCollectionResult', function () {
+        beforeEach(module('app'));
 
-        var getCollection;
+        describe('handleCollectionResult', function () {
 
-        describe('if it finds collection', function () {
+            var getCollection;
 
-
-            var testObject = new Spiro.ListRepresentation();
-            var testViewModel = { test: testObject };
-
-            var collectionViewModel;
+            describe('if it finds collection', function () {
 
 
-            beforeEach(inject(function ($rootScope, Handlers: Spiro.Angular.HandlersInterface, Context: Spiro.Angular.ContextInterface, ViewModelFactory: Spiro.Angular.VMFInterface) {
-                $scope = $rootScope.$new();
+                var testObject = new Spiro.ListRepresentation();
+                var testViewModel = { test: testObject };
 
-                getCollection = spyOnPromise(Context, 'getCollection', testObject);
-                collectionViewModel = spyOn(ViewModelFactory, 'collectionViewModel').andReturn(testViewModel);
-
-                Handlers.handleCollectionResult($scope);
-            }));
+                var collectionViewModel;
 
 
-            it('should update the scope', function () {
-                expect(getCollection).toHaveBeenCalled();
-                expect(collectionViewModel).toHaveBeenCalledWith(testObject);
+                beforeEach(inject(function ($rootScope, Handlers: Spiro.Angular.HandlersInterface, Context: Spiro.Angular.ContextInterface, ViewModelFactory: Spiro.Angular.VMFInterface) {
+                    $scope = $rootScope.$new();
 
-                expect($scope.collection).toEqual(testViewModel);
-                expect($scope.collectionTemplate).toEqual("Content/partials/nestedCollection.html");
-            });
-        });
+                    getCollection = spyOnPromise(Context, 'getCollection', testObject);
+                    collectionViewModel = spyOn(ViewModelFactory, 'collectionViewModel').andReturn(testViewModel);
 
-        describe('if it has an error', function () {
-
-            var testObject = new Spiro.ErrorRepresentation();
-            var setError;
-
-            beforeEach(inject(function ($rootScope, Handlers: Spiro.Angular.HandlersInterface, Context: Spiro.Angular.ContextInterface) {
-                $scope = $rootScope.$new();
-
-                getCollection = spyOnPromiseFail(Context, 'getCollection', testObject);
-                setError = spyOn(Context, 'setError');
-
-                Handlers.handleCollectionResult($scope);
-            }));
-
-
-            it('should update the context', function () {
-                expect(getCollection).toHaveBeenCalled();
-                expect(setError).toHaveBeenCalledWith(testObject);
-
-                expect($scope.collection).toBeUndefined();
-                expect($scope.collectionTemplate).toBeUndefined();
-            });
-        });
-    });
-
-    describe('handleCollection', function () {
-
-        var getObject;
-
-        describe('if it finds object', function () {
-
-            var testObject = new Spiro.DomainObjectRepresentation();
-            var testMember = new Spiro.CollectionMember({}, testObject);
-            var testDetails = new Spiro.CollectionRepresentation();
-            var testViewModel = { test: testObject };
-
-
-            var collectionMember;
-            var collectionDetails;
-            var populate;
-            var collectionViewModel;
-
-            beforeEach(inject(function ($rootScope, $routeParams, Handlers: Spiro.Angular.HandlersInterface, Context: Spiro.Angular.ContextInterface, ViewModelFactory: Spiro.Angular.VMFInterface, RepresentationLoader: Spiro.Angular.RLInterface) {
-                $scope = $rootScope.$new();
-
-                getObject = spyOnPromise(Context, 'getObject', testObject);
-
-                collectionMember = spyOn(testObject, "collectionMember").andReturn(testMember);
-                collectionDetails = spyOn(testMember, "getDetails").andReturn(testDetails);
-                populate = spyOnPromise(RepresentationLoader, "populate", testDetails);
-                collectionViewModel = spyOn(ViewModelFactory, 'collectionViewModel').andReturn(testViewModel);
-
-
-                $routeParams.dt = "test";
-                $routeParams.id = "1";
-                $routeParams.collection = "aCollection";
-
-                Handlers.handleCollection($scope);
-            }));
-
-
-            it('should update the scope', function () {
-                expect(getObject).toHaveBeenCalledWith("test", "1");
-                expect(collectionMember).toHaveBeenCalledWith("aCollection");
-                expect(collectionDetails).toHaveBeenCalled();
-                expect(populate).toHaveBeenCalledWith(testDetails);
-                expect(collectionViewModel).toHaveBeenCalledWith(testDetails);
-
-                expect($scope.collection).toEqual(testViewModel);
-                expect($scope.collectionTemplate).toEqual("Content/partials/nestedCollection.html");
-            });
-
-        });
-
-        describe('if it has an error', function () {
-
-            var testObject = new Spiro.ErrorRepresentation();
-            var setError;
-
-            beforeEach(inject(function ($rootScope, $routeParams, Handlers: Spiro.Angular.HandlersInterface, Context: Spiro.Angular.ContextInterface) {
-                $scope = $rootScope.$new();
-
-                getObject = spyOnPromiseNestedFail(Context, 'getObject', testObject);
-                setError = spyOn(Context, 'setError');
-
-                $routeParams.dt = "test";
-                $routeParams.id = "1";
-
-                Handlers.handleCollection($scope);
-            }));
-
-
-            it('should update the context', function () {
-                expect(getObject).toHaveBeenCalledWith("test", "1");
-                expect(setError).toHaveBeenCalledWith(testObject);
-
-                expect($scope.collection).toBeUndefined();
-                expect($scope.collectionTemplate).toBeUndefined();
-            });
-        });
-
-    });
-
-    describe('handleActionDialog', function () {
-
-        var getObject;
-
-        describe('if it finds object', function () {
-
-            var testObject = new Spiro.DomainObjectRepresentation();
-            var testMember = new Spiro.ActionMember({}, testObject);
-            var testDetails = new Spiro.ActionRepresentation();
-            var testViewModel = { test: testObject };
-
-            var actionMember;
-            var actionDetails;
-            var populate;
-            var dialogViewModel;
-
-            beforeEach(inject(function ($rootScope, $routeParams, Handlers: Spiro.Angular.HandlersInterface, Context: Spiro.Angular.ContextInterface, ViewModelFactory: Spiro.Angular.VMFInterface, RepresentationLoader: Spiro.Angular.RLInterface) {
-                $scope = $rootScope.$new();
-
-                getObject = spyOnPromise(Context, 'getObject', testObject);
-
-                actionMember = spyOn(testObject, "actionMember").andReturn(testMember);
-                actionDetails = spyOn(testMember, "getDetails").andReturn(testDetails);
-                populate = spyOnPromise(RepresentationLoader, "populate", testDetails);
-                dialogViewModel = spyOn(ViewModelFactory, 'dialogViewModel').andReturn(testViewModel);
-
-            }));
-
-            describe('if it is a service', function () {
-
-                beforeEach(inject(function ($rootScope, $routeParams, Handlers: Spiro.Angular.HandlersInterface) {
-                    spyOn(testDetails, "extensions").andReturn({ hasParams: true });
-
-                    $routeParams.sid = "testService";
-                    $routeParams.action = "anAction";
-
-                    Handlers.handleActionDialog($scope);
+                    Handlers.handleCollectionResult($scope);
                 }));
 
-                it('should update the scope', function () {
-                    expect(getObject).toHaveBeenCalledWith("testService", undefined);
-                    expect(actionMember).toHaveBeenCalledWith("anAction");
-                    expect(actionDetails).toHaveBeenCalled();
-                    expect(populate).toHaveBeenCalledWith(testDetails);
-                    expect(dialogViewModel).toHaveBeenCalledWith(testDetails, jasmine.any(Function));
 
-                    expect($scope.dialog).toEqual(testViewModel);
-                    expect($scope.dialogTemplate).toEqual("Content/partials/dialog.html");
+                it('should update the scope', function () {
+                    expect(getCollection).toHaveBeenCalled();
+                    expect(collectionViewModel).toHaveBeenCalledWith(testObject);
+
+                    expect($scope.collection).toEqual(testViewModel);
+                    expect($scope.collectionTemplate).toEqual("Content/partials/nestedCollection.html");
+                });
+            });
+
+            describe('if it has an error', function () {
+
+                var testObject = new Spiro.ErrorRepresentation();
+                var setError;
+
+                beforeEach(inject(function ($rootScope, Handlers: Spiro.Angular.HandlersInterface, Context: Spiro.Angular.ContextInterface) {
+                    $scope = $rootScope.$new();
+
+                    getCollection = spyOnPromiseFail(Context, 'getCollection', testObject);
+                    setError = spyOn(Context, 'setError');
+
+                    Handlers.handleCollectionResult($scope);
+                }));
+
+
+                it('should update the context', function () {
+                    expect(getCollection).toHaveBeenCalled();
+                    expect(setError).toHaveBeenCalledWith(testObject);
+
+                    expect($scope.collection).toBeUndefined();
+                    expect($scope.collectionTemplate).toBeUndefined();
+                });
+            });
+        });
+
+        describe('handleCollection', function () {
+
+            var getObject;
+
+            describe('if it finds object', function () {
+
+                var testObject = new Spiro.DomainObjectRepresentation();
+                var testMember = new Spiro.CollectionMember({}, testObject);
+                var testDetails = new Spiro.CollectionRepresentation();
+                var testViewModel = { test: testObject };
+
+
+                var collectionMember;
+                var collectionDetails;
+                var populate;
+                var collectionViewModel;
+
+                beforeEach(inject(function ($rootScope, $routeParams, Handlers: Spiro.Angular.HandlersInterface, Context: Spiro.Angular.ContextInterface, ViewModelFactory: Spiro.Angular.VMFInterface, RepresentationLoader: Spiro.Angular.RLInterface) {
+                    $scope = $rootScope.$new();
+
+                    getObject = spyOnPromise(Context, 'getObject', testObject);
+
+                    collectionMember = spyOn(testObject, "collectionMember").andReturn(testMember);
+                    collectionDetails = spyOn(testMember, "getDetails").andReturn(testDetails);
+                    populate = spyOnPromise(RepresentationLoader, "populate", testDetails);
+                    collectionViewModel = spyOn(ViewModelFactory, 'collectionViewModel').andReturn(testViewModel);
+
+
+                    $routeParams.dt = "test";
+                    $routeParams.id = "1";
+                    $routeParams.collection = "aCollection";
+
+                    Handlers.handleCollection($scope);
+                }));
+
+
+                it('should update the scope', function () {
+                    expect(getObject).toHaveBeenCalledWith("test", "1");
+                    expect(collectionMember).toHaveBeenCalledWith("aCollection");
+                    expect(collectionDetails).toHaveBeenCalled();
+                    expect(populate).toHaveBeenCalledWith(testDetails);
+                    expect(collectionViewModel).toHaveBeenCalledWith(testDetails);
+
+                    expect($scope.collection).toEqual(testViewModel);
+                    expect($scope.collectionTemplate).toEqual("Content/partials/nestedCollection.html");
                 });
 
             });
 
+            describe('if it has an error', function () {
 
+                var testObject = new Spiro.ErrorRepresentation();
+                var setError;
 
-            describe('if it has params', function () {
+                beforeEach(inject(function ($rootScope, $routeParams, Handlers: Spiro.Angular.HandlersInterface, Context: Spiro.Angular.ContextInterface) {
+                    $scope = $rootScope.$new();
 
-                beforeEach(inject(function ($rootScope, $routeParams, Handlers: Spiro.Angular.HandlersInterface) {
-                    spyOn(testDetails, "extensions").andReturn({ hasParams: true });
+                    getObject = spyOnPromiseNestedFail(Context, 'getObject', testObject);
+                    setError = spyOn(Context, 'setError');
+
                     $routeParams.dt = "test";
                     $routeParams.id = "1";
-                    $routeParams.action = "anAction";
 
-                    Handlers.handleActionDialog($scope);
+                    Handlers.handleCollection($scope);
                 }));
 
-                it('should update the scope', function () {
-                    expect(getObject).toHaveBeenCalledWith("test", "1");
-                    expect(actionMember).toHaveBeenCalledWith("anAction");
-                    expect(actionDetails).toHaveBeenCalled();
-                    expect(populate).toHaveBeenCalledWith(testDetails);
-                    expect(dialogViewModel).toHaveBeenCalledWith(testDetails, jasmine.any(Function));
 
-                    expect($scope.dialog).toEqual(testViewModel);
-                    expect($scope.dialogTemplate).toEqual("Content/partials/dialog.html");
+                it('should update the context', function () {
+                    expect(getObject).toHaveBeenCalledWith("test", "1");
+                    expect(setError).toHaveBeenCalledWith(testObject);
+
+                    expect($scope.collection).toBeUndefined();
+                    expect($scope.collectionTemplate).toBeUndefined();
+                });
+            });
+
+        });
+
+        describe('handleActionDialog', function () {
+
+            var getObject;
+
+            describe('if it finds object', function () {
+
+                var testObject = new Spiro.DomainObjectRepresentation();
+                var testMember = new Spiro.ActionMember({}, testObject);
+                var testDetails = new Spiro.ActionRepresentation();
+                var testViewModel = { test: testObject };
+
+                var actionMember;
+                var actionDetails;
+                var populate;
+                var dialogViewModel;
+
+                beforeEach(inject(function ($rootScope, $routeParams, Handlers: Spiro.Angular.HandlersInterface, Context: Spiro.Angular.ContextInterface, ViewModelFactory: Spiro.Angular.VMFInterface, RepresentationLoader: Spiro.Angular.RLInterface) {
+                    $scope = $rootScope.$new();
+
+                    getObject = spyOnPromise(Context, 'getObject', testObject);
+
+                    actionMember = spyOn(testObject, "actionMember").andReturn(testMember);
+                    actionDetails = spyOn(testMember, "getDetails").andReturn(testDetails);
+                    populate = spyOnPromise(RepresentationLoader, "populate", testDetails);
+                    dialogViewModel = spyOn(ViewModelFactory, 'dialogViewModel').andReturn(testViewModel);
+
+                }));
+
+                describe('if it is a service', function () {
+
+                    beforeEach(inject(function ($rootScope, $routeParams, Handlers: Spiro.Angular.HandlersInterface) {
+                        spyOn(testDetails, "extensions").andReturn({ hasParams: true });
+
+                        $routeParams.sid = "testService";
+                        $routeParams.action = "anAction";
+
+                        Handlers.handleActionDialog($scope);
+                    }));
+
+                    it('should update the scope', function () {
+                        expect(getObject).toHaveBeenCalledWith("testService", undefined);
+                        expect(actionMember).toHaveBeenCalledWith("anAction");
+                        expect(actionDetails).toHaveBeenCalled();
+                        expect(populate).toHaveBeenCalledWith(testDetails);
+                        expect(dialogViewModel).toHaveBeenCalledWith(testDetails, jasmine.any(Function));
+
+                        expect($scope.dialog).toEqual(testViewModel);
+                        expect($scope.dialogTemplate).toEqual("Content/partials/dialog.html");
+                    });
+
+                });
+
+
+
+                describe('if it has params', function () {
+
+                    beforeEach(inject(function ($rootScope, $routeParams, Handlers: Spiro.Angular.HandlersInterface) {
+                        spyOn(testDetails, "extensions").andReturn({ hasParams: true });
+                        $routeParams.dt = "test";
+                        $routeParams.id = "1";
+                        $routeParams.action = "anAction";
+
+                        Handlers.handleActionDialog($scope);
+                    }));
+
+                    it('should update the scope', function () {
+                        expect(getObject).toHaveBeenCalledWith("test", "1");
+                        expect(actionMember).toHaveBeenCalledWith("anAction");
+                        expect(actionDetails).toHaveBeenCalled();
+                        expect(populate).toHaveBeenCalledWith(testDetails);
+                        expect(dialogViewModel).toHaveBeenCalledWith(testDetails, jasmine.any(Function));
+
+                        expect($scope.dialog).toEqual(testViewModel);
+                        expect($scope.dialogTemplate).toEqual("Content/partials/dialog.html");
+                    });
+
+                });
+
+                describe('if it has no params', function () {
+
+                    beforeEach(inject(function ($rootScope, $routeParams, Handlers: Spiro.Angular.HandlersInterface) {
+                        spyOn(testDetails, "extensions").andReturn({ hasParams: false });
+                        $routeParams.dt = "test";
+                        $routeParams.id = "1";
+                        $routeParams.action = "anAction";
+
+                        Handlers.handleActionDialog($scope);
+                    }));
+
+                    it('should update the scope', function () {
+                        expect(getObject).toHaveBeenCalledWith("test", "1");
+                        expect(actionMember).toHaveBeenCalledWith("anAction");
+                        expect(actionDetails).toHaveBeenCalled();
+                        expect(populate).toHaveBeenCalledWith(testDetails);
+                        expect(dialogViewModel).wasNotCalled();
+
+                        expect($scope.dialog).toBeUndefined();
+                        expect($scope.dialogTemplate).toBeUndefined();
+                    });
+
                 });
 
             });
 
-            describe('if it has no params', function () {
+            describe('if it has an error', function () {
 
-                beforeEach(inject(function ($rootScope, $routeParams, Handlers: Spiro.Angular.HandlersInterface) {
-                    spyOn(testDetails, "extensions").andReturn({ hasParams: false });
+                var testObject = new Spiro.ErrorRepresentation();
+                var setError;
+
+                beforeEach(inject(function ($rootScope, $routeParams, Handlers: Spiro.Angular.HandlersInterface, Context: Spiro.Angular.ContextInterface) {
+                    $scope = $rootScope.$new();
+
+                    getObject = spyOnPromiseNestedFail(Context, 'getObject', testObject);
+                    setError = spyOn(Context, 'setError');
+
                     $routeParams.dt = "test";
                     $routeParams.id = "1";
-                    $routeParams.action = "anAction";
 
                     Handlers.handleActionDialog($scope);
                 }));
 
-                it('should update the scope', function () {
+
+                it('should update the context', function () {
                     expect(getObject).toHaveBeenCalledWith("test", "1");
-                    expect(actionMember).toHaveBeenCalledWith("anAction");
-                    expect(actionDetails).toHaveBeenCalled();
-                    expect(populate).toHaveBeenCalledWith(testDetails);
-                    expect(dialogViewModel).wasNotCalled();
+                    expect(setError).toHaveBeenCalledWith(testObject);
 
                     expect($scope.dialog).toBeUndefined();
                     expect($scope.dialogTemplate).toBeUndefined();
                 });
-
             });
 
         });
 
-        describe('if it has an error', function () {
+        describe('handleActionResult', function () {
 
-            var testObject = new Spiro.ErrorRepresentation();
-            var setError;
+            var getObject;
 
-            beforeEach(inject(function ($rootScope, $routeParams, Handlers: Spiro.Angular.HandlersInterface, Context: Spiro.Angular.ContextInterface) {
-                $scope = $rootScope.$new();
+            describe('if it finds object', function () {
 
-                getObject = spyOnPromiseNestedFail(Context, 'getObject', testObject);
-                setError = spyOn(Context, 'setError');
+                var testObject = new Spiro.DomainObjectRepresentation();
+                var testMember = new Spiro.ActionMember({}, testObject);
+                var testDetails = new Spiro.ActionRepresentation();
+                var testResult = new Spiro.ActionResultRepresentation();
 
-                $routeParams.dt = "test";
-                $routeParams.id = "1";
+                var actionMember;
+                var actionDetails;
+                var actionResult;
+                var populate;
+                var setResult;
 
-                Handlers.handleActionDialog($scope);
-            }));
+                beforeEach(inject(function ($rootScope, $routeParams, Handlers: Spiro.Angular.HandlersInterface, Context: Spiro.Angular.ContextInterface, ViewModelFactory: Spiro.Angular.VMFInterface, RepresentationLoader: Spiro.Angular.RLInterface) {
+                    $scope = $rootScope.$new();
 
+                    getObject = spyOnPromise(Context, 'getObject', testObject);
 
-            it('should update the context', function () {
-                expect(getObject).toHaveBeenCalledWith("test", "1");
-                expect(setError).toHaveBeenCalledWith(testObject);
+                    actionMember = spyOn(testObject, "actionMember").andReturn(testMember);
+                    actionDetails = spyOn(testMember, "getDetails").andReturn(testDetails);
+                    actionResult = spyOn(testDetails, "getInvoke").andReturn(testResult);
+                    populate = spyOnPromiseConditional(RepresentationLoader, "populate", testDetails, testResult);
 
-                expect($scope.dialog).toBeUndefined();
-                expect($scope.dialogTemplate).toBeUndefined();
-            });
-        });
-
-    });
-
-    describe('handleActionResult', function () {
-
-        var getObject;
-
-        describe('if it finds object', function () {
-
-            var testObject = new Spiro.DomainObjectRepresentation();
-            var testMember = new Spiro.ActionMember({}, testObject);
-            var testDetails = new Spiro.ActionRepresentation();
-            var testResult = new Spiro.ActionResultRepresentation();
-
-            var actionMember;
-            var actionDetails;
-            var actionResult;
-            var populate;
-            var setResult;
-
-            beforeEach(inject(function ($rootScope, $routeParams, Handlers: Spiro.Angular.HandlersInterface, Context: Spiro.Angular.ContextInterface, ViewModelFactory: Spiro.Angular.VMFInterface, RepresentationLoader: Spiro.Angular.RLInterface) {
-                $scope = $rootScope.$new();
-
-                getObject = spyOnPromise(Context, 'getObject', testObject);
-
-                actionMember = spyOn(testObject, "actionMember").andReturn(testMember);
-                actionDetails = spyOn(testMember, "getDetails").andReturn(testDetails);
-                actionResult = spyOn(testDetails, "getInvoke").andReturn(testResult);
-                populate = spyOnPromiseConditional(RepresentationLoader, "populate", testDetails, testResult);
-
-                setResult = spyOn(Handlers, "setResult");
-            }));
-
-            describe('if it is a service', function () {
-
-                beforeEach(inject(function ($rootScope, $routeParams, Handlers: Spiro.Angular.HandlersInterface) {
-                    spyOn(testMember, "extensions").andReturn({ hasParams: false });
-
-                    $routeParams.sid = "testService";
-                    $routeParams.action = "anAction";
-
-                    Handlers.handleActionResult($scope);
+                    setResult = spyOn(Handlers, "setResult");
                 }));
 
-                it('should update the scope', function () {
-                    expect(getObject).toHaveBeenCalledWith("testService", undefined);
-                    expect(actionMember).toHaveBeenCalledWith("anAction");
-                    expect(actionDetails).toHaveBeenCalled();
-                    expect(actionResult).toHaveBeenCalled();
+                describe('if it is a service', function () {
 
-                    expect(populate).toHaveBeenCalled();
-                    expect(setResult).toHaveBeenCalled();
+                    beforeEach(inject(function ($rootScope, $routeParams, Handlers: Spiro.Angular.HandlersInterface) {
+                        spyOn(testMember, "extensions").andReturn({ hasParams: false });
+
+                        $routeParams.sid = "testService";
+                        $routeParams.action = "anAction";
+
+                        Handlers.handleActionResult($scope);
+                    }));
+
+                    it('should update the scope', function () {
+                        expect(getObject).toHaveBeenCalledWith("testService", undefined);
+                        expect(actionMember).toHaveBeenCalledWith("anAction");
+                        expect(actionDetails).toHaveBeenCalled();
+                        expect(actionResult).toHaveBeenCalled();
+
+                        expect(populate).toHaveBeenCalled();
+                        expect(setResult).toHaveBeenCalled();
+                    });
+
+                });
+
+                describe('if it has no params', function () {
+
+                    beforeEach(inject(function ($rootScope, $routeParams, Handlers: Spiro.Angular.HandlersInterface) {
+                        spyOn(testMember, "extensions").andReturn({ hasParams: false });
+                        $routeParams.dt = "test";
+                        $routeParams.id = "1";
+                        $routeParams.action = "anAction";
+
+                        Handlers.handleActionResult($scope);
+                    }));
+
+                    it('should update the scope', function () {
+                        expect(getObject).toHaveBeenCalledWith("test", "1");
+                        expect(actionMember).toHaveBeenCalledWith("anAction");
+                        expect(actionDetails).toHaveBeenCalled();
+                        expect(actionResult).toHaveBeenCalled();
+
+                        expect(populate).toHaveBeenCalled();
+                        expect(setResult).toHaveBeenCalled();
+                    });
+
+                });
+
+                describe('if it has params', function () {
+
+                    beforeEach(inject(function ($rootScope, $routeParams, Handlers: Spiro.Angular.HandlersInterface) {
+                        spyOn(testMember, "extensions").andReturn({ hasParams: true });
+                        $routeParams.dt = "test";
+                        $routeParams.id = "1";
+                        $routeParams.action = "anAction";
+
+                        Handlers.handleActionResult($scope);
+                    }));
+
+                    it('should not update the scope', function () {
+                        expect(getObject).toHaveBeenCalledWith("test", "1");
+                        expect(actionMember).toHaveBeenCalledWith("anAction");
+                        expect(actionDetails).wasNotCalled();
+                        expect(actionResult).wasNotCalled();
+
+                        expect(setResult).wasNotCalled();
+                    });
+
                 });
 
             });
 
-            describe('if it has no params', function () {
+            describe('if it has an error', function () {
 
-                beforeEach(inject(function ($rootScope, $routeParams, Handlers: Spiro.Angular.HandlersInterface) {
-                    spyOn(testMember, "extensions").andReturn({ hasParams: false });
+                var testObject = new Spiro.ErrorRepresentation();
+                var setError;
+
+                beforeEach(inject(function ($rootScope, $routeParams, Handlers: Spiro.Angular.HandlersInterface, Context: Spiro.Angular.ContextInterface) {
+                    $scope = $rootScope.$new();
+
+                    getObject = spyOnPromise2NestedFail(Context, 'getObject', testObject);
+                    setError = spyOn(Context, 'setError');
+
                     $routeParams.dt = "test";
                     $routeParams.id = "1";
-                    $routeParams.action = "anAction";
 
                     Handlers.handleActionResult($scope);
+                }));
+
+
+                it('should update the context', function () {
+                    expect(getObject).toHaveBeenCalledWith("test", "1");
+                    expect(setError).toHaveBeenCalledWith(testObject);
+
+                    expect($scope.dialog).toBeUndefined();
+                    expect($scope.dialogTemplate).toBeUndefined();
+                });
+            });
+
+        });
+
+        describe('handleProperty', function () {
+
+            var getObject;
+
+            describe('if it finds object', function () {
+
+                var testObject = new Spiro.DomainObjectRepresentation();
+                var testMember = new Spiro.PropertyMember({}, testObject);
+                var testDetails = new Spiro.PropertyRepresentation();
+                var testValue = new Spiro.Value({});
+                var testLink = new Spiro.Link();
+                var testTarget = new Spiro.DomainObjectRepresentation();
+                var testViewModel = { test: testTarget };
+
+                var propertyMember;
+                var propertyDetails;
+                var setNestedObject;
+                var objectViewModel;
+
+                var populate;
+
+                beforeEach(inject(function ($rootScope, $routeParams, Handlers: Spiro.Angular.HandlersInterface, Context: Spiro.Angular.ContextInterface, ViewModelFactory: Spiro.Angular.VMFInterface, RepresentationLoader: Spiro.Angular.RLInterface) {
+                    $scope = $rootScope.$new();
+
+                    getObject = spyOnPromise(Context, 'getObject', testObject);
+
+                    propertyMember = spyOn(testObject, "propertyMember").andReturn(testMember);
+                    propertyDetails = spyOn(testMember, "getDetails").andReturn(testDetails);
+
+                    spyOn(testDetails, "value").andReturn(testValue);
+                    spyOn(testValue, "link").andReturn(testLink);
+                    spyOn(testLink, "getTarget").andReturn(testTarget);
+
+                    populate = spyOnPromiseConditional(RepresentationLoader, "populate", testDetails, testTarget);
+
+                    objectViewModel = spyOn(ViewModelFactory, 'domainObjectViewModel').andReturn(testViewModel);
+                    setNestedObject = spyOn(Context, 'setNestedObject');
+
+                    $routeParams.dt = "test";
+                    $routeParams.id = "1";
+                    $routeParams.property = "aProperty";
+
+                    Handlers.handleProperty($scope);
                 }));
 
                 it('should update the scope', function () {
                     expect(getObject).toHaveBeenCalledWith("test", "1");
-                    expect(actionMember).toHaveBeenCalledWith("anAction");
-                    expect(actionDetails).toHaveBeenCalled();
-                    expect(actionResult).toHaveBeenCalled();
+                    expect(propertyMember).toHaveBeenCalledWith("aProperty");
+                    expect(propertyDetails).toHaveBeenCalled();
 
                     expect(populate).toHaveBeenCalled();
-                    expect(setResult).toHaveBeenCalled();
+
+                    expect(setNestedObject).toHaveBeenCalledWith(testTarget);
+
+                    expect($scope.result).toEqual(testViewModel);
+                    expect($scope.nestedTemplate).toEqual("Content/partials/nestedObject.html");
                 });
+
 
             });
 
-            describe('if it has params', function () {
+            describe('if it has an error', function () {
 
-                beforeEach(inject(function ($rootScope, $routeParams, Handlers: Spiro.Angular.HandlersInterface) {
-                    spyOn(testMember, "extensions").andReturn({ hasParams: true });
+                var testObject = new Spiro.ErrorRepresentation();
+                var setError;
+
+                beforeEach(inject(function ($rootScope, $routeParams, Handlers: Spiro.Angular.HandlersInterface, Context: Spiro.Angular.ContextInterface) {
+                    $scope = $rootScope.$new();
+
+                    getObject = spyOnPromise2NestedFail(Context, 'getObject', testObject);
+                    setError = spyOn(Context, 'setError');
+
                     $routeParams.dt = "test";
                     $routeParams.id = "1";
-                    $routeParams.action = "anAction";
 
-                    Handlers.handleActionResult($scope);
+                    Handlers.handleProperty($scope);
                 }));
 
-                it('should not update the scope', function () {
-                    expect(getObject).toHaveBeenCalledWith("test", "1");
-                    expect(actionMember).toHaveBeenCalledWith("anAction");
-                    expect(actionDetails).wasNotCalled();
-                    expect(actionResult).wasNotCalled();
 
-                    expect(setResult).wasNotCalled();
+                it('should update the context', function () {
+                    expect(getObject).toHaveBeenCalledWith("test", "1");
+                    expect(setError).toHaveBeenCalledWith(testObject);
+
+                    expect($scope.dialog).toBeUndefined();
+                    expect($scope.dialogTemplate).toBeUndefined();
+                });
+            });
+
+        });
+
+
+        describe('handleResult', function () {
+            var getNestedObject;
+
+            describe('if it finds object', function () {
+
+                var testObject = new Spiro.DomainObjectRepresentation();
+                var testViewModel = { test: testObject };
+
+                var objectViewModel;
+                var setNestedObject;
+
+                beforeEach(inject(function ($rootScope, $routeParams, Handlers: Spiro.Angular.HandlersInterface, Context: Spiro.Angular.ContextInterface, ViewModelFactory: Spiro.Angular.VMFInterface) {
+                    $scope = $rootScope.$new();
+
+                    getNestedObject = spyOnPromise(Context, 'getNestedObject', testObject);
+
+                    objectViewModel = spyOn(ViewModelFactory, 'domainObjectViewModel').andReturn(testViewModel);
+                    setNestedObject = spyOn(Context, 'setNestedObject');
+
+
+                    $routeParams.resultObject = "test-1";
+
+                    Handlers.handleResult($scope);
+                }));
+
+
+                it('should update the scope', function () {
+                    expect(getNestedObject).toHaveBeenCalledWith("test", "1");
+                    expect(objectViewModel).toHaveBeenCalledWith(testObject);
+                    expect(setNestedObject).toHaveBeenCalledWith(testObject);
+
+                    expect($scope.result).toEqual(testViewModel);
+                    expect($scope.nestedTemplate).toEqual("Content/partials/nestedObject.html");
                 });
 
             });
 
-        });
+            describe('if it has an error', function () {
 
-        describe('if it has an error', function () {
+                var testObject = new Spiro.ErrorRepresentation();
+                var setError;
 
-            var testObject = new Spiro.ErrorRepresentation();
-            var setError;
+                beforeEach(inject(function ($rootScope, $routeParams, Handlers: Spiro.Angular.HandlersInterface, Context: Spiro.Angular.ContextInterface) {
+                    $scope = $rootScope.$new();
 
-            beforeEach(inject(function ($rootScope, $routeParams, Handlers: Spiro.Angular.HandlersInterface, Context: Spiro.Angular.ContextInterface) {
-                $scope = $rootScope.$new();
+                    getNestedObject = spyOnPromiseFail(Context, 'getNestedObject', testObject);
+                    setError = spyOn(Context, 'setError');
 
-                getObject = spyOnPromise2NestedFail(Context, 'getObject', testObject);
-                setError = spyOn(Context, 'setError');
+                    $routeParams.resultObject = "test-1";
 
-                $routeParams.dt = "test";
-                $routeParams.id = "1";
-
-                Handlers.handleActionResult($scope);
-            }));
+                    Handlers.handleResult($scope);
+                }));
 
 
-            it('should update the context', function () {
-                expect(getObject).toHaveBeenCalledWith("test", "1");
-                expect(setError).toHaveBeenCalledWith(testObject);
+                it('should update the context', function () {
+                    expect(getNestedObject).toHaveBeenCalledWith("test", "1");
+                    expect(setError).toHaveBeenCalledWith(testObject);
 
-                expect($scope.dialog).toBeUndefined();
-                expect($scope.dialogTemplate).toBeUndefined();
+                    expect($scope.result).toBeUndefined();
+                    expect($scope.nestedTemplate).toBeUndefined();
+                });
             });
         });
 
-    });
+        describe('handleCollectionItem', function () {
+            var getNestedObject;
 
-    describe('handleProperty', function () {
+            describe('if it finds object', function () {
 
-        var getObject;
+                var testObject = new Spiro.DomainObjectRepresentation();
+                var testViewModel = { test: testObject };
 
-        describe('if it finds object', function () {
+                var objectViewModel;
+                var setNestedObject;
 
-            var testObject = new Spiro.DomainObjectRepresentation();
-            var testMember = new Spiro.PropertyMember({}, testObject);
-            var testDetails = new Spiro.PropertyRepresentation();
-            var testValue = new Spiro.Value({});
-            var testLink = new Spiro.Link();
-            var testTarget = new Spiro.DomainObjectRepresentation();
-            var testViewModel = { test: testTarget };
+                beforeEach(inject(function ($rootScope, $routeParams, Handlers: Spiro.Angular.HandlersInterface, Context: Spiro.Angular.ContextInterface, ViewModelFactory: Spiro.Angular.VMFInterface) {
+                    $scope = $rootScope.$new();
 
-            var propertyMember;
-            var propertyDetails;
-            var setNestedObject;
-            var objectViewModel;
+                    getNestedObject = spyOnPromise(Context, 'getNestedObject', testObject);
 
-            var populate;
+                    objectViewModel = spyOn(ViewModelFactory, 'domainObjectViewModel').andReturn(testViewModel);
+                    setNestedObject = spyOn(Context, 'setNestedObject');
 
-            beforeEach(inject(function ($rootScope, $routeParams, Handlers: Spiro.Angular.HandlersInterface, Context: Spiro.Angular.ContextInterface, ViewModelFactory: Spiro.Angular.VMFInterface, RepresentationLoader: Spiro.Angular.RLInterface) {
-                $scope = $rootScope.$new();
+                    $routeParams.collectionItem = "test/1";
 
-                getObject = spyOnPromise(Context, 'getObject', testObject);
+                    Handlers.handleCollectionItem($scope);
+                }));
 
-                propertyMember = spyOn(testObject, "propertyMember").andReturn(testMember);
-                propertyDetails = spyOn(testMember, "getDetails").andReturn(testDetails);
 
-                spyOn(testDetails, "value").andReturn(testValue);
-                spyOn(testValue, "link").andReturn(testLink);
-                spyOn(testLink, "getTarget").andReturn(testTarget);
+                it('should update the scope', function () {
+                    expect(getNestedObject).toHaveBeenCalledWith("test", "1");
+                    expect(objectViewModel).toHaveBeenCalledWith(testObject);
+                    expect(setNestedObject).toHaveBeenCalledWith(testObject);
 
-                populate = spyOnPromiseConditional(RepresentationLoader, "populate", testDetails, testTarget);
+                    expect($scope.result).toEqual(testViewModel);
+                    expect($scope.nestedTemplate).toEqual("Content/partials/nestedObject.html");
+                });
 
-                objectViewModel = spyOn(ViewModelFactory, 'domainObjectViewModel').andReturn(testViewModel);
-                setNestedObject = spyOn(Context, 'setNestedObject');
+            });
 
-                $routeParams.dt = "test";
-                $routeParams.id = "1";
-                $routeParams.property = "aProperty";
+            describe('if it has an error', function () {
 
-                Handlers.handleProperty($scope);
-            }));
+                var testObject = new Spiro.ErrorRepresentation();
+                var setError;
 
-            it('should update the scope', function () {
-                expect(getObject).toHaveBeenCalledWith("test", "1");
-                expect(propertyMember).toHaveBeenCalledWith("aProperty");
-                expect(propertyDetails).toHaveBeenCalled();
+                beforeEach(inject(function ($rootScope, $routeParams, Handlers: Spiro.Angular.HandlersInterface, Context: Spiro.Angular.ContextInterface) {
+                    $scope = $rootScope.$new();
 
-                expect(populate).toHaveBeenCalled();
+                    getNestedObject = spyOnPromiseFail(Context, 'getNestedObject', testObject);
+                    setError = spyOn(Context, 'setError');
 
-                expect(setNestedObject).toHaveBeenCalledWith(testTarget);
+                    $routeParams.collectionItem = "test/1";
 
-                expect($scope.result).toEqual(testViewModel);
-                expect($scope.nestedTemplate).toEqual("Content/partials/nestedObject.html");
+                    Handlers.handleCollectionItem($scope);
+                }));
+
+
+                it('should update the context', function () {
+                    expect(getNestedObject).toHaveBeenCalledWith("test", "1");
+                    expect(setError).toHaveBeenCalledWith(testObject);
+
+                    expect($scope.result).toBeUndefined();
+                    expect($scope.nestedTemplate).toBeUndefined();
+                });
             });
 
 
         });
 
-        describe('if it has an error', function () {
-
-            var testObject = new Spiro.ErrorRepresentation();
-            var setError;
-
-            beforeEach(inject(function ($rootScope, $routeParams, Handlers: Spiro.Angular.HandlersInterface, Context: Spiro.Angular.ContextInterface) {
-                $scope = $rootScope.$new();
-
-                getObject = spyOnPromise2NestedFail(Context, 'getObject', testObject);
-                setError = spyOn(Context, 'setError');
-
-                $routeParams.dt = "test";
-                $routeParams.id = "1";
-
-                Handlers.handleProperty($scope);
-            }));
 
 
-            it('should update the context', function () {
-                expect(getObject).toHaveBeenCalledWith("test", "1");
-                expect(setError).toHaveBeenCalledWith(testObject);
+        describe('handleServices', function () {
+            var getServices;
 
-                expect($scope.dialog).toBeUndefined();
-                expect($scope.dialogTemplate).toBeUndefined();
+            describe('if it finds services', function () {
+
+                var testObject = new Spiro.DomainServicesRepresentation();
+                var testViewModel = { test: testObject };
+
+                var servicesViewModel;
+                var setObject;
+                var setNestedObject;
+
+                beforeEach(inject(function ($rootScope, $routeParams, Handlers: Spiro.Angular.HandlersInterface, Context: Spiro.Angular.ContextInterface, ViewModelFactory: Spiro.Angular.VMFInterface) {
+                    $scope = $rootScope.$new();
+
+                    getServices = spyOnPromise(Context, 'getServices', testObject);
+
+                    servicesViewModel = spyOn(ViewModelFactory, 'servicesViewModel').andReturn(testViewModel);
+                    setNestedObject = spyOn(Context, 'setNestedObject');
+                    setObject = spyOn(Context, 'setObject');
+
+                    Handlers.handleServices($scope);
+                }));
+
+
+                it('should update the scope', function () {
+                    expect(getServices).toHaveBeenCalled();
+                    expect(servicesViewModel).toHaveBeenCalledWith(testObject);
+                    expect(setObject).toHaveBeenCalledWith(null);
+                    expect(setNestedObject).toHaveBeenCalledWith(null);
+
+                    expect($scope.services).toEqual(testViewModel);
+                });
+
             });
-        });
 
-    });
+            describe('if it has an error', function () {
 
+                var testObject = new Spiro.ErrorRepresentation();
+                var setError;
 
-    describe('handleResult', function () {
-        var getNestedObject;
+                beforeEach(inject(function ($rootScope, $routeParams, Handlers: Spiro.Angular.HandlersInterface, Context: Spiro.Angular.ContextInterface) {
+                    $scope = $rootScope.$new();
 
-        describe('if it finds object', function () {
+                    getServices = spyOnPromiseFail(Context, 'getServices', testObject);
+                    setError = spyOn(Context, 'setError');
 
-            var testObject = new Spiro.DomainObjectRepresentation();
-            var testViewModel = { test: testObject };
-
-            var objectViewModel;
-            var setNestedObject;
-
-            beforeEach(inject(function ($rootScope, $routeParams, Handlers: Spiro.Angular.HandlersInterface, Context: Spiro.Angular.ContextInterface, ViewModelFactory: Spiro.Angular.VMFInterface) {
-                $scope = $rootScope.$new();
-
-                getNestedObject = spyOnPromise(Context, 'getNestedObject', testObject);
-
-                objectViewModel = spyOn(ViewModelFactory, 'domainObjectViewModel').andReturn(testViewModel);
-                setNestedObject = spyOn(Context, 'setNestedObject');
+                    Handlers.handleServices($scope);
+                }));
 
 
-                $routeParams.resultObject = "test-1";
+                it('should update the context', function () {
+                    expect(getServices).toHaveBeenCalled();
+                    expect(setError).toHaveBeenCalledWith(testObject);
 
-                Handlers.handleResult($scope);
-            }));
-
-
-            it('should update the scope', function () {
-                expect(getNestedObject).toHaveBeenCalledWith("test", "1");
-                expect(objectViewModel).toHaveBeenCalledWith(testObject);
-                expect(setNestedObject).toHaveBeenCalledWith(testObject);
-
-                expect($scope.result).toEqual(testViewModel);
-                expect($scope.nestedTemplate).toEqual("Content/partials/nestedObject.html");
+                    expect($scope.services).toBeUndefined();
+                });
             });
+
 
         });
 
-        describe('if it has an error', function () {
+        describe('handleService', function () {
+            var getObject;
 
-            var testObject = new Spiro.ErrorRepresentation();
-            var setError;
+            describe('if it finds service', function () {
 
-            beforeEach(inject(function ($rootScope, $routeParams, Handlers: Spiro.Angular.HandlersInterface, Context: Spiro.Angular.ContextInterface) {
-                $scope = $rootScope.$new();
+                var testObject = new Spiro.DomainObjectRepresentation();
+                var testViewModel = { test: testObject };
 
-                getNestedObject = spyOnPromiseFail(Context, 'getNestedObject', testObject);
-                setError = spyOn(Context, 'setError');
+                var serviceViewModel;
 
-                $routeParams.resultObject = "test-1";
+                beforeEach(inject(function ($rootScope, $routeParams, Handlers: Spiro.Angular.HandlersInterface, Context: Spiro.Angular.ContextInterface, ViewModelFactory: Spiro.Angular.VMFInterface) {
+                    $scope = $rootScope.$new();
 
-                Handlers.handleResult($scope);
-            }));
+                    getObject = spyOnPromise(Context, 'getObject', testObject);
 
+                    serviceViewModel = spyOn(ViewModelFactory, 'serviceViewModel').andReturn(testViewModel);
 
-            it('should update the context', function () {
-                expect(getNestedObject).toHaveBeenCalledWith("test", "1");
-                expect(setError).toHaveBeenCalledWith(testObject);
+                    $routeParams.sid = "test";
 
-                expect($scope.result).toBeUndefined();
-                expect($scope.nestedTemplate).toBeUndefined();
-            });
-        });
-    });
-
-    describe('handleCollectionItem', function () {
-        var getNestedObject;
-
-        describe('if it finds object', function () {
-
-            var testObject = new Spiro.DomainObjectRepresentation();
-            var testViewModel = { test: testObject };
-
-            var objectViewModel;
-            var setNestedObject;
-
-            beforeEach(inject(function ($rootScope, $routeParams, Handlers: Spiro.Angular.HandlersInterface, Context: Spiro.Angular.ContextInterface, ViewModelFactory: Spiro.Angular.VMFInterface) {
-                $scope = $rootScope.$new();
-
-                getNestedObject = spyOnPromise(Context, 'getNestedObject', testObject);
-
-                objectViewModel = spyOn(ViewModelFactory, 'domainObjectViewModel').andReturn(testViewModel);
-                setNestedObject = spyOn(Context, 'setNestedObject');
-
-                $routeParams.collectionItem = "test/1";
-
-                Handlers.handleCollectionItem($scope);
-            }));
+                    Handlers.handleService($scope);
+                }));
 
 
-            it('should update the scope', function () {
-                expect(getNestedObject).toHaveBeenCalledWith("test", "1");
-                expect(objectViewModel).toHaveBeenCalledWith(testObject);
-                expect(setNestedObject).toHaveBeenCalledWith(testObject);
+                it('should update the scope', function () {
+                    expect(getObject).toHaveBeenCalledWith("test");
+                    expect(serviceViewModel).toHaveBeenCalledWith(testObject);
 
-                expect($scope.result).toEqual(testViewModel);
-                expect($scope.nestedTemplate).toEqual("Content/partials/nestedObject.html");
+                    expect($scope.object).toEqual(testViewModel);
+                });
+
             });
 
-        });
+            describe('if it has an error', function () {
 
-        describe('if it has an error', function () {
+                var testObject = new Spiro.ErrorRepresentation();
+                var setError;
 
-            var testObject = new Spiro.ErrorRepresentation();
-            var setError;
+                beforeEach(inject(function ($rootScope, $routeParams, Handlers: Spiro.Angular.HandlersInterface, Context: Spiro.Angular.ContextInterface) {
+                    $scope = $rootScope.$new();
 
-            beforeEach(inject(function ($rootScope, $routeParams, Handlers: Spiro.Angular.HandlersInterface, Context: Spiro.Angular.ContextInterface) {
-                $scope = $rootScope.$new();
+                    getObject = spyOnPromiseFail(Context, 'getObject', testObject);
+                    setError = spyOn(Context, 'setError');
 
-                getNestedObject = spyOnPromiseFail(Context, 'getNestedObject', testObject);
-                setError = spyOn(Context, 'setError');
+                    $routeParams.sid = "test";
 
-                $routeParams.collectionItem = "test/1";
-
-                Handlers.handleCollectionItem($scope);
-            }));
+                    Handlers.handleService($scope);
+                }));
 
 
-            it('should update the context', function () {
-                expect(getNestedObject).toHaveBeenCalledWith("test", "1");
-                expect(setError).toHaveBeenCalledWith(testObject);
+                it('should update the context', function () {
+                    expect(getObject).toHaveBeenCalledWith("test");
+                    expect(setError).toHaveBeenCalledWith(testObject);
 
-                expect($scope.result).toBeUndefined();
-                expect($scope.nestedTemplate).toBeUndefined();
+                    expect($scope.object).toBeUndefined();
+                });
             });
         });
 
+        describe('handleObject', function () {
+            var getObject;
 
-    });
+            describe('if it finds object', function () {
 
+                var testObject = new Spiro.DomainObjectRepresentation();
+                var testViewModel = { test: testObject };
 
+                var objectViewModel;
+                var setNestedObject;
 
-    describe('handleServices', function () {
-        var getServices;
+                beforeEach(inject(function ($rootScope, $routeParams, Handlers: Spiro.Angular.HandlersInterface, Context: Spiro.Angular.ContextInterface, ViewModelFactory: Spiro.Angular.VMFInterface) {
+                    $scope = $rootScope.$new();
 
-        describe('if it finds services', function () {
+                    getObject = spyOnPromise(Context, 'getObject', testObject);
 
-            var testObject = new Spiro.DomainServicesRepresentation();
-            var testViewModel = { test: testObject };
+                    objectViewModel = spyOn(ViewModelFactory, 'domainObjectViewModel').andReturn(testViewModel);
+                    setNestedObject = spyOn(Context, 'setNestedObject');
 
-            var servicesViewModel;
-            var setObject;
-            var setNestedObject;
-
-            beforeEach(inject(function ($rootScope, $routeParams, Handlers: Spiro.Angular.HandlersInterface, Context: Spiro.Angular.ContextInterface, ViewModelFactory: Spiro.Angular.VMFInterface) {
-                $scope = $rootScope.$new();
-
-                getServices = spyOnPromise(Context, 'getServices', testObject);
-
-                servicesViewModel = spyOn(ViewModelFactory, 'servicesViewModel').andReturn(testViewModel);
-                setNestedObject = spyOn(Context, 'setNestedObject');
-                setObject = spyOn(Context, 'setObject');
-
-                Handlers.handleServices($scope);
-            }));
-
-
-            it('should update the scope', function () {
-                expect(getServices).toHaveBeenCalled();
-                expect(servicesViewModel).toHaveBeenCalledWith(testObject);
-                expect(setObject).toHaveBeenCalledWith(null);
-                expect(setNestedObject).toHaveBeenCalledWith(null);
-
-                expect($scope.services).toEqual(testViewModel);
-            });
-
-        });
-
-        describe('if it has an error', function () {
-
-            var testObject = new Spiro.ErrorRepresentation();
-            var setError;
-
-            beforeEach(inject(function ($rootScope, $routeParams, Handlers: Spiro.Angular.HandlersInterface, Context: Spiro.Angular.ContextInterface) {
-                $scope = $rootScope.$new();
-
-                getServices = spyOnPromiseFail(Context, 'getServices', testObject);
-                setError = spyOn(Context, 'setError');
-
-                Handlers.handleServices($scope);
-            }));
-
-
-            it('should update the context', function () {
-                expect(getServices).toHaveBeenCalled();
-                expect(setError).toHaveBeenCalledWith(testObject);
-
-                expect($scope.services).toBeUndefined();
-            });
-        });
-
-
-    });
-
-    describe('handleService', function () {
-        var getObject;
-
-        describe('if it finds service', function () {
-
-            var testObject = new Spiro.DomainObjectRepresentation();
-            var testViewModel = { test: testObject };
-
-            var serviceViewModel;
-
-            beforeEach(inject(function ($rootScope, $routeParams, Handlers: Spiro.Angular.HandlersInterface, Context: Spiro.Angular.ContextInterface, ViewModelFactory: Spiro.Angular.VMFInterface) {
-                $scope = $rootScope.$new();
-
-                getObject = spyOnPromise(Context, 'getObject', testObject);
-
-                serviceViewModel = spyOn(ViewModelFactory, 'serviceViewModel').andReturn(testViewModel);
-
-                $routeParams.sid = "test";
-
-                Handlers.handleService($scope);
-            }));
-
-
-            it('should update the scope', function () {
-                expect(getObject).toHaveBeenCalledWith("test");
-                expect(serviceViewModel).toHaveBeenCalledWith(testObject);
-
-                expect($scope.object).toEqual(testViewModel);
-            });
-
-        });
-
-        describe('if it has an error', function () {
-
-            var testObject = new Spiro.ErrorRepresentation();
-            var setError;
-
-            beforeEach(inject(function ($rootScope, $routeParams, Handlers: Spiro.Angular.HandlersInterface, Context: Spiro.Angular.ContextInterface) {
-                $scope = $rootScope.$new();
-
-                getObject = spyOnPromiseFail(Context, 'getObject', testObject);
-                setError = spyOn(Context, 'setError');
-
-                $routeParams.sid = "test";
-
-                Handlers.handleService($scope);
-            }));
-
-
-            it('should update the context', function () {
-                expect(getObject).toHaveBeenCalledWith("test");
-                expect(setError).toHaveBeenCalledWith(testObject);
-
-                expect($scope.object).toBeUndefined();
-            });
-        });
-    });
-
-    describe('handleObject', function () {
-        var getObject;
-
-        describe('if it finds object', function () {
-
-            var testObject = new Spiro.DomainObjectRepresentation();
-            var testViewModel = { test: testObject };
-
-            var objectViewModel;
-            var setNestedObject;
-
-            beforeEach(inject(function ($rootScope, $routeParams, Handlers: Spiro.Angular.HandlersInterface, Context: Spiro.Angular.ContextInterface, ViewModelFactory: Spiro.Angular.VMFInterface) {
-                $scope = $rootScope.$new();
-
-                getObject = spyOnPromise(Context, 'getObject', testObject);
-
-                objectViewModel = spyOn(ViewModelFactory, 'domainObjectViewModel').andReturn(testViewModel);
-                setNestedObject = spyOn(Context, 'setNestedObject');
-
-                $routeParams.dt = "test";
-                $routeParams.id = "1";
-
-                Handlers.handleObject($scope);
-            }));
-
-            describe('not in edit mode', function () {
-
-                beforeEach(inject(function ($rootScope, $routeParams, Handlers: Spiro.Angular.HandlersInterface) {
+                    $routeParams.dt = "test";
+                    $routeParams.id = "1";
 
                     Handlers.handleObject($scope);
                 }));
 
-                it('should update the scope', function () {
-                    expect(getObject).toHaveBeenCalledWith("test", "1");
-                    expect(objectViewModel).toHaveBeenCalledWith(testObject, jasmine.any(Function));
-                    expect(setNestedObject).toHaveBeenCalledWith(null);
+                describe('not in edit mode', function () {
 
-                    expect($scope.object).toEqual(testViewModel);
-                    expect($scope.actionTemplate).toEqual("Content/partials/actions.html");
-                    expect($scope.propertiesTemplate).toEqual("Content/partials/viewProperties.html");
+                    beforeEach(inject(function ($rootScope, $routeParams, Handlers: Spiro.Angular.HandlersInterface) {
+
+                        Handlers.handleObject($scope);
+                    }));
+
+                    it('should update the scope', function () {
+                        expect(getObject).toHaveBeenCalledWith("test", "1");
+                        expect(objectViewModel).toHaveBeenCalledWith(testObject, jasmine.any(Function));
+                        expect(setNestedObject).toHaveBeenCalledWith(null);
+
+                        expect($scope.object).toEqual(testViewModel);
+                        expect($scope.actionTemplate).toEqual("Content/partials/actions.html");
+                        expect($scope.propertiesTemplate).toEqual("Content/partials/viewProperties.html");
+                    });
+                });
+
+                describe('in edit mode', function () {
+
+                    beforeEach(inject(function ($rootScope, $routeParams, Handlers: Spiro.Angular.HandlersInterface) {
+
+                        $routeParams.editMode = "test";
+                        Handlers.handleObject($scope);
+                    }));
+
+                    it('should update the scope', function () {
+                        expect(getObject).toHaveBeenCalledWith("test", "1");
+                        expect(objectViewModel).toHaveBeenCalledWith(testObject, jasmine.any(Function));
+                        expect(setNestedObject).toHaveBeenCalledWith(null);
+
+                        expect($scope.object).toEqual(testViewModel);
+                        expect($scope.actionTemplate).toEqual("");
+                        expect($scope.propertiesTemplate).toEqual("Content/partials/editProperties.html");
+                    });
                 });
             });
 
-            describe('in edit mode', function () {
+            describe('if it has an error', function () {
 
-                beforeEach(inject(function ($rootScope, $routeParams, Handlers: Spiro.Angular.HandlersInterface) {
+                var testObject = new Spiro.ErrorRepresentation();
+                var setError;
 
-                    $routeParams.editMode = "test";
+                beforeEach(inject(function ($rootScope, $routeParams, Handlers: Spiro.Angular.HandlersInterface, Context: Spiro.Angular.ContextInterface) {
+                    $scope = $rootScope.$new();
+
+                    getObject = spyOnPromiseFail(Context, 'getObject', testObject);
+                    setError = spyOn(Context, 'setError');
+
+                    $routeParams.dt = "test";
+                    $routeParams.id = "1";
+
                     Handlers.handleObject($scope);
                 }));
 
-                it('should update the scope', function () {
+                it('should update the context', function () {
                     expect(getObject).toHaveBeenCalledWith("test", "1");
-                    expect(objectViewModel).toHaveBeenCalledWith(testObject, jasmine.any(Function));
-                    expect(setNestedObject).toHaveBeenCalledWith(null);
+                    expect(setError).toHaveBeenCalledWith(testObject);
 
-                    expect($scope.object).toEqual(testViewModel);
-                    expect($scope.actionTemplate).toEqual("");
-                    expect($scope.propertiesTemplate).toEqual("Content/partials/editProperties.html");
+                    expect($scope.object).toBeUndefined();
+                    expect($scope.actionTemplate).toBeUndefined();
+                    expect($scope.propertiesTemplate).toBeUndefined();
                 });
             });
         });
 
-        describe('if it has an error', function () {
+        describe('handleError', function () {
 
-            var testObject = new Spiro.ErrorRepresentation();
-            var setError;
-
-            beforeEach(inject(function ($rootScope, $routeParams, Handlers: Spiro.Angular.HandlersInterface, Context: Spiro.Angular.ContextInterface) {
+            beforeEach(inject(function ($rootScope, Handlers: Spiro.Angular.HandlersInterface, Context: Spiro.Angular.ContextInterface) {
                 $scope = $rootScope.$new();
 
-                getObject = spyOnPromiseFail(Context, 'getObject', testObject);
-                setError = spyOn(Context, 'setError');
+                spyOn(Context, 'getError').andReturn(new Spiro.ErrorRepresentation({ message: "", stacktrace: [] }));
 
-                $routeParams.dt = "test";
-                $routeParams.id = "1";
-
-                Handlers.handleObject($scope);
+                Handlers.handleError($scope);
             }));
 
-            it('should update the context', function () {
-                expect(getObject).toHaveBeenCalledWith("test", "1");
-                expect(setError).toHaveBeenCalledWith(testObject);
 
-                expect($scope.object).toBeUndefined();
-                expect($scope.actionTemplate).toBeUndefined();
-                expect($scope.propertiesTemplate).toBeUndefined();
-            });
-        });
-    });
-
-    describe('handleError', function () {
-
-        beforeEach(inject(function ($rootScope, Handlers: Spiro.Angular.HandlersInterface, Context: Spiro.Angular.ContextInterface) {
-            $scope = $rootScope.$new();
-
-            spyOn(Context, 'getError').andReturn(new Spiro.ErrorRepresentation({ message: "", stacktrace: [] }));
-
-            Handlers.handleError($scope);
-        }));
-
-
-        it('should set a error data', function () {
-            expect($scope.error).toBeDefined();
-            expect($scope.errorTemplate).toEqual("Content/partials/error.html");
-        });
-
-    });
-
-    describe('handleAppBar', function () {
-
-
-        function expectAppBarData() {
-            expect($scope.appBar).toBeDefined();
-            expect($scope.appBar.goHome).toEqual("#/");
-            expect($scope.appBar.template).toEqual("Content/partials/appbar.html");
-            expect($scope.appBar.goBack).toBeDefined();
-            expect($scope.appBar.goForward).toBeDefined();
-        }
-
-        describe('handleAppBar when not viewing an  object', function () {
-
-            beforeEach(inject(function ($rootScope, Handlers: Spiro.Angular.HandlersInterface) {
-                $scope = $rootScope.$new();
-
-                Handlers.handleAppBar($scope);
-            }));
-
-            it('should set appBar data', function () {
-                expectAppBarData();
-            });
-
-            it('should disable edit button', function () {
-                expect($scope.appBar.hideEdit).toEqual(true);
-                expect($scope.appBar.doEdit).toBeUndefined();
+            it('should set a error data', function () {
+                expect($scope.error).toBeDefined();
+                expect($scope.errorTemplate).toEqual("Content/partials/error.html");
             });
 
         });
 
-        describe('handleAppBar when viewing an object', function () {
-
-            beforeEach(inject(function ($rootScope, $location, $routeParams, Handlers: Spiro.Angular.HandlersInterface, Context: Spiro.Angular.ContextInterface) {
-                $scope = $rootScope.$new();
-
-                $routeParams.dt = "test";
-                $routeParams.id = "1";
-
-                spyOnPromise(Context, 'getObject', new Spiro.DomainObjectRepresentation());
-
-                spyOn($location, 'path').andReturn("aPath");
-
-                Handlers.handleAppBar($scope);
-            }));
-
-            it('should set appBar data', function () {
-                expectAppBarData();
-            });
-
-            it('should enable edit button', function () {
-                expect($scope.appBar.hideEdit).toBe(false);
-                expect($scope.appBar.doEdit).toEqual("#aPath?editMode=true");
-            });
-
-        });
-    });
-
-    describe('setResult helper', function () {
-
-        var testActionResult = new Spiro.ActionResultRepresentation();
-        var testViewModel = new Spiro.Angular.DialogViewModel();
-        var location;
-
-        beforeEach(inject(function ($location) {
-            location = $location;
-        }));
-
-        describe('result is null', function () {
-
-            var testResult = new Spiro.Result(null, 'object');
-
-            beforeEach(inject(function (Handlers: Spiro.Angular.HandlersInterface) {
-                spyOn(testActionResult, 'result').andReturn(testResult);
-                (<any>Handlers).setResult(testActionResult, testViewModel);
-            }));
-
-            it('should set view model error', function () {
-                expect(testViewModel.message).toBe("no result found");
-                expect(location.search()).toEqual({});
-            });
-        });
-
-        describe('result is object', function () {
-
-            var testObject = new Spiro.DomainObjectRepresentation();
-            var testResult = new Spiro.Result({}, 'object');
-            var setNestedObject;
-
-            beforeEach(inject(function ($routeParams, Context: Spiro.Angular.ContextInterface) {
-
-                spyOn(testActionResult, 'result').andReturn(testResult);
-                spyOn(testActionResult, 'resultType').andReturn('object');
-                spyOn(testResult, 'object').andReturn(testObject);
-                setNestedObject = spyOn(Context, 'setNestedObject');
-
-                spyOn(testObject, 'domainType').andReturn("test");
-                spyOn(testObject, 'instanceId').andReturn("1");
-
-                $routeParams.action = "anAction";
-            }));
+        describe('handleAppBar', function () {
 
 
-            describe('with show flag', function () {
+            function expectAppBarData() {
+                expect($scope.appBar).toBeDefined();
+                expect($scope.appBar.goHome).toEqual("#/");
+                expect($scope.appBar.template).toEqual("Content/partials/appbar.html");
+                expect($scope.appBar.goBack).toBeDefined();
+                expect($scope.appBar.goForward).toBeDefined();
+            }
 
-                beforeEach(inject(function (Handlers: Spiro.Angular.HandlersInterface) {
-                    (<any>Handlers).setResult(testActionResult, testViewModel, true);
+            describe('handleAppBar when not viewing an  object', function () {
+
+                beforeEach(inject(function ($rootScope, Handlers: Spiro.Angular.HandlersInterface) {
+                    $scope = $rootScope.$new();
+
+                    Handlers.handleAppBar($scope);
                 }));
 
-                it('should set nested object and search', function () {
-                    expect(setNestedObject).toHaveBeenCalledWith(testObject);
-                    expect(location.search()).toEqual({ resultObject: 'test-1', action: 'anAction' });
+                it('should set appBar data', function () {
+                    expectAppBarData();
+                });
+
+                it('should disable edit button', function () {
+                    expect($scope.appBar.hideEdit).toEqual(true);
+                    expect($scope.appBar.doEdit).toBeUndefined();
                 });
 
             });
 
-            describe('without show flag', function () {
+            describe('handleAppBar when viewing an object', function () {
 
-                beforeEach(inject(function (Handlers: Spiro.Angular.HandlersInterface) {
-                    (<any>Handlers).setResult(testActionResult);
+                beforeEach(inject(function ($rootScope, $location, $routeParams, Handlers: Spiro.Angular.HandlersInterface, Context: Spiro.Angular.ContextInterface) {
+                    $scope = $rootScope.$new();
+
+                    $routeParams.dt = "test";
+                    $routeParams.id = "1";
+
+                    spyOnPromise(Context, 'getObject', new Spiro.DomainObjectRepresentation());
+
+                    spyOn($location, 'path').andReturn("aPath");
+
+                    Handlers.handleAppBar($scope);
                 }));
 
-                it('should set nested object and search', function () {
-                    expect(setNestedObject).toHaveBeenCalledWith(testObject);
-                    expect(location.search()).toEqual({ resultObject: 'test-1' });
+                it('should set appBar data', function () {
+                    expectAppBarData();
+                });
+
+                it('should enable edit button', function () {
+                    expect($scope.appBar.hideEdit).toBe(false);
+                    expect($scope.appBar.doEdit).toEqual("#aPath?editMode=true");
                 });
 
             });
         });
 
-        describe('result is list', function () {
+        describe('setResult helper', function () {
 
-            var testList = new Spiro.ListRepresentation();
-            var testResult = new Spiro.Result([], 'list');
-            var setCollection;
+            var testActionResult = new Spiro.ActionResultRepresentation();
+            var testViewModel = new Spiro.Angular.DialogViewModel();
+            var location;
 
-            beforeEach(inject(function ($routeParams, Context: Spiro.Angular.ContextInterface) {
-
-                spyOn(testActionResult, 'result').andReturn(testResult);
-                spyOn(testActionResult, 'resultType').andReturn('list');
-                spyOn(testResult, 'list').andReturn(testList);
-                setCollection = spyOn(Context, 'setCollection');
-
-                $routeParams.action = "anAction";
+            beforeEach(inject(function ($location) {
+                location = $location;
             }));
 
-            describe('with show flag', function () {
+            describe('result is null', function () {
 
-                var testParameters = [new Spiro.Angular.ParameterViewModel(), new Spiro.Angular.ParameterViewModel()];
-                testParameters[0].value = "1";
-                testParameters[1].value = "2";
+                var testResult = new Spiro.Result(null, 'object');
 
                 beforeEach(inject(function (Handlers: Spiro.Angular.HandlersInterface) {
+                    spyOn(testActionResult, 'result').andReturn(testResult);
+                    (<any>Handlers).setResult(testActionResult, testViewModel);
+                }));
 
+                it('should set view model error', function () {
+                    expect(testViewModel.message).toBe("no result found");
+                    expect(location.search()).toEqual({});
+                });
+            });
+
+            describe('result is object', function () {
+
+                var testObject = new Spiro.DomainObjectRepresentation();
+                var testResult = new Spiro.Result({}, 'object');
+                var setNestedObject;
+
+                beforeEach(inject(function ($routeParams, Context: Spiro.Angular.ContextInterface) {
+
+                    spyOn(testActionResult, 'result').andReturn(testResult);
+                    spyOn(testActionResult, 'resultType').andReturn('object');
+                    spyOn(testResult, 'object').andReturn(testObject);
+                    setNestedObject = spyOn(Context, 'setNestedObject');
+
+                    spyOn(testObject, 'domainType').andReturn("test");
+                    spyOn(testObject, 'instanceId').andReturn("1");
+
+                    $routeParams.action = "anAction";
+                }));
+
+
+                describe('with show flag', function () {
+
+                    beforeEach(inject(function (Handlers: Spiro.Angular.HandlersInterface) {
+                        (<any>Handlers).setResult(testActionResult, testViewModel, true);
+                    }));
+
+                    it('should set nested object and search', function () {
+                        expect(setNestedObject).toHaveBeenCalledWith(testObject);
+                        expect(location.search()).toEqual({ resultObject: 'test-1', action: 'anAction' });
+                    });
+
+                });
+
+                describe('without show flag', function () {
+
+                    beforeEach(inject(function (Handlers: Spiro.Angular.HandlersInterface) {
+                        (<any>Handlers).setResult(testActionResult);
+                    }));
+
+                    it('should set nested object and search', function () {
+                        expect(setNestedObject).toHaveBeenCalledWith(testObject);
+                        expect(location.search()).toEqual({ resultObject: 'test-1' });
+                    });
+
+                });
+            });
+
+            describe('result is list', function () {
+
+                var testList = new Spiro.ListRepresentation();
+                var testResult = new Spiro.Result([], 'list');
+                var setCollection;
+
+                beforeEach(inject(function ($routeParams, Context: Spiro.Angular.ContextInterface) {
+
+                    spyOn(testActionResult, 'result').andReturn(testResult);
+                    spyOn(testActionResult, 'resultType').andReturn('list');
+                    spyOn(testResult, 'list').andReturn(testList);
+                    setCollection = spyOn(Context, 'setCollection');
+
+                    $routeParams.action = "anAction";
+                }));
+
+                describe('with show flag', function () {
+
+                    var testParameters = [new Spiro.Angular.ParameterViewModel(), new Spiro.Angular.ParameterViewModel()];
+                    testParameters[0].value = "1";
+                    testParameters[1].value = "2";
+
+                    beforeEach(inject(function (Handlers: Spiro.Angular.HandlersInterface) {
+
+                        testViewModel.parameters = testParameters;
+
+                        (<any>Handlers).setResult(testActionResult, testViewModel, true);
+                    }));
+
+                    it('should set collection and search', function () {
+                        expect(setCollection).toHaveBeenCalledWith(testList);
+                        expect(location.search()).toEqual({ resultCollection: 'anAction1-2-', action: 'anAction' });
+                    });
+                });
+
+                describe('without show flag', function () {
+
+                    beforeEach(inject(function (Handlers: Spiro.Angular.HandlersInterface) {
+                        (<any>Handlers).setResult(testActionResult);
+                    }));
+
+                    it('should set collection and search', function () {
+                        expect(setCollection).toHaveBeenCalledWith(testList);
+                        expect(location.search()).toEqual({ resultCollection: 'anAction' });
+                    });
+
+                });
+            });
+        });
+
+        describe('invokeAction helper', function () {
+
+            var testAction = new Spiro.ActionRepresentation();
+            var testActionResult = new Spiro.ActionResultRepresentation();
+            var testViewModel = new Spiro.Angular.DialogViewModel();
+
+            var testParameters = [new Spiro.Angular.ParameterViewModel(), new Spiro.Angular.ParameterViewModel()];
+            testParameters[0].value = "1";
+            testParameters[1].value = "2";
+            testParameters[0].id = "one";
+            testParameters[1].id = "two";
+
+            var populate;
+            var clearMessages;
+            var setParameter;
+
+            beforeEach(inject(function ($rootScope) {
+                
+                spyOn(testAction, 'getInvoke').andReturn(testActionResult);
+                
+                clearMessages = spyOn(testViewModel, 'clearMessages');
+                setParameter = spyOn(testActionResult, 'setParameter');
+                $scope = $rootScope.$new();
+            }));
+
+            describe('invoke is successful', function () {
+
+                var setResult;
+                
+                
+                beforeEach(inject(function (Handlers: Spiro.Angular.HandlersInterface, RepresentationLoader: Spiro.Angular.RLInterface) {
+                    populate = spyOnPromise(RepresentationLoader, 'populate', testActionResult);
+                    setResult = spyOn(Handlers, 'setResult');
                     testViewModel.parameters = testParameters;
-
-                    (<any>Handlers).setResult(testActionResult, testViewModel, true);
+                    
+                    (<any>Handlers).invokeAction($scope, testAction, testViewModel, false);
                 }));
 
-                it('should set collection and search', function () {
-                    expect(setCollection).toHaveBeenCalledWith(testList);
-                    expect(location.search()).toEqual({ resultCollection: 'anAction1-2-', action: 'anAction' });
+                it('should set result', function () {
+                    expect(setParameter.callCount == 2).toBeTruthy();
+
+                    expect(setParameter.calls[0].args[0]).toBe("one");
+                    expect(setParameter.calls[0].args[1].scalar()).toBe("1");
+
+                    expect(setParameter.calls[1].args[0]).toBe("two");
+                    expect(setParameter.calls[1].args[1].scalar()).toBe("2");
+
+                    expect(clearMessages).toHaveBeenCalled();
+                    expect(populate).toHaveBeenCalledWith(testActionResult, true);
+
+                    expect(setResult).toHaveBeenCalledWith(testActionResult, testViewModel, false);
                 });
             });
 
-            describe('without show flag', function () {
+            describe('if invoke has an error', function () {
+
+                var testObject = new Spiro.ErrorRepresentation();
+                var setInvokeUpdateError;
+
+                beforeEach(inject(function ($rootScope, $routeParams, Handlers: Spiro.Angular.HandlersInterface, RepresentationLoader: Spiro.Angular.RLInterface, Context: Spiro.Angular.ContextInterface) {
+                    populate = spyOnPromiseFail(RepresentationLoader, 'populate', testObject);
+                    setInvokeUpdateError = spyOn(Handlers, 'setInvokeUpdateError');
+                    (<any>Handlers).invokeAction($scope, testAction, testViewModel, false);
+                }));
+
+                it('should set the error', function () {
+                    expect(setInvokeUpdateError).toHaveBeenCalledWith($scope, testObject, testParameters, testViewModel);
+                });
+            });
+        });
+
+        describe('updateObject helper', function () {
+
+            var testObject = new Spiro.DomainObjectRepresentation();
+            var testUpdatedObject = new Spiro.DomainObjectRepresentation();
+            var testUpdate = {};
+            var testViewModel = new Spiro.Angular.DomainObjectViewModel();
+            var testRawLinks = { testLinks: "" };
+
+            var testProperties = [new Spiro.Angular.PropertyViewModel(), new Spiro.Angular.PropertyViewModel(), new Spiro.Angular.PropertyViewModel()];
+            
+            testProperties[0].id = "one";
+            testProperties[0].value = "1";
+            testProperties[0].isEditable = true;
+            testProperties[0].type = 'scalar';
+
+            testProperties[1].id = "two";
+            testProperties[1].value = "2";
+            testProperties[1].isEditable = true;
+            testProperties[1].type = 'scalar';
+
+            testProperties[2].id = "three";
+            testProperties[2].value = "3";
+            testProperties[2].isEditable = false;
+            testProperties[2].type = 'scalar';
+
+
+            var populate;
+            var setProperty;
+            var set;
+            
+            beforeEach(inject(function ($rootScope, RepresentationLoader: Spiro.Angular.RLInterface) {
+
+                (<any>testUpdate).setProperty = () => { };
+
+                spyOn(testObject, 'getUpdateMap').andReturn(testUpdate);
+                setProperty = spyOn(testUpdate, 'setProperty');
+                testViewModel.properties = testProperties;
+
+                spyOn(testObject, 'get').andReturn(testRawLinks);
+                set = spyOn(testUpdatedObject, 'set');
+
+                $scope = $rootScope.$new();
+            }));
+
+            describe('update is successful', function () {
+
+                var setObject;
+                
+                var location;
+                var cacheFactory;
+                var testCache = {};
+                var remove;
+
+                beforeEach(inject(function ($location, $cacheFactory, Handlers: Spiro.Angular.HandlersInterface, RepresentationLoader: Spiro.Angular.RLInterface, Context: Spiro.Angular.ContextInterface) {
+
+                    setObject = spyOn(Context, 'setObject');
+                    
+                    location = $location;
+                    cacheFactory = $cacheFactory;
+                    (<any>testCache).remove = (url: string) => { };
+
+                    populate = spyOnPromise(RepresentationLoader, 'populate', testUpdatedObject);
+
+                    spyOn(cacheFactory, 'get').andReturn(testCache);
+                    remove = spyOn(testCache, 'remove');
+
+                    testUpdatedObject.hateoasUrl = "testUrl";
+                    
+                    (<any>Handlers).updateObject($scope, testObject, testViewModel);
+                }));
+
+                it('should set result', function () {
+                    expect(setProperty.callCount == 2).toBeTruthy();
+
+                    expect(setProperty.calls[0].args[0]).toBe("one");
+                    expect(setProperty.calls[0].args[1].scalar()).toBe("1");
+
+                    expect(setProperty.calls[1].args[0]).toBe("two");
+                    expect(setProperty.calls[1].args[1].scalar()).toBe("2");
+
+                    expect(remove).toHaveBeenCalledWith("testUrl");
+                    expect(location.search()).toEqual({});
+                    expect(set).toHaveBeenCalledWith('links', testRawLinks);
+                    expect(populate).toHaveBeenCalledWith(testUpdate, true, new Spiro.DomainObjectRepresentation());
+                    expect(setObject).toHaveBeenCalledWith(testUpdatedObject);
+                });
+            });
+
+            describe('if update has an error', function () {
+
+                var testError = new Spiro.ErrorRepresentation();
+                var setInvokeUpdateError;
+                var editableProperties = _.filter(testProperties, (tp) => tp.isEditable);
+
+                beforeEach(inject(function ($rootScope, $routeParams, Handlers: Spiro.Angular.HandlersInterface, RepresentationLoader: Spiro.Angular.RLInterface) {
+                    populate = spyOnPromiseFail(RepresentationLoader, 'populate', testError);
+                    setInvokeUpdateError = spyOn(Handlers, 'setInvokeUpdateError');
+                    (<any>Handlers).updateObject($scope, testObject, testViewModel);
+                }));
+
+                it('should set the error', function () {
+                    expect(setInvokeUpdateError).toHaveBeenCalledWith($scope, testError, editableProperties, testViewModel);
+                });
+            });
+        });
+
+        describe('setInvokeUpdateError helper', function () {
+
+            var testViewModel = { message: "" };
+            
+
+            beforeEach(inject(function ($rootScope) {
+                $scope = $rootScope.$new();
+            }));
+
+            describe('if error is errorMap', function () {
+                
+                var error = { "one": { "value": "1", "invalidReason": "a reason" }, "two": { "value": "2" }, "x-ro-invalid-reason": "another reason" };
+
+                var errorMap = new Spiro.ErrorMap(error, "status", "a warning message");
+                var vms = [{ id: "one", value: null, message: null }, { id: "two", value: null, message: null }];
 
                 beforeEach(inject(function (Handlers: Spiro.Angular.HandlersInterface) {
-                    (<any>Handlers).setResult(testActionResult);
+                    
+                    (<any>Handlers).setInvokeUpdateError($scope, errorMap, vms, testViewModel);
                 }));
 
-                it('should set collection and search', function () {
-                    expect(setCollection).toHaveBeenCalledWith(testList);
-                    expect(location.search()).toEqual({ resultCollection: 'anAction' });
+
+                it('should set the parameters and error', function () {
+                    expect(vms[0].value).toBe("1");
+                    expect(vms[0].message).toBe("a reason");
+                    expect(vms[1].value).toBe("2");
+                    expect(vms[1].message).toBeUndefined();
+
+                    expect(testViewModel.message).toBe("another reason");
+                });
+            });
+
+            describe('if error is errorRep', function () {
+
+                var testError = new Spiro.ErrorRepresentation();
+                var testErrorViewModel = new Spiro.Angular.ErrorViewModel();
+                var errorViewModel;
+                
+                beforeEach(inject(function (Handlers: Spiro.Angular.HandlersInterface, ViewModelFactory: Spiro.Angular.VMFInterface) {
+                    errorViewModel = spyOn(ViewModelFactory, 'errorViewModel').andReturn(testErrorViewModel);
+                    (<any>Handlers).setInvokeUpdateError($scope, testError, [], testViewModel);
+                }));
+
+                it('should set the scope ', function () {
+                    expect(errorViewModel).toHaveBeenCalledWith(testError);
+                    expect($scope.error).toBe(testErrorViewModel);
+                    expect($scope.dialogTemplate).toBe("Content/partials/error.html");
                 });
 
             });
-        });
-    });
 
-    describe('invokeAction helper', function () {
+            describe('if error is string', function () {
 
-        var testAction = new Spiro.ActionRepresentation();
-        var testActionResult = new Spiro.ActionResultRepresentation();
-        var testViewModel = new Spiro.Angular.DialogViewModel();
+                var errorMessage = 'an error message';
 
-        var testParameters = [new Spiro.Angular.ParameterViewModel(), new Spiro.Angular.ParameterViewModel()];
-        testParameters[0].value = "1";
-        testParameters[1].value = "2";
-        testParameters[0].id = "one";
-        testParameters[1].id = "two";  
-
-        var populate; 
-        var clearMessages; 
-        var setParameter; 
-
-        beforeEach(inject(function ($rootScope) {   
-            
-            spyOn(testAction, 'getInvoke').andReturn(testActionResult); 
-           
-            clearMessages = spyOn(testViewModel, 'clearMessages');
-            setParameter = spyOn(testActionResult, 'setParameter'); 
-            $scope = $rootScope.$new();
-        }));
-
-        describe('invoke is successful', function () {
-
-            var setResult; 
-            
-          
-            beforeEach(inject(function (Handlers: Spiro.Angular.HandlersInterface, RepresentationLoader : Spiro.Angular.RLInterface) {
-                populate = spyOnPromise(RepresentationLoader, 'populate', testActionResult); 
-                setResult = spyOn(Handlers, 'setResult');
-                testViewModel.parameters = testParameters;
-         
-                (<any>Handlers).invokeAction($scope, testAction, testViewModel, false);
-            }));
-
-            it('should set result', function () {
-                expect(setParameter.callCount == 2).toBeTruthy(); 
-
-                expect(setParameter.calls[0].args[0]).toBe("one"); 
-                expect(setParameter.calls[0].args[1].scalar()).toBe("1"); 
-
-                expect(setParameter.calls[1].args[0]).toBe("two");
-                expect(setParameter.calls[1].args[1].scalar()).toBe("2"); 
-
-                expect(clearMessages).toHaveBeenCalled(); 
-                expect(populate).toHaveBeenCalledWith(testActionResult, true); 
-
-                expect(setResult).toHaveBeenCalledWith(testActionResult, testViewModel, false); 
-            });
-        });
-
-        describe('if invoke has an error', function () {
-
-            var testObject = new Spiro.ErrorRepresentation();
-            var setInvokeUpdateError;
-
-            beforeEach(inject(function ($rootScope, $routeParams, Handlers: Spiro.Angular.HandlersInterface, RepresentationLoader: Spiro.Angular.RLInterface, Context: Spiro.Angular.ContextInterface) {
-                populate = spyOnPromiseFail(RepresentationLoader, 'populate', testObject); 
-                setInvokeUpdateError = spyOn(Handlers, 'setInvokeUpdateError');
-                (<any>Handlers).invokeAction($scope, testAction, testViewModel, false);
-            }));
-
-            it('should set the error', function () {
-                expect(setInvokeUpdateError).toHaveBeenCalledWith($scope, testObject, testParameters, testViewModel); 
-            });
-        });  
-    });
-
-    describe('updateObject helper', function () {
-
-        var testObject = new Spiro.DomainObjectRepresentation();
-        var testUpdatedObject = new Spiro.DomainObjectRepresentation();
-        var testUpdate = {}; 
-        var testViewModel = new Spiro.Angular.DomainObjectViewModel();
-        var testRawLinks = { testLinks: "" };
-
-        var testProperties = [new Spiro.Angular.PropertyViewModel(), new Spiro.Angular.PropertyViewModel(), new Spiro.Angular.PropertyViewModel()];
-        
-        testProperties[0].id = "one";
-        testProperties[0].value = "1";
-        testProperties[0].isEditable = true;
-        testProperties[0].type = 'scalar';
-
-        testProperties[1].id = "two";
-        testProperties[1].value = "2";
-        testProperties[1].isEditable = true;
-        testProperties[1].type = 'scalar';
-
-        testProperties[2].id = "three";
-        testProperties[2].value = "3";
-        testProperties[2].isEditable = false;
-        testProperties[2].type = 'scalar';
-
-
-        var populate;
-        var setProperty;
-        var set; 
-     
-        beforeEach(inject(function ($rootScope, RepresentationLoader: Spiro.Angular.RLInterface) {
-
-            (<any>testUpdate).setProperty = () => { };
-
-            spyOn(testObject, 'getUpdateMap').andReturn(testUpdate);
-            setProperty = spyOn(testUpdate, 'setProperty');
-            testViewModel.properties = testProperties;
-
-            spyOn(testObject, 'get').andReturn(testRawLinks);
-            set = spyOn(testUpdatedObject, 'set');
-
-            $scope = $rootScope.$new();
-        }));
-
-        describe('update is successful', function () {
-
-            var setObject;
-         
-            var location; 
-            var cacheFactory; 
-            var testCache = {};
-            var remove; 
-
-            beforeEach(inject(function ($location, $cacheFactory, Handlers: Spiro.Angular.HandlersInterface, RepresentationLoader: Spiro.Angular.RLInterface, Context: Spiro.Angular.ContextInterface) {
-
-                setObject = spyOn(Context, 'setObject');
-               
-                location = $location; 
-                cacheFactory = $cacheFactory; 
-                (<any>testCache).remove = (url: string) => { };
-
-                populate = spyOnPromise(RepresentationLoader, 'populate', testUpdatedObject);
-
-                spyOn(cacheFactory, 'get').andReturn(testCache); 
-                remove = spyOn(testCache, 'remove');
-
-                testUpdatedObject.hateoasUrl = "testUrl";
+                beforeEach(inject(function ($rootScope, $routeParams, Handlers: Spiro.Angular.HandlersInterface) {
+                    (<any>Handlers).setInvokeUpdateError($scope, errorMessage, [], testViewModel);
+                }));
                 
-                (<any>Handlers).updateObject($scope, testObject, testViewModel);
-            }));
-
-            it('should set result', function () {
-                expect(setProperty.callCount == 2).toBeTruthy();
-
-                expect(setProperty.calls[0].args[0]).toBe("one");
-                expect(setProperty.calls[0].args[1].scalar()).toBe("1");
-
-                expect(setProperty.calls[1].args[0]).toBe("two");
-                expect(setProperty.calls[1].args[1].scalar()).toBe("2");
-
-                expect(remove).toHaveBeenCalledWith("testUrl"); 
-                expect(location.search()).toEqual({ });
-                expect(set).toHaveBeenCalledWith('links', testRawLinks); 
-                expect(populate).toHaveBeenCalledWith(testUpdate, true, new Spiro.DomainObjectRepresentation());
-                expect(setObject).toHaveBeenCalledWith(testUpdatedObject);
+                it('should set the scope ', function () {
+                    expect(testViewModel.message).toBe(errorMessage);
+                });
             });
         });
-
-        describe('if update has an error', function () {
-
-            var testError = new Spiro.ErrorRepresentation();
-            var setInvokeUpdateError;
-            var editableProperties = _.filter(testProperties, (tp) => tp.isEditable);
-
-            beforeEach(inject(function ($rootScope, $routeParams, Handlers: Spiro.Angular.HandlersInterface, RepresentationLoader: Spiro.Angular.RLInterface) {
-                populate = spyOnPromiseFail(RepresentationLoader, 'populate', testError);
-                setInvokeUpdateError = spyOn(Handlers, 'setInvokeUpdateError');
-                (<any>Handlers).updateObject($scope, testObject, testViewModel);
-            }));
-
-            it('should set the error', function () {
-                expect(setInvokeUpdateError).toHaveBeenCalledWith($scope, testError, editableProperties, testViewModel);
-            });
-        });  
     });
 
-    describe('setInvokeUpdateError helper', function () {
+    describe('Context Service', function () {
+        var $scope;
 
-        var testViewModel = {message : ""}; 
-        
+        beforeEach(module('app'));
 
-        beforeEach(inject(function ($rootScope) {        
-            $scope = $rootScope.$new();
-        }));
+        describe('getHome', function () {
 
-        describe('if error is errorMap', function () {
-            
-            var error = { "one": { "value": "1", "invalidReason": "a reason" }, "two": { "value": "2" }, "x-ro-invalid-reason": "another reason" };
+            var homePromise: ng.IPromise;
+            var testHome = new Spiro.HomePageRepresentation();
+            var context; 
 
-            var errorMap = new Spiro.ErrorMap(error, "status", "a warning message");
-            var vms = [{ id: "one", value: null, message: null }, { id: "two", value: null, message: null }];
+            //describe('when currentHome is set', function () {
 
-            beforeEach(inject(function (Handlers: Spiro.Angular.HandlersInterface) {
-                
-                (<any>Handlers).setInvokeUpdateError($scope, errorMap, vms, testViewModel);
-            }));
+            //    beforeEach(inject(function ($rootScope, $routeParams, Context: Spiro.Angular.ContextInterface) {
 
 
-            it('should set the parameters and error', function () {
-                expect(vms[0].value).toBe("1");
-                expect(vms[0].message).toBe("a reason");
-                expect(vms[1].value).toBe("2");
-                expect(vms[1].message).toBeUndefined();
+            //        homePromise = Context.getHome();
+            //    }));
 
-                expect(testViewModel.message).toBe("another reason");
-            });
-        });
 
-        describe('if error is errorRep', function () {
+            //    it('returns home page representation', function () {
 
-            var testError = new Spiro.ErrorRepresentation(); 
-            var testErrorViewModel = new Spiro.Angular.ErrorViewModel();
-            var errorViewModel; 
-            
-            beforeEach(inject(function (Handlers: Spiro.Angular.HandlersInterface, ViewModelFactory: Spiro.Angular.VMFInterface) {
-                errorViewModel = spyOn(ViewModelFactory, 'errorViewModel').andReturn(testErrorViewModel);
-                (<any>Handlers).setInvokeUpdateError($scope, testError, [], testViewModel);
-            }));
+            //    });
+            //});
 
-            it('should set the scope ', function () {
-                expect(errorViewModel).toHaveBeenCalledWith(testError); 
-                expect($scope.error).toBe(testErrorViewModel);
-                expect($scope.dialogTemplate).toBe("Content/partials/error.html");           
-            });
+            describe('when currentHome is not set', function () {
 
-        });
+                var result;
 
-        describe('if error is string', function () {
+                beforeEach(inject(function ($rootScope, $routeParams, Context: Spiro.Angular.ContextInterface, RepresentationLoader: Spiro.Angular.RLInterface) {
+                    spyOnPromise(RepresentationLoader, 'populate', testHome);
+                    context = Context;
 
-            var errorMessage = 'an error message';
+                    runs(function () {
+                        context.getHome().then(function (home) {
+                            result = home;
+                        });
+                        $rootScope.$apply();
+                    });
+                   
+                    waitsFor(function () {
+                        return !!result;
+                    }, "result not set", 1000);
 
-            beforeEach(inject(function ($rootScope, $routeParams, Handlers: Spiro.Angular.HandlersInterface) { 
-                (<any>Handlers).setInvokeUpdateError($scope, errorMessage, [], testViewModel);
-            }));
-            
-            it('should set the scope ', function () {
-                expect(testViewModel.message).toBe(errorMessage);
+                }));
+
+                it('returns home page representation', function () {
+                    expect(result).toBe(testHome);
+                });
+
             });
         });
     });

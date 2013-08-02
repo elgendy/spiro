@@ -23,7 +23,10 @@ files = [
   'Spiro.Angular/Scripts/spiro.angular.viewmodels.js',
   'Spiro.Angular/Scripts/spiro.angular.controllers.js',
   
-  'Spiro.Angular/Tests/specs/*.js'
+  'Spiro.Angular/Tests/specs/testData.js',
+  'Spiro.Angular/Tests/specs/controllers.js',
+  'Spiro.Angular/Tests/specs/services.js'
+
 ];
 
 
