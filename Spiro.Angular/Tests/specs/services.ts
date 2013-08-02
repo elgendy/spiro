@@ -1566,6 +1566,84 @@ describe('Services', function () {
 
         });
 
+        describe('getNestedObject', function () {
+
+            var testObject = new Spiro.DomainObjectRepresentation();
+            
+            var context;
+            var result;
+
+            var populate ;
+      
+            beforeEach(inject(function ($rootScope, $routeParams, Context: Spiro.Angular.ContextInterface ) {
+               
+             
+                spyOn(testObject, 'domainType').andReturn("test");
+                spyOn(testObject, 'instanceId').andReturn("1");
+                spyOn(testObject, 'serviceId').andReturn(undefined);
+
+                context = Context;
+            }));
+
+            describe('when nestedObject is set', function () {
+
+                beforeEach(inject(function ($rootScope, RepresentationLoader: Spiro.Angular.RLInterface) {
+
+                    populate = spyOnPromise(RepresentationLoader, 'populate', testObject);
+
+                    context.setNestedObject(testObject);
+
+                    runs(function () {
+                        context.getNestedObject("test", "1").then(function (object) {
+                            result = object;
+                        });
+                        $rootScope.$apply();
+                    });
+
+                    waitsFor(function () {
+                        return !!result;
+                    }, "result not set", 1000);
+                }));
+
+
+                it('returns object representation', function () {
+                    expect(populate).wasNotCalled();         
+                    expect(result).toBe(testObject);
+                });
+            });
+
+            describe('when nestedObject is not set', function () {
+
+                var testResult = new Spiro.DomainObjectRepresentation();
+                
+                beforeEach(inject(function ($rootScope, RepresentationLoader: Spiro.Angular.RLInterface) {
+
+                    testResult.hateoasUrl = "objects/test/1";
+
+                    populate = spyOnPromise(RepresentationLoader, 'populate', testResult);
+
+                    runs(function () {
+                        context.getNestedObject("test", "1").then(function (object) {
+                            result = object;
+                        });
+                        $rootScope.$apply();
+                    });
+
+                    waitsFor(function () {
+                        return !!result;
+                    }, "result not set", 1000);
+                }));
+
+
+                it('returns object representation', function () {
+                    expect(populate).toHaveBeenCalled();   
+                    expect(result).toBe(testResult);
+                });
+            });
+
+        });
+
+
         describe('getService', function () {
 
             var testObject = new Spiro.DomainObjectRepresentation();
