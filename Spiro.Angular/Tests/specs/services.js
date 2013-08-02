@@ -80,11 +80,11 @@ describe('Services', function () {
         return spyOn(tgt, func).andReturn(mp);
     }
 
+    var $scope;
+
+    beforeEach(module('app'));
+
     describe('Handlers Service', function () {
-        var $scope;
-
-        beforeEach(module('app'));
-
         describe('handleCollectionResult', function () {
             var getCollection;
 
@@ -1233,21 +1233,31 @@ describe('Services', function () {
     });
 
     describe('Context Service', function () {
-        var $scope;
-
-        beforeEach(module('app'));
-
         describe('getHome', function () {
-            var homePromise;
             var testHome = new Spiro.HomePageRepresentation();
             var context;
 
-            describe('when currentHome is not set', function () {
-                var result;
+            var result;
 
-                beforeEach(inject(function ($rootScope, $routeParams, Context, RepresentationLoader) {
-                    spyOnPromise(RepresentationLoader, 'populate', testHome);
-                    context = Context;
+            beforeEach(inject(function ($rootScope, $routeParams, Context, RepresentationLoader) {
+                spyOnPromise(RepresentationLoader, 'populate', testHome);
+                context = Context;
+
+                runs(function () {
+                    context.getHome().then(function (home) {
+                        result = home;
+                    });
+                    $rootScope.$apply();
+                });
+
+                waitsFor(function () {
+                    return !!result;
+                }, "result not set", 1000);
+            }));
+
+            describe('when currentHome is set', function () {
+                beforeEach(inject(function ($rootScope) {
+                    result = null;
 
                     runs(function () {
                         context.getHome().then(function (home) {
@@ -1263,6 +1273,67 @@ describe('Services', function () {
 
                 it('returns home page representation', function () {
                     expect(result).toBe(testHome);
+                });
+            });
+
+            describe('when currentHome is not set', function () {
+                it('returns home page representation', function () {
+                    expect(result).toBe(testHome);
+                });
+            });
+        });
+
+        describe('getServices', function () {
+            var testServices = new Spiro.DomainServicesRepresentation();
+            var testHome = new Spiro.HomePageRepresentation();
+            var context;
+
+            var result;
+
+            beforeEach(inject(function ($rootScope, $routeParams, Context, RepresentationLoader) {
+                spyOnPromise(RepresentationLoader, 'populate', testServices);
+                spyOnPromise(Context, 'getHome', testHome);
+
+                spyOn(testHome, 'getDomainServices').andReturn(testServices);
+
+                context = Context;
+
+                runs(function () {
+                    context.getServices().then(function (services) {
+                        result = services;
+                    });
+                    $rootScope.$apply();
+                });
+
+                waitsFor(function () {
+                    return !!result;
+                }, "result not set", 1000);
+            }));
+
+            describe('when currentServices is set', function () {
+                beforeEach(inject(function ($rootScope) {
+                    result = null;
+
+                    runs(function () {
+                        context.getServices().then(function (services) {
+                            result = services;
+                        });
+                        $rootScope.$apply();
+                    });
+
+                    waitsFor(function () {
+                        return !!result;
+                    }, "result not set", 1000);
+                }));
+
+                it('returns home page representation', function () {
+                    expect(result).toBe(testServices);
+                });
+            });
+
+            describe('when currentServices is not set', function () {
+                it('returns services representation', function () {
+                    expect(result).toBe(testServices);
                 });
             });
         });
