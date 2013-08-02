@@ -1382,6 +1382,29 @@ describe('Services', function () {
                 });
             });
 
+            describe('when currentObject is set but not same', function () {
+                beforeEach(inject(function ($rootScope) {
+                    context.setObject(testObject);
+
+                    runs(function () {
+                        context.getObject("test2", "2").then(function (object) {
+                            result = object;
+                        });
+                        $rootScope.$apply();
+                    });
+
+                    waitsFor(function () {
+                        return !!result;
+                    }, "result not set", 1000);
+                }));
+
+                it('returns object representation', function () {
+                    expect(getDomainObject).toHaveBeenCalledWith("test2", "2");
+                    expect(getService).wasNotCalled();
+                    expect(result).toBe(testObject);
+                });
+            });
+
             describe('when currentObject is not set', function () {
                 beforeEach(inject(function ($rootScope) {
                     runs(function () {
@@ -1441,6 +1464,34 @@ describe('Services', function () {
                 it('returns object representation', function () {
                     expect(populate).wasNotCalled();
                     expect(result).toBe(testObject);
+                });
+            });
+
+            describe('when nestedObject is set but not same', function () {
+                var testResult = new Spiro.DomainObjectRepresentation();
+
+                beforeEach(inject(function ($rootScope, RepresentationLoader) {
+                    testResult.hateoasUrl = "objects/test2/2";
+
+                    populate = spyOnPromise(RepresentationLoader, 'populate', testResult);
+
+                    context.setNestedObject(testObject);
+
+                    runs(function () {
+                        context.getNestedObject("test2", "2").then(function (object) {
+                            result = object;
+                        });
+                        $rootScope.$apply();
+                    });
+
+                    waitsFor(function () {
+                        return !!result;
+                    }, "result not set", 1000);
+                }));
+
+                it('returns object representation', function () {
+                    expect(populate).toHaveBeenCalled();
+                    expect(result).toBe(testResult);
                 });
             });
 
@@ -1567,6 +1618,29 @@ describe('Services', function () {
                 it('returns service representation', function () {
                     expect(getDomainObject).wasNotCalled();
                     expect(getService).wasNotCalled();
+                    expect(result).toBe(testObject);
+                });
+            });
+
+            describe('when currentObject is set but is not same', function () {
+                beforeEach(inject(function ($rootScope) {
+                    context.setObject(testObject);
+
+                    runs(function () {
+                        context.getObject("test2").then(function (object) {
+                            result = object;
+                        });
+                        $rootScope.$apply();
+                    });
+
+                    waitsFor(function () {
+                        return !!result;
+                    }, "result not set", 1000);
+                }));
+
+                it('returns service representation', function () {
+                    expect(getDomainObject).wasNotCalled();
+                    expect(getService).toHaveBeenCalledWith("test2");
                     expect(result).toBe(testObject);
                 });
             });
