@@ -1471,6 +1471,62 @@ describe('Services', function () {
             });
         });
 
+        describe('getCollection', function () {
+            var testObject = new Spiro.ListRepresentation();
+
+            var context;
+            var result;
+
+            var populate;
+
+            beforeEach(inject(function ($rootScope, $routeParams, Context) {
+                context = Context;
+            }));
+
+            describe('when collection is set', function () {
+                beforeEach(inject(function ($rootScope) {
+                    context.setCollection(testObject);
+
+                    runs(function () {
+                        context.getCollection().then(function (object) {
+                            result = object;
+                        });
+                        $rootScope.$apply();
+                    });
+
+                    waitsFor(function () {
+                        return !!result;
+                    }, "result not set", 1000);
+                }));
+
+                it('returns collection representation', function () {
+                    expect(result).toBe(testObject);
+                });
+            });
+
+            describe('when collection is not set', function () {
+                beforeEach(inject(function ($rootScope) {
+                    var getCollectionRun = false;
+
+                    runs(function () {
+                        context.getCollection().then(function (object) {
+                            result = object;
+                            getCollectionRun = true;
+                        });
+                        $rootScope.$apply();
+                    });
+
+                    waitsFor(function () {
+                        return getCollectionRun;
+                    }, "result not set", 1000);
+                }));
+
+                it('returns object representation', function () {
+                    expect(result).toBeNull();
+                });
+            });
+        });
+
         describe('getService', function () {
             var testObject = new Spiro.DomainObjectRepresentation();
 

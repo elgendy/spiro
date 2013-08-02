@@ -240,6 +240,10 @@
     <Content Include="Scripts\underscore.min.js" />
     <Content Include="Scripts\underscore.min.map" />
     <TypeScriptCompile Include="Tests\specs\controllers.ts" />
+    <TypeScriptCompile Include="Tests\e2e\scenariotests.ts" />
+    <Content Include="Tests\e2e\scenariotests.js">
+      <DependentUpon>scenariotests.ts</DependentUpon>
+    </Content>
     <Content Include="Tests\specs\controllers.js">
       <DependentUpon>controllers.ts</DependentUpon>
     </Content>
@@ -706,7 +710,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
-    <Folder Include="Tests\e2e\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />
